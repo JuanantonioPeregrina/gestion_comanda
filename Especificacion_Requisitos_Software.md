@@ -126,4 +126,64 @@ Requisitos No Funcionales
 •   Los usuarios registrados podrán personalizar ciertos aspectos de la interfaz (como el tema oscuro o el tamaño de la fuente). Se validará permitiendo que los usuarios hagan estos ajustes y comprobando que los cambios se aplican correctamente.
 60. Programación de pedidos recurrentes
 •   Los usuarios registrados podrán programar pedidos recurrentes, como pedidos diarios o semanales. Se probará configurando un pedido recurrente y verificando que el sistema lo procesa automáticamente en las fechas establecidas.
+61. Sugerencia de menú según historial de pedidos
+El sistema debe sugerir platos basados en los pedidos anteriores del cliente registrado. Se validará verificando que las sugerencias aparecen correctamente en función del historial de pedidos.
+62. Opción para duplicar un pedido anterior
+Los clientes registrados deben poder duplicar un pedido pasado sin tener que reconfigurarlo desde cero. Se comprobará accediendo al historial y repitiendo un pedido.
+63. Vista previa del pedido en cocina
+El personal de cocina podrá ver una vista previa de los ingredientes y personalización de los platos antes de confirmar su preparación. Se validará verificando que las personalizaciones están correctas antes de comenzar.
+64. Pedidos agrupados por tiempo de preparación
+Los pedidos que tienen platos con tiempos de preparación similares se agruparán automáticamente para optimizar el flujo de trabajo en la cocina. Se validará haciendo varios pedidos y comprobando su agrupación.
+65. Configuración de niveles de picante o condimentos
+El cliente debe poder elegir el nivel de picante o añadir condimentos específicos en sus platos. Se probará realizando pedidos con diferentes niveles de condimentos.
+66. Información sobre alérgenos en tiempo real
+El sistema debe alertar al cliente sobre alérgenos presentes en los platos seleccionados. Se validará seleccionando platos con alérgenos y verificando la aparición de la advertencia.
+67. Opción de dividir la cuenta entre varios clientes
+El sistema permitirá dividir el costo de un pedido entre varios usuarios antes de confirmar el pago. Se validará realizando un pedido y dividiendo la cuenta entre varias formas de pago.
+68. Autocompletado de datos de usuario registrado
+Los usuarios registrados deben ver sus datos de contacto y pago autocompletados al realizar un pedido. Se probará verificando que los datos se llenan automáticamente en un pedido.
+69. Personalización de combos de menú
+El cliente debe poder armar combos personalizados seleccionando diferentes opciones dentro de un conjunto. Se validará creando un combo personalizado y verificando que la cocina lo recibe correctamente.
+70. Aviso de tiempo de espera prolongado
+El sistema debe alertar al cliente si el tiempo de preparación estimado excede un cierto umbral. Se probará simulando demoras en la cocina y revisando las notificaciones.
+71. Asignación automática de pedidos a chefs especializados
+El sistema debe asignar automáticamente platos específicos a chefs con especialización en esos platos. Se validará verificando que los pedidos se distribuyen según las especialidades.
+72. Programación de pedidos según turnos de cocina
+El cliente podrá programar un pedido en función de la disponibilidad de chefs y turnos en la cocina. Se validará creando un pedido para un turno específico.
+73. Filtrado de platos por dietas especiales
+Los clientes podrán filtrar el menú según dietas especiales como vegana, vegetariana o sin gluten. Se validará haciendo búsquedas en el menú y verificando que se muestra el filtro correcto.
+74. Visualización de platos más pedidos
+El sistema mostrará los platos más solicitados en un restaurante. Se validará haciendo varios pedidos y comprobando que los platos populares se actualizan correctamente.
+75. Pedido múltiple desde varias mesas
+Los camareros podrán hacer pedidos desde diferentes mesas en una sola orden. Se validará realizando pedidos desde varias mesas y confirmando que llegan agrupados.
+76. Opción de dividir platos entre varios clientes
+Los clientes podrán compartir un plato dividiendo porciones y costos entre varios usuarios. Se validará haciendo un pedido compartido y verificando que el sistema divide correctamente.
+77. Integración con programas de lealtad
+El sistema se integrará con programas de puntos o recompensas para clientes frecuentes. Se probará realizando pedidos y verificando que se acumulan puntos en el programa de lealtad.
+78. Alerta de confirmación de pedido duplicado
+El sistema alertará al cliente si intenta hacer un pedido que ya ha realizado recientemente. Se validará haciendo dos pedidos idénticos y revisando que se muestra la alerta.
+79. Menú dinámico basado en disponibilidad de chefs
+Los platos en el menú se mostrarán u ocultarán en función de la disponibilidad de chefs capacitados para prepararlos. Se validará modificando la disponibilidad de los chefs y revisando los cambios en el menú.
+80. Pedidos agrupados por mesa
+Los pedidos que provienen de una misma mesa se agruparán automáticamente para facilitar la entrega. Se validará haciendo varios pedidos desde la misma mesa y comprobando que llegan juntos a la cocina.
+81. Personalización del tamaño de las porciones
+El cliente podrá elegir el tamaño de las porciones para cada plato. Se probará realizando pedidos con diferentes tamaños de porciones.
+82. Cancelación automática de pedidos inactivos
+Si un pedido no se confirma después de un tiempo determinado, será cancelado automáticamente. Se validará creando un pedido sin confirmar y verificando que el sistema lo cancela tras el tiempo límite.
+83. Pedido exprés desde historial
+El cliente podrá hacer un pedido rápido seleccionando uno de sus pedidos previos desde el historial. Se validará probando la opción de "pedido exprés".
+84. Opción de menú en modo familiar
+El cliente podrá hacer pedidos de tamaño familiar o para grupos grandes. Se validará creando un pedido para múltiples personas y verificando que el sistema ajusta las porciones y el precio.
+85. Visualización de pedidos en cola por cliente
+Los clientes podrán ver en tiempo real cuántos pedidos están antes del suyo en la cola de la cocina. Se validará haciendo varios pedidos y verificando el número de pedidos en espera.
+86. Registro de preferencias de clientes registrados
+Los clientes registrados podrán guardar sus preferencias de comida para futuros pedidos. Se validará haciendo un pedido y comprobando que las preferencias se guardan correctamente.
+87. Control de acceso para personal de cocina
+El sistema permitirá asignar diferentes niveles de acceso al personal de cocina (chef, ayudante, administrador). Se validará configurando usuarios con diferentes roles y verificando los permisos.
+88. Opción de agregar notas especiales para el pedido
+El cliente podrá añadir notas especiales o comentarios adicionales para la cocina. Se validará añadiendo notas y verificando que lleguen a la cocina.
+89. Visualización del progreso de la preparación:
+El cliente podrá ver una barra de progreso que muestra en qué etapa se encuentra la preparación de su pedido. Se validará haciendo un pedido y revisando el estado de la barra de progreso.
+90. Pedidos de bebidas por separado
+El cliente podrá hacer pedidos de bebidas independientemente de los platos principales, incluso durante la preparación de un pedido ya existente. Se validará haciendo un pedido de bebidas separado.
 
