@@ -4,23 +4,23 @@ Este proyecto tiene como objetivo desarrollar un sistema de comandas que permite
 
 Requisitos Funcionales
 1.  Acceso al menú sin registro
-o   El cliente podrá visualizar el menú completo de la aplicación o página web sin necesidad de registrarse ni iniciar sesión. Se probará accediendo como usuario anónimo y verificando que el menú está completamente accesible y que no te pide credenciales.
+•   El cliente podrá visualizar el menú completo de la aplicación o página web sin necesidad de registrarse ni iniciar sesión. Se probará accediendo como usuario anónimo y verificando que el menú está completamente accesible y que no te pide credenciales.
 2.  Personalización de platos
-o   El cliente podrá personalizar su pedido, eligiendo opciones como eliminar ingredientes o ajustar porciones. Se validará haciendo un pedido con personalización y comprobando que estos cambios llegan correctamente a la cocina.
+•   El cliente podrá personalizar su pedido, eligiendo opciones como eliminar ingredientes o ajustar porciones. Se validará haciendo un pedido con personalización y comprobando que estos cambios llegan correctamente a la cocina.
 3.  Añadir productos al carrito sin cuenta
-o   El usuario debe poder agregar productos al carrito sin estar registrado. Se verificará agregando productos como cliente anónimo y comprobando que los productos se añaden correctamente.
+•   El usuario debe poder agregar productos al carrito sin estar registrado. Se verificará agregando productos como cliente anónimo y comprobando que los productos se añaden correctamente.
 4.  Modificar el carrito antes de confirmar el pedido
-o   El cliente podrá modificar el contenido de su carrito (añadir, eliminar o cambiar cantidades) antes de finalizar el pedido. Se comprobará realizando modificaciones en el carrito y revisando que se actualizan correctamente.
+•   El cliente podrá modificar el contenido de su carrito (añadir, eliminar o cambiar cantidades) antes de finalizar el pedido. Se comprobará realizando modificaciones en el carrito y revisando que se actualizan correctamente.
 5.  Confirmar el pedido sin registro
-o   Los clientes podrán confirmar y enviar su pedido sin estar registrados en la plataforma. La validación se hará comprobando que el pedido se envía a la cocina sin necesidad de iniciar sesión.
+•   Los clientes podrán confirmar y enviar su pedido sin estar registrados en la plataforma. La validación se hará comprobando que el pedido se envía a la cocina sin necesidad de iniciar sesión.
 6.  Notificación de pedido recibido
-o   Al enviar un pedido a la cocina, el cliente recibirá una confirmación visual en la pantalla. Se comprobará que la notificación aparece correctamente tras hacer un pedido.
+•   Al enviar un pedido a la cocina, el cliente recibirá una confirmación visual en la pantalla. Se comprobará que la notificación aparece correctamente tras hacer un pedido.
 7.  Seguimiento del estado del pedido
-o   El cliente podrá consultar el estado de su pedido en tiempo real (por ejemplo, en preparación o listo para recoger). Para validarlo, se verificarán los cambios de estado de los pedidos en la interfaz del cliente.
+•   El cliente podrá consultar el estado de su pedido en tiempo real (por ejemplo, en preparación o listo para recoger). Para validarlo, se verificarán los cambios de estado de los pedidos en la interfaz del cliente.
 8.  Notificación de pedido listo para recoger
-o   El sistema debe notificar al cliente cuando el pedido esté listo para recoger o entregar. Se probará simulando un pedido que pasa a estar listo y revisando que la notificación aparece en la pantalla del cliente.
+•   El sistema debe notificar al cliente cuando el pedido esté listo para recoger o entregar. Se probará simulando un pedido que pasa a estar listo y revisando que la notificación aparece en la pantalla del cliente.
 9.  Historial temporal de pedidos
-o   El cliente podrá ver un historial temporal de sus pedidos realizados durante la misma sesión, sin necesidad de estar registrado. Se validará realizando varios pedidos y revisando que el historial se mantiene mientras la sesión esté activa.
+•   El cliente podrá ver un historial temporal de sus pedidos realizados durante la misma sesión, sin necesidad de estar registrado. Se validará realizando varios pedidos y revisando que el historial se mantiene mientras la sesión esté activa.
 10. Pago sin necesidad de cuenta
 •   Los usuarios podrán realizar el pago de su pedido utilizando diversas formas de pago (tarjeta de crédito/débito, por ejemplo) sin registrarse. Se probará completando un pago con un cliente no registrado y verificando que se procesa correctamente.
 11. Registro opcional para recibir ofertas
