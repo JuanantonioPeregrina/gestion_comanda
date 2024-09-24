@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión</title>
+</head>
+<body>
+    <div class="form">
+        <h1>Iniciar Sesión</h1>
+        <form action="login.php" method="post">
+            <div class="field-wrap">
+                <label> Correo Electrónico<span class="req">*</span> </label>
+                <input type="email" name="email" required autocomplete="off"/>
+            </div>
+
+            <div class="field-wrap">
+                <label> Contraseña<span class="req">*</span> </label>
+                <input type="password" name="password" required autocomplete="off"/>
+            </div>
+
+            <p class="forgot"><a href="#">Olvidé mi contraseña</a></p>
+            <button type="submit" class="button button-block">Iniciar Sesión</button>
+        </form>
+    </div>
+</body>
+</html>
+
