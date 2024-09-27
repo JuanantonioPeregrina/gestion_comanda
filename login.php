@@ -2,10 +2,17 @@
 session_start(); // Iniciar sesión para manejar mensajes de error
 
 // Datos de ejemplo en el archivo o en la base de datos para validación
-$usuarios_validos = [
-    'ceo@comanda.com' => '1',
-    'usuario2@example.com' => 'password2'
-];
+//$usuarios_validos = [
+//    'ceo@comanda.com' => '1',
+//    'usuario2@example.com' => 'password2'
+//];
+if (!file_exists('usuarios.json')) {
+    file_put_contents('usuarios.json', json_encode([]));
+}
+
+$contenido_json = file_get_contents($archivo_usuarios);
+
+$usuarios_validos = json_decode($contenido_json, true);
 
 // Obtener el correo y contraseña del formulario
 $email = $_POST['email'];
