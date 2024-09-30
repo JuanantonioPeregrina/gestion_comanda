@@ -1,20 +1,23 @@
 <!DOCTYPE html>
 <html lang="es">
-	<head>
-		    <meta charset="UTF-8">
-		        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-			  <link rel="stylesheet" href="style.css">
-
-	</head>
-	    <body style="background-image: url('https://cdn.glitch.global/7c2765b9-8a6f-4f34-8127-938702a89292/Untitled%20Project.jpg?v=1727179462189');">
-		        <div class="menu">
-				        <h1>Bienvenido, ¡Identifíquese!</h1>
-					   
-					       <button>Invitado</button> 
-						     <button onclick="location.href='InicioSesion2.html'" >Registrado</button> 
-						          
-
-						          </div>    
-	    </body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Bienvenido</title>
+</head>
+<body>
+    <video autoplay loop muted playsinline style="position: absolute; width: 100%; left: 0; top: 0; height: 100%; object-fit: cover; z-index: -1;">
+        <source src="media/videofondo.mp4" type="video/mp4">
+        Tu navegador no soporta videos.
+    </video>
+    <div class="overlay"></div>
+    <div class="menu">
+        <h1>Bienvenido, ¡Identifíquese!</h1>
+        <div class="button-group">
+            <button class="btn">Invitado</button>
+            <button class="btn" onclick="location.href='InicioSesion2.html'">Registrado</button>
+        </div>
+    </div>
+</body>
 </html>
-
