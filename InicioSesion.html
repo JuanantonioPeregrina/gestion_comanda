@@ -3,9 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
     <title>Iniciar Sesión</title>
 </head>
 <body>
+
+    <video autoplay loop muted playsinline style="position: absolute; width: 100%; left: 0; top: 0; height: 100%; object-fit: cover; z-index: -1;">
+        <source src="media/videofondo.mp4" type="video/mp4">
+        Tu navegador no soporta videos.
+    </video>
+
 
     <div class="form">
         
@@ -35,27 +42,29 @@
                         <label> Contraseña<span class="req">*</span> </label>
                         <input type="password" required autocomplete="off"/>
                     </div>
-		    <!--
                     <button type="submit" class="button button-block">Inicio Sesion </button>
                 </form>
-	    </div> -->
+	        -->
+            </div> 
 
             <div id="login">
-                <h1>Iniciar Sesión</h1>
-                <form action="/" method="post">
-                    <div class="field-wrap">
-                        <label> Correro Electrónico<span class="req">*</span> </label>
-                        <input type="email" required autocomplete="off"/>
-                    </div>
+                <div class = "menu">
+                    <h1>Iniciar Sesión</h1>
+                    <form action="/" method="post">
+                        <div class="field-wrap">
+                            <label> Correro Electrónico<span class="req">*</span> </label>
+                            <input type="email" required autocomplete="off"/>
+                        </div>
 
-                    <div class="field-wrap">
-                        <label> Contraseña<span class="req">*</span> </label>
-                        <input type="password" required autocomplete="off"/>
-                    </div>
+                        <div class="field-wrap">
+                            <label> Contraseña<span class="req">*</span> </label>
+                            <input type="password" required autocomplete="off"/>
+                        </div>
 
-                    <p class="forgot"><a href="#"> Olvide Mi Contraseña</a></p>
-                    <button class="button button-block">Inicio Sesion</button>
-                </form>
+                        <p class="forgot"><a href="#"> Olvide Mi Contraseña</a></p>
+                        <button class="button button-block">Inicio Sesion</button>
+                    </form>
+            </div>
             </div>
         </div><!-- tab-content -->
     </div><!-- /form -->
