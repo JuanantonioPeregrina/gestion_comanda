@@ -3,44 +3,184 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
     <title>Página Principal</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
+        /* Estilo para el botón que abre el carrito */
+        .cart-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            z-index: 1000;
+        }
+
+        /* Estilos para el sidebar del carrito */
+        .cart-sidebar {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            top: 0;
+            right: 0;
+            background-color: white;
+            box-shadow: -2px 0px 5px rgba(0, 0, 0, 0.5);
+            overflow-x: hidden;
+            transition: 0.5s;
+            padding: 60px 20px;
+            z-index: 1001;
+        }
+
+        .cart-sidebar h2 {
+            margin-top: 0;
+        }
+
+        .cart-sidebar a {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            font-size: 30px;
+            color: #007BFF;
+            text-decoration: none;
+        }
+
+        /* Estilos cuando el sidebar está visible */
+        .cart-sidebar.open {
+            width: 300px;
+        }
+
+        /* Estilos para la lista de productos */
+        .products {
+            padding: 20px;
+        }
+
+        .product-list {
             display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f0f0f0;
+            flex-direction: column;
+            gap: 10px;
         }
 
-        .content {
-            text-align: center;
-            background-color: #fff;
-            padding: 50px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        .product {
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
 
-        h1 {
-            font-size: 24px;
-            margin-bottom: 20px;
-            color: #333;
+        .product h3, .product p {
+            margin: 0;
         }
 
-        p {
-            font-size: 18px;
-            color: #555;
+        .add-to-cart {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
-    <div class="content">
+
+    <video autoplay loop muted playsinline style="position: absolute; width: 100%; left: 0; top: 0; height: 100%; object-fit: cover; z-index: -1;">
+        <source src="media/videofondo.mp4" type="video/mp4">
+        Tu navegador no soporta videos.
+    </video>
+
+    <div class="menu">
         <h1>Bienvenido</h1>
         <p>Esta es la página principal</p>
     </div>
+
+    <section class="products">
+        <h2>Productos</h2>
+        <div class="product-list">
+            <div class="product">
+                <h3>Producto 1</h3>
+                <p>Precio: 10€</p>
+                <button class="add-to-cart" data-name="Producto 1" data-price="10">Añadir al carrito</button>
+            </div>
+            <div class="product">
+                <h3>Producto 2</h3>
+                <p>Precio: 20€</p>
+                <button class="add-to-cart" data-name="Producto 2" data-price="20">Añadir al carrito</button>
+            </div>
+            <div class="product">
+                <h3>Producto 3</h3>
+                <p>Precio: 30€</p>
+                <button class="add-to-cart" data-name="Producto 3" data-price="30">Añadir al carrito</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Botón para abrir el carrito -->
+    <button class="cart-toggle">Ver Carrito</button>
+
+    <!-- Sidebar del carrito -->
+    <div id="cart-sidebar" class="cart-sidebar">
+        <a href="javascript:void(0)" class="close-cart">&times;</a>
+        <h2>Carrito de Compras</h2>
+        <div id="cart-items"></div>
+        <p>Total: <span id="total-price">0</span>€</p>
+        <button id="checkout-btn">Finalizar Compra</button>
+    </div>
+
+    <script>
+        const cart = [];
+        const cartItemsContainer = document.getElementById('cart-items');
+        const totalPriceElement = document.getElementById('total-price');
+        const cartSidebar = document.getElementById('cart-sidebar');
+        const cartToggleBtn = document.querySelector('.cart-toggle');
+        const closeCartBtn = document.querySelector('.close-cart');
+
+        // Función para abrir el carrito
+        cartToggleBtn.addEventListener('click', () => {
+            cartSidebar.classList.add('open');
+        });
+
+        // Función para cerrar el carrito
+        closeCartBtn.addEventListener('click', () => {
+            cartSidebar.classList.remove('open');
+        });
+
+        // Función para actualizar el carrito
+        function updateCart() {
+            cartItemsContainer.innerHTML = '';
+            let totalPrice = 0;
+
+            cart.forEach(item => {
+                const itemElement = document.createElement('div');
+                itemElement.textContent = `${item.name} - ${item.price}€`;
+                cartItemsContainer.appendChild(itemElement);
+                totalPrice += item.price;
+            });
+
+            totalPriceElement.textContent = totalPrice.toFixed(2);
+        }
+
+        // Añadir producto al carrito
+        document.querySelectorAll('.add-to-cart').forEach(button => {
+            button.addEventListener('click', (event) => {
+                const name = event.target.getAttribute('data-name');
+                const price = parseFloat(event.target.getAttribute('data-price'));
+
+                cart.push({ name, price });
+                updateCart();
+            });
+        });
+
+        // Finalizar compra
+        document.getElementById('checkout-btn').addEventListener('click', () => {
+            alert('Compra finalizada. Total: ' + totalPriceElement.textContent + '€');
+            cart.length = 0;
+            updateCart();
+            cartSidebar.classList.remove('open');
+        });
+    </script>
+
 </body>
 </html>
-
