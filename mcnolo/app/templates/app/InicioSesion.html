@@ -4,172 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar Sesión</title>
-    <style>
-        /* General Body Styles */
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Arial', sans-serif;
-            background-size: cover;
-            background-position: center;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            position: relative;
-        }
-
-        /* Overlay to darken the background for readability */
-        .overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1;
-        }
-
-        /* Form container */
-        .form {
-            z-index: 2;
-            text-align: center;
-            background-color: rgba(255, 255, 255, 0.9);
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
-            width: 400px; /* Added width for better layout */
-        }
-
-        /* Menu styling */
-        .menu {
-            margin-bottom: 20px;
-        }
-
-        /* Title styling */
-        .menu h1 {
-            font-size: 2.5rem;
-            color: #333;
-            margin-bottom: 20px;
-            font-weight: bold;
-        }
-
-        /* Field wrap styles */
-        .field-wrap {
-            margin: 15px 0;
-            text-align: left;
-        }
-
-        .field-wrap label {
-            display: block;
-            margin-bottom: 5px;
-            color: #333;
-        }
-
-        .field-wrap input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 1rem;
-        }
-
-        /* Button styles */
-        .button {
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 1.2rem;
-            cursor: pointer;
-            border-radius: 5px;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            width: 100%; /* Full width for the button */
-        }
-
-        .button:hover {
-            background-color: #0056b3;
-            transform: scale(1.05);
-        }
-
-        /* Forgot password styling */
-        .forgot {
-            margin: 10px 0;
-            text-align: right;
-        }
-
-        /* Add some responsive styles */
-        @media (max-width: 600px) {
-            .menu h1 {
-                font-size: 2rem;
-            }
-
-            .button {
-                padding: 10px 15px;
-                font-size: 1rem;
-            }
-        }
-    </style>
+   
 </head>
 <body>
-    <!--<video autoplay loop muted playsinline style="position: absolute; width: 100%; left: 0; top: 0; height: 100%; object-fit: cover; z-index: -1;">
-        <source src="media/videofondo.mp4" type="video/mp4">
-        Tu navegador no soporta videos.
-    </video>-->
-
     <div class="overlay"></div>
     <div class="form">
-        <div class="tab-content">
-            <div id="signup">
-                <!-- Formulario de registro (opcional, puede ser activado si es necesario)
-                <h1>Darse de Alta</h1> 
-                <form action="/" method="post">
-                    <div class="top-row">
-                        <div class="field-wrap">
-                            <label> Nombre<span class="req">*</span> </label>
-                            <input type="text" required autocomplete="off"/>
-                        </div>
-
-                        <div class="field-wrap">
-                            <label> Apellido<span class="req">*</span> </label>
-                            <input type="text" required autocomplete="off"/>
-                        </div>
+        <div class="menu">
+            <h1>Iniciar Sesión</h1>
+            <form action="{% url 'inicio_sesion' %}" method="post">
+                {% csrf_token %}
+                
+                <!-- Mensajes de error -->
+                {% if messages %}
+                    <div class="messages">
+                        {% for message in messages %}
+                            <p style="color: red;">{{ message }}</p>
+                        {% endfor %}
                     </div>
+                {% endif %}
 
-                    <div class="field-wrap">
-                        <label> Correo Electrónico<span class="req">*</span> </label>
-                        <input type="email" required autocomplete="off"/>
-                    </div>
-
-                    <div class="field-wrap">
-                        <label> Contraseña<span class="req">*</span> </label>
-                        <input type="password" required autocomplete="off"/>
-                    </div>
-                    <button type="submit" class="button button-block">Darse de Alta</button>
-                </form>
-                -->
-            </div> 
-
-            <div id="login">
-                <div class="menu">
-                    <h1>Iniciar Sesión</h1>
-                    <form action="/" method="post">
-                        <div class="field-wrap">
-                            <label> Correo Electrónico<span class="req">*</span> </label>
-                            <input type="email" required autocomplete="off"/>
-                        </div>
-
-                        <div class="field-wrap">
-                            <label> Contraseña<span class="req">*</span> </label>
-                            <input type="password" required autocomplete="off"/>
-                        </div>
-
-                        <p class="forgot"><a href="#"> Olvidé Mi Contraseña</a></p>
-                        <button type="submit" class="button button-block">Inicio Sesión</button>
-                    </form>
+                <div class="field-wrap">
+                    <label> Correo Electrónico<span class="req">*</span> </label>
+                    <input type="email" name="email" required autocomplete="off"/>
                 </div>
-            </div>
-        </div><!-- tab-content -->
-    </div><!-- /form -->
+
+                <div class="field-wrap">
+                    <label> Contraseña<span class="req">*</span> </label>
+                    <input type="password" name="password" required autocomplete="off"/>
+                </div>
+
+                <p class="forgot"><a href="#"> Olvidé Mi Contraseña</a></p>
+                <button type="submit" class="button button-block">Inicio Sesión</button>
+            </form>
+        </div>
+    </div>
 </body>
 </html>
