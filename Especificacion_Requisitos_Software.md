@@ -122,4 +122,96 @@ El cliente podrá hacer pedidos de bebidas independientemente de los platos prin
 48. Acceso a la aplicación mediante QR
 •  Al escanear el código QR, el usuario es redirigido automáticamente a la aplicación web. Verificar que el QR redirige correctamente a la URL de la aplicación.
 
+49. **Acceso a la aplicación mediante QR** 
+    Al escanear el código QR, el usuario es redirigido automáticamente a la aplicación web. 
+    Verificar que el QR redirige correctamente a la URL de la aplicación.
+
+50. **Pantalla de bienvenida** 
+    Al acceder, el usuario debe ver una pantalla de bienvenida que le ofrece dos opciones: acceder con cuenta (login) o acceder sin registrarse. 
+    Verificar que la pantalla de bienvenida se carga correctamente tras acceder desde el QR.
+
+51. **Botón de acceso sin cuenta** 
+    En la pantalla de bienvenida, debe haber un botón que permita al usuario acceder sin necesidad de registrarse.
+    Verificar que el botón redirige al usuario a la siguiente pantalla sin requerir credenciales.
+
+52. **Botón de login** 
+    En la pantalla de bienvenida, debe haber un botón que permita al usuario acceder introduciendo sus credenciales (usuario y contraseña). 
+    Comprobar que el botón redirige correctamente a la pantalla de login.
+
+53. **Formulario de login** 
+    La pantalla de login debe mostrar un formulario donde el usuario pueda introducir su nombre de usuario y contraseña. 
+    Comprobar que el formulario recoge correctamente los datos y valida las credenciales del usuario.
+
+54. **Redirección tras login exitoso** 
+    Una vez que el usuario introduce correctamente sus credenciales, debe ser redirigido a la página principal de la aplicación. 
+    Verificar que tras el login exitoso, el usuario accede a la página principal.
+
+55. **Validación de credenciales** 
+    Si el usuario introduce credenciales incorrectas, el sistema debe mostrar un mensaje de error indicando que los datos no son válidos. 
+    Comprobar que el sistema valida las credenciales correctamente y muestra un mensaje de error en caso de fallo.
+
+56. **Acceso sin cuenta directo al menú** 
+    Si el usuario elige acceder sin cuenta, debe ser redirigido directamente al menú de comidas o productos disponibles. 
+    Verificar que el acceso sin cuenta redirige correctamente al menú.
+
+57. **Carga del menú de comidas y crear base de datos** 
+    Al acceder a la página del menú, se deben cargar los productos disponibles desde la base de datos. 
+    Comprobar que el menú muestra correctamente los productos disponibles.
+
+58. **Opciones de personalización de productos** 
+    Al seleccionar un producto, debe mostrarse la opción de personalizar (por ejemplo, añadir o quitar ingredientes). 
+    Verificar que las opciones de personalización se muestran y funcionan correctamente.
+
+59. **Carrito de compras vacío inicialmente** 
+    Al acceder al menú por primera vez, el carrito de compras debe estar vacío y debe mostrarse una indicación al usuario. 
+    Comprobar que el carrito está vacío cuando se accede por primera vez.
+
+60. **Agregar productos al carrito** 
+    El usuario debe poder agregar productos desde el menú al carrito de compras. 
+    Verificar que los productos seleccionados se añaden correctamente al carrito.
+
+61. **Visualización del carrito de compras** 
+    Al acceder al carrito, el usuario debe poder ver los productos que ha seleccionado, junto con los precios y la cantidad. 
+    Comprobar que el carrito muestra correctamente todos los productos seleccionados.
+
+62. **Modificar cantidad de productos en el carrito** 
+    El usuario debe poder modificar la cantidad de una clase de productos seleccionados en el carrito. 
+    Verificar que al cambiar la cantidad de un producto, el total del pedido se actualiza correctamente.
+
+63. **Eliminar productos del carrito** 
+    El usuario debe poder eliminar productos del carrito antes de confirmar su pedido. 
+    Comprobar que los productos se eliminan correctamente del carrito y el total se actualiza.
+
+64. **Confirmación del pedido sin cuenta** 
+    Si el usuario no tiene una cuenta, debe poder confirmar el pedido sin registrarse. 
+    Verificar que el pedido se procesa correctamente aunque el usuario no esté registrado.
+
+65. **Proceso de pago básico sin registro** 
+    El usuario debe poder completar el proceso de pago sin necesidad de registrarse. 
+    Comprobar que el sistema permite realizar el pago sin cuenta y guarda la información del pedido en la base de datos.
+
+66. **Guardar pedido en la base de datos** 
+    Al confirmar el pedido, este debe guardarse en la base de datos con el detalle de los productos seleccionados. 
+    Verificar que cada pedido se guarda correctamente con su detalle en la base de datos.
+
+67. **Notificación de pedido realizado** 
+    Tras completar el pedido, el usuario debe recibir una notificación visual indicando que el pedido ha sido procesado con éxito. 
+    Comprobar que el sistema muestra la notificación una vez el pedido ha sido registrado.
+
+68. **Manejo de errores en el proceso de pedido** 
+    Si ocurre un error durante el proceso de pedido (por ejemplo, un problema con el pago), el sistema debe notificar al usuario y permitirle corregir el error. 
+    Verificar que el sistema maneja correctamente los errores y permite al usuario repetir el proceso.
+
+69. **Visualizar menú con opciones de comida** 
+    La página web debe mostrar un menú con las opciones de todos los platos que hayan sido agregados al menú. 
+    Observar gráficamente que hay un menú con varias opciones de platos.
+
+70. **Añadir platos al menú** 
+    Añadir platos al menú de forma persistente desde la página principal (función cocinero). 
+    Agregar un plato y, tras apagar y volver a iniciar el programa, comprobar que el plato sigue estando disponible.
+
+71. **Persistencia de sesión** 
+    Al registrarse un usuario, su sesión debe mantenerse activa de forma persistente. Al apagar la máquina y volver a iniciar el programa, la sesión debe seguir en pie. 
+    Verificar que la sesión del usuario se mantiene activa después de apagar y reiniciar la máquina.
+
 
