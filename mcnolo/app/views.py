@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
+from .models import Producto
 
 # Página principal
 def index(request):
@@ -21,8 +22,11 @@ def inicio_sesion(request):
         else:
             messages.error(request, 'Correo o contraseña incorrectos')
 
-    return render(request, 'app/inicioSesion.html')
+    return render(request, 'app/InicioSesion.html')
 
 # Página mostrada cuando el usuario ha iniciado sesión
+# Página mostrada cuando el usuario ha iniciado sesión
 def pagina_principal(request):
-    return render(request, 'app/paginaPrincipal.html')
+    productos = Producto.objects.filter(disponible=True)  # Solo muestra los productos disponibles
+    return render(request, 'app/PaginaPrincipal.html', {'productos': productos})
+

@@ -86,11 +86,6 @@
 </head>
 <body>
 
-   <!-- <video autoplay loop muted playsinline style="position: absolute; width: 100%; left: 0; top: 0; height: 100%; object-fit: cover; z-index: -1;">
-        <source src="media/videofondo.mp4" type="video/mp4">
-        Tu navegador no soporta videos.
-    </video>-->
-
     <div class="menu">
         <h1>Bienvenido</h1>
         <p>Esta es la página principal</p>
@@ -99,21 +94,16 @@
     <section class="products">
         <h2>Productos</h2>
         <div class="product-list">
-            <div class="product">
-                <h3>Producto 1</h3>
-                <p>Precio: 10€</p>
-                <button class="add-to-cart" data-name="Producto 1" data-price="10">Añadir al carrito</button>
-            </div>
-            <div class="product">
-                <h3>Producto 2</h3>
-                <p>Precio: 20€</p>
-                <button class="add-to-cart" data-name="Producto 2" data-price="20">Añadir al carrito</button>
-            </div>
-            <div class="product">
-                <h3>Producto 3</h3>
-                <p>Precio: 30€</p>
-                <button class="add-to-cart" data-name="Producto 3" data-price="30">Añadir al carrito</button>
-            </div>
+            {% for producto in productos %}
+                <div class="product">
+                    <h3>{{ producto.nombre }}</h3>
+                    <p>Descripción: {{ producto.descripcion }}</p>
+                    <p>Precio: {{ producto.precio }}€</p>
+                    <button class="add-to-cart" data-name="{{ producto.nombre }}" data-price="{{ producto.precio }}">Añadir al carrito</button>
+                </div>
+            {% empty %}
+                <p>No hay productos disponibles en este momento.</p>
+            {% endfor %}
         </div>
     </section>
 
