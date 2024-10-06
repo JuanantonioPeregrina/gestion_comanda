@@ -1,6 +1,5 @@
 
-from django.urls import path
-from . import views
+
 from django.urls import path
 from . import views
 from django.conf import settings
@@ -12,6 +11,7 @@ urlpatterns = [
     path('inicio-sesion/', views.inicio_sesion, name='inicio_sesion'),
     path('pagina-principal/', views.pagina_principal, name='pagina_principal'),  # Asegúrate de que esta URL redirige correctamente.
     path('menu/', views.menu_view, name='menu'),
+
 ]
 
 if settings.DEBUG:

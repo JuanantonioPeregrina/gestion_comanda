@@ -3,10 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
     <title>Página Principal</title>
     <style>
-        /* Estilo para el botón que abre el carrito */
+        /* General Body Styles */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            position: relative;
+            background-color: #f4f4f9;
+        }
+
+        /* Video as background */
+        .video-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1; /* Asegúrate de que esté detrás del contenido */
+        }
+
+
+        /* Overlay to darken the background for readability */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1;
+        }
+
+        /* Header Styles */
+        .menu {
+            z-index: 2;
+            text-align: center;
+            padding: 30px;
+            color: white;
+        }
+
+        .menu h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .menu p {
+            font-size: 1.2rem;
+        }
+
+        /* Product Section */
+        .products {
+            z-index: 2;
+            margin-top: 20px;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .products h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        .product-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .product {
+            background-color: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 200px;
+            text-align: center;
+        }
+
+        .product h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .product p {
+            margin: 5px 0;
+        }
+
+        .add-to-cart {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .add-to-cart:hover {
+            background-color: #0056b3;
+        }
+
+        /* Sidebar Styles */
         .cart-toggle {
             position: fixed;
             top: 20px;
@@ -19,7 +127,6 @@
             z-index: 1000;
         }
 
-        /* Estilos para el sidebar del carrito */
         .cart-sidebar {
             height: 100%;
             width: 0;
@@ -36,6 +143,7 @@
 
         .cart-sidebar h2 {
             margin-top: 0;
+            font-size: 1.8rem;
         }
 
         .cart-sidebar a {
@@ -47,48 +155,24 @@
             text-decoration: none;
         }
 
-        /* Estilos cuando el sidebar está visible */
         .cart-sidebar.open {
             width: 300px;
-        }
-
-        /* Estilos para la lista de productos */
-        .products {
-            padding: 20px;
-        }
-
-        .product-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .product {
-            background-color: rgba(255, 255, 255, 0.8);
-            padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        }
-
-        .product h3, .product p {
-            margin: 0;
-        }
-
-        .add-to-cart {
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            cursor: pointer;
-            margin-top: 10px;
         }
     </style>
 </head>
 <body>
 
+      <!-- Video como fondo -->
+    <video autoplay muted loop class="video-background">
+        <source src="{{ MEDIA_URL }}/media/videos/principal.mp4" type="video/mp4">
+        Tu navegador no soporta videos.
+    </video>
+
+    <div class="overlay"></div>
+
     <div class="menu">
-        <h1>Bienvenido</h1>
-        <p>Esta es la página principal</p>
+        <h1>Bienvenido a McNolo</h1>
+        <p>¡Explora nuestro menú y disfruta de nuestros productos!</p>
     </div>
 
     <section class="products">
@@ -127,17 +211,14 @@
         const cartToggleBtn = document.querySelector('.cart-toggle');
         const closeCartBtn = document.querySelector('.close-cart');
 
-        // Función para abrir el carrito
         cartToggleBtn.addEventListener('click', () => {
             cartSidebar.classList.add('open');
         });
 
-        // Función para cerrar el carrito
         closeCartBtn.addEventListener('click', () => {
             cartSidebar.classList.remove('open');
         });
 
-        // Función para actualizar el carrito
         function updateCart() {
             cartItemsContainer.innerHTML = '';
             let totalPrice = 0;
@@ -152,7 +233,6 @@
             totalPriceElement.textContent = totalPrice.toFixed(2);
         }
 
-        // Añadir producto al carrito
         document.querySelectorAll('.add-to-cart').forEach(button => {
             button.addEventListener('click', (event) => {
                 const name = event.target.getAttribute('data-name');
@@ -163,7 +243,6 @@
             });
         });
 
-        // Finalizar compra
         document.getElementById('checkout-btn').addEventListener('click', () => {
             alert('Compra finalizada. Total: ' + totalPriceElement.textContent + '€');
             cart.length = 0;
