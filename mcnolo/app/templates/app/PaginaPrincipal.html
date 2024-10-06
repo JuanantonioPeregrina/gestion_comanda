@@ -13,7 +13,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh; /* Cambiado de height: 100vh a min-height */
             position: relative;
             background-color: #f4f4f9;
         }
@@ -28,7 +28,6 @@
             object-fit: cover;
             z-index: -1; /* Asegúrate de que esté detrás del contenido */
         }
-
 
         /* Overlay to darken the background for readability */
         .overlay {
@@ -47,6 +46,8 @@
             text-align: center;
             padding: 30px;
             color: white;
+            max-width: 100%;
+            box-sizing: border-box;
         }
 
         .menu h1 {
@@ -66,8 +67,9 @@
             background-color: rgba(255, 255, 255, 0.9);
             border-radius: 10px;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-            max-width: 900px;
-            width: 100%;
+            max-width: 100%;
+            width: 90%;
+            box-sizing: border-box;
         }
 
         .products h2 {
@@ -157,13 +159,22 @@
 
         .cart-sidebar.open {
             width: 300px;
-            right: 0; 
+            right: 0;
+        }
+
+        /* Imagenes de los productos */
+        .product img {
+            max-width: 150px;
+            height: auto;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            object-fit: cover;
         }
     </style>
 </head>
 <body>
 
-      <!-- Video como fondo -->
+    <!-- Video como fondo -->
     <video autoplay muted loop class="video-background">
         <source src="{{ MEDIA_URL }}/media/videos/principal.mp4" type="video/mp4">
         Tu navegador no soporta videos.
@@ -181,6 +192,13 @@
         <div class="product-list">
             {% for producto in productos %}
                 <div class="product">
+                    <!-- Mostrar la imagen si existe -->
+                    {% if producto.imagen %}
+                        <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}">
+                    {% else %}
+                        <img src="/path/to/placeholder/image.jpg" alt="Imagen no disponible">
+                    {% endif %}
+                    
                     <h3>{{ producto.nombre }}</h3>
                     <p>Descripción: {{ producto.descripcion }}</p>
                     <p>Precio: {{ producto.precio }}€</p>
