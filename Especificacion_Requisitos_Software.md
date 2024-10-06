@@ -23,8 +23,8 @@ Requisitos Funcionales
 •   El cliente podrá ver un historial temporal de sus pedidos realizados durante la misma sesión, sin necesidad de estar registrado. Se validará realizando varios pedidos y revisando que el historial se mantiene mientras la sesión esté activa.
 10. Pago sin necesidad de cuenta
 •   Los usuarios podrán realizar el pago de su pedido utilizando diversas formas de pago (tarjeta de crédito/débito, por ejemplo) sin registrarse. Se probará completando un pago con un cliente no registrado y verificando que se procesa correctamente.
-11. Registro opcional para recibir ofertas
-•   Los clientes tendrán la opción de registrarse para recibir ofertas y promociones especiales. Se verificará permitiendo a los usuarios registrarse y comprobar que reciben las promociones como corresponde.
+11. Registro opcional para recibir ofertas o ver su historial.
+•   Los clientes tendrán la opción de registrarse para recibir promociones especiales o bien ver sus compras previas. Se verificará permitiendo a los usuarios registrarse y comprobar que reciben las promociones como corresponde.
 12. Gestión de ofertas y descuentos por parte de la cocina
 •   El personal de cocina o administración podrá crear, modificar y eliminar ofertas y descuentos especiales. Se validará añadiendo una oferta y comprobando que se muestra correctamente en la interfaz del cliente.
 13. Aplicación automática de descuentos
