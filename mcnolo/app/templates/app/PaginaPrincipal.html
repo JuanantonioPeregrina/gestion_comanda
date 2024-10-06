@@ -132,11 +132,11 @@
             width: 0;
             position: fixed;
             top: 0;
-            right: 0;
+            right: -300px;
             background-color: white;
             box-shadow: -2px 0px 5px rgba(0, 0, 0, 0.5);
             overflow-x: hidden;
-            transition: 0.5s;
+            transition: 0.5s ease;
             padding: 60px 20px;
             z-index: 1001;
         }
@@ -157,6 +157,7 @@
 
         .cart-sidebar.open {
             width: 300px;
+            right: 0; 
         }
     </style>
 </head>
