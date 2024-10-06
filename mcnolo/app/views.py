@@ -3,6 +3,8 @@ from django.contrib.auth import authenticate, login
 from django.contrib import messages
 from .models import Producto
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
+
 
 # Página principal
 def index(request):
@@ -10,6 +12,10 @@ def index(request):
 
 # Vista de inicio de sesión
 def inicio_sesion(request):
+    # Verificar si el usuario ya está autenticado
+    if request.user.is_authenticated:
+        return redirect('pagina_principal')  # Redirigir directamente a la página principal si ya ha iniciado sesión
+
     if request.method == 'POST':
         email = request.POST.get('email')
         password = request.POST.get('password')
@@ -25,12 +31,14 @@ def inicio_sesion(request):
 
     return render(request, 'app/InicioSesion.html')
 
+
 # Página mostrada cuando el usuario ha iniciado sesión
 # Página mostrada cuando el usuario ha iniciado sesión
+@login_required  # Esto asegura que solo los usuarios autenticados puedan acceder
 def pagina_principal(request):
     productos = Producto.objects.filter(disponible=True)  # Solo muestra los productos disponibles
     return render(request, 'app/PaginaPrincipal.html', {'productos': productos})
-
+    
 def registrarse(request):
     if request.method == 'POST':
         nombre_completo = request.POST.get('nombre_completo')

@@ -126,3 +126,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Duración de la sesión en segundos (por defecto, expira cuando se cierra el navegador)
+SESSION_COOKIE_AGE = 1209600  # 2 semanas (valor en segundos)
+
+# Establece si las sesiones deben persistir incluso después de cerrar el navegador
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+
+# Usar sesiones basadas en la base de datos (lo más común en Django)
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+
+# Para mayor seguridad, puedes activar esto para asegurarte de que las cookies de sesión solo se envían por HTTPS (en producción)
+# SESSION_COOKIE_SECURE = True
