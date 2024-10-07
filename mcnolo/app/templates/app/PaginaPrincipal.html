@@ -78,7 +78,29 @@
             font-weight: bold;
             margin-bottom: 20px;
         }
+        .anadir-plato-boton {
+            position: fixed;
+            top: 20px;
+            right: 150px; /* Ubicar a la izquierda del carrito */
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            z-index: 1000;
+        }
 
+        .anadir-plato-form {
+            display: none;
+            position: fixed;
+            top: 60px;
+            right: 150px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            z-index: 1001;
+        }
         .product-list {
             display: flex;
             flex-wrap: wrap;
@@ -214,7 +236,7 @@
                     {% if producto.imagen %}
                         <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}">
                     {% else %}
-                        <img src="/path/to/placeholder/image.jpg" alt="Imagen no disponible">
+                        <img src="/media/elementor-placeholder-image.jpg" alt="Imagen no disponible">
                     {% endif %}
                     <h3>{{ producto.nombre }}</h3>
                     <p>{{ producto.descripcion }}</p>
@@ -230,6 +252,32 @@
     <!-- Botón para abrir el carrito -->
     <button class="cart-toggle">Ver Carrito</button>
 
+    <!-- Botón para añadir platos -->
+    <button class="anadir-plato-boton">Agregar Plato</button>
+     <!-- Formulario para agregar platos -->
+     <div class="anadir-plato-form" id="anadir-plato-form">
+        <h2>Agregar Plato</h2>
+        <form action="{% url 'anadir_plato' %}" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <label for="nombre_plato">Nombre:</label>
+            <input type="text" id="nombre_plato" name="nombre_plato"><br><br>
+
+            <label for="descripcion">Descripción:</label>
+            <textarea id="descripcion" name="descripcion"></textarea><br><br>
+
+            <label for="precio">Precio:</label>
+            <input type="number" id="precio" step="0.01" name="precio"><br><br>
+
+            <label for="disponible">Disponible:</label>
+            <input type="checkbox" id="disponible" name="disponible"><br><br>
+
+            <label for="imagen">Imagen:</label>
+            <input type="file" id="imagen" name="imagen"><br><br>
+
+            <button type="submit" class="btn">Guardar</button>
+        </form>
+    </div>
+
     <!-- Sidebar del carrito -->
     <div id="cart-sidebar" class="cart-sidebar">
         <a href="javascript:void(0)" class="close-cart">&times;</a>
@@ -240,12 +288,18 @@
     </div>
 
     <script>
+        const anadir_boton = document.querySelector('.anadir-plato-boton');
+        const anadir_form = document.getElementById('anadir-plato-form');
         const cart = [];
         const cartItemsContainer = document.getElementById('cart-items');
         const totalPriceElement = document.getElementById('total-price');
         const cartSidebar = document.getElementById('cart-sidebar');
         const cartToggleBtn = document.querySelector('.cart-toggle');
         const closeCartBtn = document.querySelector('.close-cart');
+        
+        anadir_boton.addEventListener('click', () => {
+            anadir_form.style.display = anadir_form.style.display === 'block' ? 'none' : 'block';
+        });
 
         cartToggleBtn.addEventListener('click', () => {
             cartSidebar.classList.add('open');

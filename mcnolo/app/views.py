@@ -36,7 +36,7 @@ def inicio_sesion(request):
 # Página mostrada cuando el usuario ha iniciado sesión
 @login_required  # Esto asegura que solo los usuarios autenticados puedan acceder
 def pagina_principal(request):
-    productos = Producto.objects.filter(disponible=True)  # Solo muestra los productos disponibles
+    productos = Producto.objects.all()  # Solo muestra los productos disponibles
     return render(request, 'app/PaginaPrincipal.html', {'productos': productos})
     
 def registrarse(request):
@@ -56,3 +56,15 @@ def registrarse(request):
 
     return render(request, 'app/registro.html')  # Template para mostrar el formulario de registro
 
+def anadir_plato(request):
+    if request.method == 'POST':
+        nombre_plato = request.POST.get('nombre_plato')
+        descripcion = request.POST.get('descripcion')
+        precio =   request.POST.get('precio')
+        disponible = 'disponible' in request.POST
+        #disponible = request.POST.get('disponible')
+        imagen = request.FILES.get('imagen')
+
+        nuevo_plato = Producto(nombre=nombre_plato, descripcion=descripcion, precio=precio, disponible=disponible, imagen=imagen)
+        nuevo_plato.save()
+        return redirect('pagina_principal')
