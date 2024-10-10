@@ -91,5 +91,50 @@
             <button type="submit" class="btn">Registrarse</button>
         </form>
     </div>
+    <label>
+        <input type="checkbox" id="miCheckbox" disabled>
+        Acepto los <a href="#" id="linkLey">términos y condiciones</a>
+    </label>
+    <div id="popupLey" style="display:none; position:fixed; left:0; top:0; width:100%; height:100%; background-color: rgba(0, 0, 0, 0.5);">
+        <div style="position:relative; top:50%; left:50%; transform:translate(-50%, -50%); background-color:#fff; padding:20px;">
+            <h2>Politica de Privacidad</h2>
+            <p>Aquí va la politica de Privacidad</p>  
+            <button id="cerrarPopup"> Aceptar la Politica de Privacidad</button>
+        </div>
+    </div>
 </body>
+<script>
+    // Obtener referencias al checkbox, enlace, pop-up y botón
+    const checkbox = document.getElementById("miCheckbox");
+    const linkLey = document.getElementById("linkLey");
+    const popupLey = document.getElementById("popupLey");
+    const cerrarPopupBtn = document.getElementById("cerrarPopup");
+    const botonMarcar = document.getElementById("marcarCheckbox");
+
+    // Abrir el pop-up al hacer clic en el enlace
+    linkLey.addEventListener("click", function(event) {
+        event.preventDefault(); // Evitar el comportamiento predeterminado del enlace
+        popupLey.style.display = "block"; // Mostrar el pop-up
+    });
+
+    // Cerrar el pop-up al hacer clic en el botón "Cerrar"
+    cerrarPopupBtn.addEventListener("click", function() {
+        popupLey.style.display = "none"; // Ocultar el pop-up
+        botonMarcar.disabled = false; // Habilitar el botón para marcar el checkbox
+    });
+
+    // Cerrar el pop-up al hacer clic fuera del contenido
+    window.addEventListener("click", function(event) {
+        if (event.target == popupLey) {
+            popupLey.style.display = "none";
+            botonMarcar.disabled = false;// Habilitar el botón cuando se cierra el pop-up
+    }
+        
+    });
+
+    // Añadir un evento al botón que marque el checkbox al hacer clic
+    cerrarPopupBtn.addEventListener("click", function() {
+        checkbox.checked = true; // Marcar el checkbox
+    });
+</script>
 </html>
