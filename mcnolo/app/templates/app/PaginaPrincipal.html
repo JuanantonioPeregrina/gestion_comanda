@@ -211,6 +211,35 @@
             width: 300px;
             right: 0;
         }
+        .eliminar {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .eliminar:hover {
+            background-color: #c82333;
+            transform: scale(1.05);
+        }
+        .restaurar {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .restaurar:hover {
+            background-color: #218838;
+            transform: scale(1.05);
+        }
+
     </style>
 </head>
 <body>
@@ -242,12 +271,29 @@
                     <p>{{ producto.descripcion }}</p>
                     <p><strong>{{ producto.precio }}€</strong></p>
                     <button class="add-to-cart" data-name="{{ producto.nombre }}" data-price="{{ producto.precio }}">Añadir al carrito</button>
+                    
+                    <!-- Si es administrador, muestra el botón de eliminar/restaurar -->
+                    {% if request.user.is_staff %}
+                        {% if producto.activo %}
+                            <form action="{% url 'eliminar_producto' producto.id %}" method="POST" style="margin-top: 10px;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn eliminar">Eliminar</button>
+                            </form>
+                        {% else %}
+                            <form action="{% url 'restaurar_producto' producto.id %}" method="POST" style="margin-top: 10px;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn restaurar">Restaurar</button>
+                            </form>
+                        {% endif %}
+                    {% endif %}
                 </div>
             {% empty %}
                 <p>No hay productos disponibles en este momento.</p>
             {% endfor %}
         </div>
     </section>
+    
+    
 
     <!-- Botón para abrir el carrito -->
     <button class="cart-toggle">Ver Carrito</button>

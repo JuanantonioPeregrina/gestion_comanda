@@ -1,7 +1,7 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
-from .models import Producto
+from .models import HistorialProducto, Producto
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 
@@ -36,7 +36,8 @@ def inicio_sesion(request):
 # Página mostrada cuando el usuario ha iniciado sesión
 @login_required  # Esto asegura que solo los usuarios autenticados puedan acceder
 def pagina_principal(request):
-    productos = Producto.objects.all()  # Solo muestra los productos disponibles
+    #productos = Producto.objects.all()  # Solo muestra los productos disponibles
+    productos = Producto.objects.filter(activo=True)  # Solo productos activos
     return render(request, 'app/PaginaPrincipal.html', {'productos': productos})
     
 def registrarse(request):
@@ -68,3 +69,16 @@ def anadir_plato(request):
         nuevo_plato = Producto(nombre=nombre_plato, descripcion=descripcion, precio=precio, disponible=disponible, imagen=imagen)
         nuevo_plato.save()
         return redirect('pagina_principal')
+    
+def eliminar_producto(request, producto_id):
+    producto = get_object_or_404(Producto, id=producto_id)
+    producto.activo = False  # Marcar como inactivo en lugar de eliminar
+    producto.save()
+    HistorialProducto.objects.create(producto=producto, accion='eliminado')
+    return redirect('pagina_principal')  # Redirige a la página principal después de eliminar
+
+def restaurar_producto(request, producto_id):
+    producto = get_object_or_404(Producto, id=producto_id)
+    producto.activo = True  # Volver a activar el producto
+    producto.save()
+    return redirect('pagina_principal')
