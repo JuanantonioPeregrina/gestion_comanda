@@ -1,5 +1,7 @@
 from django.db import models
-from django.contrib.auth.models import User  # Usamos el modelo de usuario de Django
+from django.contrib.auth.models import User
+
+from mcnolo.settings import MEDIA_URL  # Usamos el modelo de usuario de Django
 
 # Create your models here.
 class Producto(models.Model):
@@ -42,7 +44,7 @@ class HistorialProducto(models.Model):
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    foto = models.ImageField(upload_to='perfil_fotos/', default='/media/productos/avatar.webp')
+    foto = models.ImageField(upload_to='perfil_fotos/', default='perfil_fotos/avatar.webp')
 
     def __str__(self):
         return f'Perfil de {self.user.username}'

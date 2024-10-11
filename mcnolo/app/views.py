@@ -69,6 +69,7 @@ def registrarse(request):
             messages.error(request, 'Las contraseñas no coinciden.')
 
     return render(request, 'app/registro.html')
+
 def anadir_plato(request):
     if request.method == 'POST':
         nombre_plato = request.POST.get('nombre_plato')

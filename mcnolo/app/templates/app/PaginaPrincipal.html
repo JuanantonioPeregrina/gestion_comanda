@@ -386,9 +386,9 @@
                 {% if user.profile.foto %}
                     <img src="{{ user.profile.foto.url }}" alt="Foto de perfil" class="profile-pic" onclick="toggleInfoUsuario()">
                 {% else %}
-                    <img src="{{ MEDIA_URL }}/media/productos/avatar.webp" alt="Foto de perfil" class="profile-pic" onclick="toggleInfoUsuario()">
+                    <img src="{{ MEDIA_URL }}perfil_fotos/avatar.webp" alt="Foto de perfil" class="profile-pic" onclick="toggleInfoUsuario()">
                 {% endif %}
-                <p>{{ user.first_name }} {{ user.last_name }}</p>
+                <p>{{ user.first_name }} {{ user.last_name }}</p> <!-- o user.username si no tienes nombres -->
             </div>
             <form action="{% url 'logout' %}" method="POST">
                 {% csrf_token %}
@@ -400,9 +400,9 @@
     </div>
     
     <!-- Área para mostrar el nombre de usuario -->
-    <div id="info-usuario" style="display:none;">
+    <div id="info-usuario" style="display:none; position:absolute; top:80px; left:20px; background-color: white; padding: 10px; border-radius: 5px; box-shadow: 0 0 5px rgba(0,0,0,0.2);">
         <p id="usuario-texto"></p>
-        <button onclick="toggleInfoUsuario()" class="cerrar-info-usuario">Cerrar</button>
+        <button onclick="toggleInfoUsuario()" class="cerrar-info-usuario" style="background-color:#dc3545; color:white; border:none; padding:5px; cursor:pointer;">Cerrar</button>
     </div>
     
     
