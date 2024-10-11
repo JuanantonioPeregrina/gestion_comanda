@@ -253,10 +253,11 @@
         }
 
         .user-profile img.profile-pic {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
+            width: 60px;  /* Ajusta a un tamaño mayor si es necesario */
+            height: 60px;  /* Ajusta el tamaño que prefieras */
+            border-radius: 50%;  /* Para que sea redonda */
             margin-right: 10px;
+            object-fit: cover;  /* Asegura que la imagen se ajuste al contenedor */
         }
 
         .user-info p {
@@ -326,7 +327,40 @@
             display: flex;
             justify-content: space-between;
             gap: 10px;
-    }
+      }
+        #info-usuario {
+            position: absolute;
+            top: 60px; /* Posición justo debajo de la foto de perfil */
+            left: 20px; /* Mantener alineado con la imagen */
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+            display: none; /* Oculto por defecto */
+            z-index: 2000;
+        }
+
+        #info-usuario p {
+            margin: 0;
+            font-weight: bold;
+            color: #333; /* Texto oscuro para mejor visibilidad */
+        }
+
+        #info-usuario button.cerrar-info-usuario {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+            text-align: center;
+        }
+
+        #info-usuario button.cerrar-info-usuario:hover {
+            background-color: #c82333;
+        }
 
 
     </style>
@@ -350,21 +384,25 @@
         {% if user.is_authenticated %}
             <div class="user-info">
                 {% if user.profile.foto %}
-                    <img src="{{ user.profile.foto.url }}" alt="Foto de perfil" class="profile-pic">
+                    <img src="{{ user.profile.foto.url }}" alt="Foto de perfil" class="profile-pic" onclick="toggleInfoUsuario()">
                 {% else %}
-                    <img src="{{ MEDIA_URL }}/media/videos/fotos/perfil.webp" alt="Foto de perfil" class="profile-pic">
+                    <img src="{{ MEDIA_URL }}/media/productos/avatar.webp" alt="Foto de perfil" class="profile-pic" onclick="toggleInfoUsuario()">
                 {% endif %}
-                <p>{{ user.first_name }} {{ user.last_name }}</p> <!-- o user.username si no tienes nombres -->
+                <p>{{ user.first_name }} {{ user.last_name }}</p>
             </div>
-            <!-- Formulario para cerrar sesión con método POST -->
             <form action="{% url 'logout' %}" method="POST">
                 {% csrf_token %}
                 <button type="submit" class="btn cerrar-sesion">Cerrar sesión</button>
             </form>
         {% else %}
-            <!-- Enlace para iniciar sesión -->
             <a href="{% url 'login' %}" class="btn login">Iniciar sesión</a>
         {% endif %}
+    </div>
+    
+    <!-- Área para mostrar el nombre de usuario -->
+    <div id="info-usuario" style="display:none;">
+        <p id="usuario-texto"></p>
+        <button onclick="toggleInfoUsuario()" class="cerrar-info-usuario">Cerrar</button>
     </div>
     
     
@@ -501,6 +539,33 @@
             updateCart();
             cartSidebar.classList.remove('open');
         });
+
+        /*function mostrarUsuario() {
+            var nombreUsuario = "{{ user.first_name }} {{ user.last_name }}";
+            var infoUsuario = document.getElementById("info-usuario");
+            infoUsuario.innerText = "Has accedido como: " + nombreUsuario;
+            infoUsuario.style.display = "block";  // Hacer visible el mensaje
+        }*/
+
+    function toggleInfoUsuario() {
+        var infoUsuario = document.getElementById("info-usuario");
+        var nombreUsuario = "{{ user.first_name }} {{ user.last_name }}";  // Puedes usar user.username si no tienes nombres
+        var usuarioTexto = document.getElementById("usuario-texto");
+
+        // Si no hay nombres, usamos el username
+        if (nombreUsuario.trim() === "") {
+            nombreUsuario = "{{ user.username }}";
+        }
+
+        // Mostrar u ocultar el contenedor del usuario
+        if (infoUsuario.style.display === "none" || infoUsuario.style.display === "") {
+            usuarioTexto.innerText = "Has accedido como: " + nombreUsuario;
+            infoUsuario.style.display = "block";
+        } else {
+            infoUsuario.style.display = "none";  // Ocultar el mensaje cuando se hace clic en "Cerrar"
+        }
+    }
+
     </script>
 
 </body>
