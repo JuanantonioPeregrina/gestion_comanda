@@ -239,6 +239,95 @@
             background-color: #218838;
             transform: scale(1.05);
         }
+        .user-profile {
+            position: fixed;
+            top: 20px;
+            left: 20px; /* Mover a la izquierda */
+            display: flex;
+            align-items: center;
+            background-color: white;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            z-index: 2000; /* Aumentar z-index para asegurarse que esté por encima de otros elementos */
+        }
+
+        .user-profile img.profile-pic {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .user-info p {
+            margin: 0;
+            font-weight: bold;
+        }
+
+        .cerrar-sesion {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            text-decoration: none;
+            margin-left: 20px;
+            cursor: pointer;
+            z-index: 2000; /* Asegurar que el botón tenga el mismo z-index alto */
+        }
+
+        .cerrar-sesion:hover {
+            background-color: #c82333;
+        }
+
+        .login {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            text-decoration: none;
+            cursor: pointer;
+            z-index: 2000;
+        }
+
+        .login:hover {
+            background-color: #0056b3;
+        }
+
+        /* Ajuste del carrito para evitar que el botón se solape */
+        .cart-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px; /* Ajustado para que no se solape con el perfil */
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            z-index: 1000;
+        }
+
+        .product {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background-color: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 240px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .product-buttons {
+            margin-top: auto; /* Esto asegura que los botones se mantengan al final del contenedor */
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+    }
+
 
     </style>
 </head>
@@ -257,6 +346,29 @@
         <p>¡Explora nuestro menú y disfruta de nuestros productos!</p>
     </div>
 
+    <div class="user-profile">
+        {% if user.is_authenticated %}
+            <div class="user-info">
+                {% if user.profile.foto %}
+                    <img src="{{ user.profile.foto.url }}" alt="Foto de perfil" class="profile-pic">
+                {% else %}
+                    <img src="{{ MEDIA_URL }}/media/videos/fotos/perfil.webp" alt="Foto de perfil" class="profile-pic">
+                {% endif %}
+                <p>{{ user.first_name }} {{ user.last_name }}</p> <!-- o user.username si no tienes nombres -->
+            </div>
+            <!-- Formulario para cerrar sesión con método POST -->
+            <form action="{% url 'logout' %}" method="POST">
+                {% csrf_token %}
+                <button type="submit" class="btn cerrar-sesion">Cerrar sesión</button>
+            </form>
+        {% else %}
+            <!-- Enlace para iniciar sesión -->
+            <a href="{% url 'login' %}" class="btn login">Iniciar sesión</a>
+        {% endif %}
+    </div>
+    
+    
+    
     <section class="products">
         <h2>Productos</h2>
         <div class="product-list">
@@ -299,10 +411,6 @@
         </div>
     </section>
     
-    
-    
-    
-
     <!-- Botón para abrir el carrito -->
     <button class="cart-toggle">Ver Carrito</button>
 

@@ -39,3 +39,10 @@ class HistorialProducto(models.Model):
 
     def __str__(self):
         return f'{self.producto.nombre} - {self.accion} - {self.fecha}'
+
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    foto = models.ImageField(upload_to='perfil_fotos/', default='/media/videos/fotos/perfil.webp')
+
+    def __str__(self):
+        return f'Perfil de {self.user.username}'

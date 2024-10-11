@@ -4,6 +4,7 @@ from django.urls import path
 from . import views
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib.auth import views as auth_views
 
 
 urlpatterns = [
@@ -15,6 +16,7 @@ urlpatterns = [
     path('anadir_plato/', views.anadir_plato, name='anadir_plato'),
     path('eliminar-producto/<int:producto_id>/', views.eliminar_producto, name='eliminar_producto'),
     path('cambiar_visibilidad_producto/<int:producto_id>/', views.cambiar_visibilidad_producto, name='cambiar_visibilidad_producto'),
+    path('logout/', auth_views.LogoutView.as_view(next_page='index'), name='logout'),
 ]
 
 

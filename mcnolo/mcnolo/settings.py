@@ -138,3 +138,6 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 # Para mayor seguridad, puedes activar esto para asegurarte de que las cookies de sesión solo se envían por HTTPS (en producción)
 # SESSION_COOKIE_SECURE = True
+
+LOGOUT_REDIRECT_URL = 'index'
+

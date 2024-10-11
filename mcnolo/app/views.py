@@ -48,7 +48,6 @@ def pagina_principal(request):
         productos = Producto.objects.filter(activo=True)
     
      return render(request, 'app/PaginaPrincipal.html', {'productos': productos})
-
 def registrarse(request):
     if request.method == 'POST':
         nombre_completo = request.POST.get('nombre_completo')
@@ -57,15 +56,19 @@ def registrarse(request):
         confirm_password = request.POST.get('confirm_password')
 
         if password == confirm_password:
-            # Crear el usuario
-            user = User.objects.create_user(username=email, email=email, password=password)
-            user.save()
-            return redirect('inicio_sesion')
+            # Comprobar si el email ya está en uso
+            if User.objects.filter(email=email).exists():
+                messages.error(request, 'El correo electrónico ya está registrado.')
+            else:
+                # Crear el usuario
+                user = User.objects.create_user(username=email, email=email, password=password)
+                user.save()
+                messages.success(request, 'Registro exitoso. Ahora puedes iniciar sesión.')
+                return redirect('inicio_sesion')  # Asegúrate de que 'inicio_sesion' esté definida en tu urls.py
         else:
             messages.error(request, 'Las contraseñas no coinciden.')
 
-    return render(request, 'app/registro.html')  # Template para mostrar el formulario de registro
-
+    return render(request, 'app/registro.html')
 def anadir_plato(request):
     if request.method == 'POST':
         nombre_plato = request.POST.get('nombre_plato')
