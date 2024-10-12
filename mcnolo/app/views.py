@@ -105,9 +105,10 @@ def cambiar_visibilidad_producto(request, producto_id):
     producto.save()
     return redirect('pagina_principal')
 
+
 def pedido_listo(request, pedido_id):
     # Lógica para marcar el pedido como listo
-    pedido = Pedido.objects.get(id=pedido_id)
+    pedido = get_object_or_404(Pedido, id=pedido_id)
     pedido.estado = 'listo'
     pedido.save()
 
@@ -121,7 +122,7 @@ def pedido_listo(request, pedido_id):
         }
     )
 
-    return redirect('pedido_detalle', pedido_id=pedido_id)
+    return redirect('admin:index')  # Redirigir a donde prefieras en el admin
 
 def anadir_al_carrito(request, producto_id):
     carrito = request.session.get('carrito', [])

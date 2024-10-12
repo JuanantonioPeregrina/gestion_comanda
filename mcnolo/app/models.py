@@ -18,15 +18,21 @@ class Producto(models.Model):
         
         
 class Pedido(models.Model):
+
+    ESTADOS = [
+        ('pendiente', 'Pendiente'),
+        ('listo', 'Listo'),
+    ]
+
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)  # Usuario que hace el pedido
     #productos = models.ManyToManyField(Producto, through='ProductoPedido')  # Relación muchos a muchos
     #productos = models.ManyToManyField(Producto)
     fecha = models.DateTimeField(auto_now_add=True)  # Fecha automática del pedido
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    #estado = models.CharField(max_length=20, default="Pendiente")  # Estado del pedido
+    estado = models.CharField(max_length=20, choices=ESTADOS, default="Pendiente")  # Estado del pedido
     
     def __str__(self):
-        return f'Pedido {self.id} - {self.usuario.username}'
+        return f'Pedido {self.id} - {self.usuario.email}'
 
 
 class ProductoPedido(models.Model):

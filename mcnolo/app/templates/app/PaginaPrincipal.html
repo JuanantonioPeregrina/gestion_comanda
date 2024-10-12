@@ -607,7 +607,7 @@
     }
 
     const pedidoId = "{{ pedido.id }}";
-    const ws = new WebSocket('ws://' + window.location.host + '/ws/group_name/');
+    const ws = new WebSocket('ws://' + window.location.host + '/ws/pedido/' + pedidoId + '/');
 
     ws.onmessage = function(event) {
         const data = JSON.parse(event.data);
