@@ -1,10 +1,13 @@
+import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
-from .models import HistorialProducto, Producto
+from .models import HistorialProducto, Pedido, Producto, Carrito, CarritoProducto, ProductoPedido
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
-
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+from django.http import JsonResponse
 
 # Página principal
 def index(request):
@@ -101,3 +104,63 @@ def cambiar_visibilidad_producto(request, producto_id):
     producto.activo = not producto.activo  # Cambiar visibilidad
     producto.save()
     return redirect('pagina_principal')
+
+def pedido_listo(request, pedido_id):
+    # Lógica para marcar el pedido como listo
+    pedido = Pedido.objects.get(id=pedido_id)
+    pedido.estado = 'listo'
+    pedido.save()
+
+    # Notificar al cliente vía WebSocket
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        f'pedido_{pedido_id}',
+        {
+            'type': 'pedido_listo',
+            'message': 'Tu pedido está listo para recoger.'
+        }
+    )
+
+    return redirect('pedido_detalle', pedido_id=pedido_id)
+
+def anadir_al_carrito(request, producto_id):
+    carrito = request.session.get('carrito', [])
+    if producto_id not in carrito:
+        carrito.append(producto_id)
+    request.session['carrito'] = carrito
+    messages.success(request, "Producto añadido al carrito.")
+    return redirect('pagina_principal')
+
+def agregar_al_carrito(request, producto_id):
+    producto = get_object_or_404(Producto, id=producto_id)
+    carrito, created = Carrito.objects.get_or_create(usuario=request.user)
+    carrito_producto, created = CarritoProducto.objects.get_or_create(carrito=carrito, producto=producto)
+    carrito_producto.cantidad += 1
+    carrito_producto.save()
+    carrito.calcular_total()
+    return JsonResponse({'status': 'success', 'total': carrito.total})
+
+
+def finalizar_compra(request):
+    if request.method == 'POST':
+        # Leer el cuerpo de la solicitud que llega en formato JSON
+        data = json.loads(request.body)
+        cart = data.get('cart', [])
+        total = data.get('total', 0)
+
+        # Verificar que el carrito no esté vacío
+        if not cart:
+            return JsonResponse({'error': 'El carrito está vacío.'}, status=400)
+
+        # Crear el pedido y almacenar en la base de datos
+        pedido = Pedido.objects.create(usuario=request.user, total=total)
+
+        # Guardar cada producto en el pedido
+        for item in cart:
+            producto = Producto.objects.get(nombre=item['name'])
+            ProductoPedido.objects.create(pedido=pedido, producto=producto, cantidad=1)
+
+        # Redirigir a la página principal después de finalizar la compra
+        return JsonResponse({'total': total})
+    
+    return JsonResponse({'error': 'Método no permitido.'}, status=405)

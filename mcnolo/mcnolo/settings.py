@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'channels',
     'app',
 ]
 
@@ -141,3 +142,13 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 LOGOUT_REDIRECT_URL = 'index'
 
+ASGI_APPLICATION = 'mcnolo.asgi.application'  # Define tu ASGI application
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}

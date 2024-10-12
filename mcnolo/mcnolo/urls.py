@@ -31,6 +31,8 @@ urlpatterns = [
     path('eliminar-producto/<int:producto_id>/', views.eliminar_producto, name='eliminar_producto'),
     path('cambiar_visibilidad_producto/<int:producto_id>/', views.cambiar_visibilidad_producto, name='cambiar_visibilidad_producto'),
     path('logout/', auth_views.LogoutView.as_view(next_page='index'), name='logout'),
-]
+    path('finalizar-compra/', views.finalizar_compra, name='finalizar_compra'),
+    #path('carrito/', views.ver_carrito, name='carrito'),
+]   
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

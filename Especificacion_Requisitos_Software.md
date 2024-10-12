@@ -17,8 +17,8 @@ Requisitos Funcionales
 •   Al enviar un pedido a la cocina, el cliente recibirá una confirmación visual en la pantalla. Se comprobará que la notificación aparece correctamente tras hacer un pedido.
 7.  Seguimiento del estado del pedido
 •   El cliente podrá consultar el estado de su pedido en tiempo real (por ejemplo, en preparación o listo para recoger). Para validarlo, se verificarán los cambios de estado de los pedidos en la interfaz del cliente.
-8.  Notificación de pedido listo para recoger
-•   El sistema debe notificar al cliente cuando el pedido esté listo para recoger o entregar. Se probará simulando un pedido que pasa a estar listo y revisando que la notificación aparece en la pantalla del cliente.
+8.  Notificación de pedido listo
+•   El sistema debe notificar al cliente cuando el pedido esté listo para entregar. Se probará simulando un pedido que pasa a estar listo y revisando que la notificación aparece en la pantalla del cliente.
 9.  Historial temporal de pedidos
 •   El cliente podrá ver un historial temporal de sus pedidos realizados durante la misma sesión, sin necesidad de estar registrado. Se validará realizando varios pedidos y revisando que el historial se mantiene mientras la sesión esté activa.
 10. Pago sin necesidad de cuenta
