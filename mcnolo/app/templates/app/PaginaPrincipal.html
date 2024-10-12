@@ -405,6 +405,23 @@
         .show-notification {
         display: block;
     }
+
+        #lista-pedidos li {
+            cursor: pointer;
+            padding: 5px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        #lista-pedidos li:hover {
+            background-color: #f0f0f0;
+        }
+
+        #detalle-pedido {
+            padding: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -441,9 +458,25 @@
         {% endif %}
     </div>
     
-    <!-- Área para mostrar el nombre de usuario -->
+    <!-- Área para mostrar el nombre de usuario y pedidos -->
     <div id="info-usuario" style="display:none; position:absolute; top:80px; left:20px; background-color: white; padding: 10px; border-radius: 5px; box-shadow: 0 0 5px rgba(0,0,0,0.2);">
         <p id="usuario-texto"></p>
+    
+        <h4>Tus pedidos:</h4>
+        {% if pedidos %}
+            <ul id="lista-pedidos">
+                {% for pedido in pedidos %}
+                    <li onclick="mostrarEstadoPedido('{{ pedido.id }}')">Pedido {{ pedido.id }} - Total: {{ pedido.total }}€</li>
+                {% endfor %}
+            </ul>
+            <div id="detalle-pedido" style="display:none; margin-top: 10px;">
+                <h5>Estado del pedido:</h5>
+                <p id="estado-pedido"></p>
+            </div>
+        {% else %}
+            <p>No tienes pedidos.</p>
+        {% endif %}
+        
         <button onclick="toggleInfoUsuario()" class="cerrar-info-usuario" style="background-color:#dc3545; color:white; border:none; padding:5px; cursor:pointer;">Cerrar</button>
     </div>
     
@@ -672,6 +705,15 @@
         }
     }
 
+    function mostrarEstadoPedido(pedidoId) {
+    // Aquí deberías obtener el estado del pedido, pero dado que ya lo tenemos en el template, lo podemos mostrar directamente.
+    var estado = document.querySelector(`#pedido-estado-${pedidoId}`).textContent;
+    var estadoPedidoElement = document.getElementById("estado-pedido");
+    
+    estadoPedidoElement.textContent = estado;
+    document.getElementById("detalle-pedido").style.display = "block";
+}
+
     // Conexión WebSocket
     const pedidoId = "{{ pedido.id }}";  // Inyectar el ID del pedido desde Django
 
@@ -693,7 +735,7 @@ ws.onmessage = function(event) {
     // Ocultar la notificación después de unos segundos
     setTimeout(() => {
         notification.classList.remove('show-notification');
-    }, 10000);  // Ocultar después de 5 segundos
+    }, 20000);  // Ocultar después de 5 segundos
 };
 
 

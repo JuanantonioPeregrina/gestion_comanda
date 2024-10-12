@@ -21,8 +21,12 @@ class Producto(models.Model):
 class Pedido(models.Model):
 
     ESTADOS = [
-        ('pendiente', 'Pendiente'),
-        ('listo', 'Listo'),
+        ('en_espera', 'En Espera'),
+        ('en_proceso', 'En Proceso'),
+        ('finalizado', 'Finalizado'),
+        ('rechazado', 'Rechazado'),
+        ('recoger', 'Listo para enviar'),
+        ('enviado', 'Enviado'),
     ]
 
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)  # Usuario que hace el pedido
@@ -47,7 +51,7 @@ class Pedido(models.Model):
                     }
                 )
         super().save(*args, **kwargs)
-        
+
     def __str__(self):
         return f'Pedido {self.id} - {self.usuario.email}'
 
