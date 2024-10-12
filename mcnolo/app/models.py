@@ -25,7 +25,7 @@ class Pedido(models.Model):
         ('en_proceso', 'En Proceso'),
         ('finalizado', 'Finalizado'),
         ('rechazado', 'Rechazado'),
-        ('recoger', 'Listo para enviar'),
+        ('listo', 'Listo para enviar'),
         ('enviado', 'Enviado'),
     ]
 

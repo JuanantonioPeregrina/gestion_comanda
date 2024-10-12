@@ -9,6 +9,7 @@ from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from django.http import JsonResponse
 
+
 # Página principal
 def index(request):
     return render(request, 'app/index.html')
@@ -52,11 +53,11 @@ def pagina_principal(request):
         productos = Producto.objects.filter(activo=True)
 
     # Obtener el último pedido del usuario (si existe)
-    pedido = Pedido.objects.filter(usuario=request.user).last() if request.user.is_authenticated else None
+    pedidos = Pedido.objects.filter(usuario=request.user) if request.user.is_authenticated else None
 
     return render(request, 'app/PaginaPrincipal.html', {
         'productos': productos,
-        'pedido': pedido  # Pasamos el pedido al contexto
+        'pedidos': pedidos  # Pasamos el pedido al contexto
     })
 
 def registrarse(request):
@@ -173,3 +174,9 @@ def finalizar_compra(request):
         return JsonResponse({'total': total})
     
     return JsonResponse({'error': 'Método no permitido.'}, status=405)
+
+
+
+def obtener_estado_pedido(request, pedido_id):
+    pedido = Pedido.objects.get(id=pedido_id, usuario=request.user)  # Asegúrate de que el pedido pertenece al usuario autenticado
+    return JsonResponse({'estado': pedido.get_estado_display()})  # Devuelve el estado legible del pedido

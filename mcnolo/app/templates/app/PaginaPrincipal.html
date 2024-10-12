@@ -466,8 +466,13 @@
         {% if pedidos %}
             <ul id="lista-pedidos">
                 {% for pedido in pedidos %}
-                    <li onclick="mostrarEstadoPedido('{{ pedido.id }}')">Pedido {{ pedido.id }} - Total: {{ pedido.total }}€</li>
-                {% endfor %}
+    <li onclick="mostrarEstadoPedido('{{ pedido.id }}')">
+        Pedido {{ pedido.id }} - Total: {{ pedido.total }}€
+        <!-- Almacenamos el estado del pedido de manera oculta -->
+        <span id="pedido-estado-{{ pedido.id }}" style="display:none;">{{ pedido.get_estado_display }}</span>
+    </li>
+{% endfor %}
+
             </ul>
             <div id="detalle-pedido" style="display:none; margin-top: 10px;">
                 <h5>Estado del pedido:</h5>
@@ -720,24 +725,22 @@
     if (pedidoId) {
         const ws = new WebSocket('ws://' + window.location.host + '/ws/pedido/' + pedidoId + '/');
 
-ws.onmessage = function(event) {
-    const data = JSON.parse(event.data);
-    console.log("Mensaje recibido:", data);  // Asegúrate de que ves esto en la consola
+        ws.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            
+            // Mostrar el mensaje en la notificación
+            const notification = document.getElementById('notification');
+            const messageElement = document.getElementById('notification-message');
+            messageElement.textContent = data.message;  // El mensaje recibido por WebSocket
 
-    // Mostrar el mensaje en la notificación
-    const notification = document.getElementById('notification');
-    const messageElement = document.getElementById('notification-message');
-    messageElement.textContent = data.message;  // El mensaje recibido por WebSocket
+            // Mostrar la notificación y aplicar la clase de animación
+            notification.classList.add('show-notification');
 
-    // Mostrar la notificación y aplicar la clase de animación
-    notification.classList.add('show-notification');
-
-    // Ocultar la notificación después de unos segundos
-    setTimeout(() => {
-        notification.classList.remove('show-notification');
-    }, 20000);  // Ocultar después de 5 segundos
-};
-
+            // Ocultar la notificación después de unos segundos
+            setTimeout(() => {
+                notification.classList.remove('show-notification');
+            }, 5000);  // Ocultar después de 5 segundos
+        };
 
         ws.onerror = function(event) {
             console.error("WebSocket error observed:", event);
@@ -747,6 +750,17 @@ ws.onmessage = function(event) {
             console.log('WebSocket cerrado.');
         };
     }
+
+
+
+        ws.onerror = function(event) {
+            console.error("WebSocket error observed:", event);
+        };
+
+        ws.onclose = function(event) {
+            console.log('WebSocket cerrado.');
+        };
+    
 </script>
 
 </body>
