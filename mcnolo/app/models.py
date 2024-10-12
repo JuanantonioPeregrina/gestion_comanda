@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
-
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 from mcnolo.settings import MEDIA_URL  # Usamos el modelo de usuario de Django
 
 # Create your models here.
@@ -31,6 +32,22 @@ class Pedido(models.Model):
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     estado = models.CharField(max_length=20, choices=ESTADOS, default="Pendiente")  # Estado del pedido
     
+    def save(self, *args, **kwargs):
+        # Verificar si el estado cambió a "listo"
+        if self.pk is not None:  # Asegurarse de que el pedido ya existe
+            previous = Pedido.objects.get(pk=self.pk)
+            if previous.estado != self.estado and self.estado == 'listo':
+                # Enviar notificación al cliente vía WebSocket
+                channel_layer = get_channel_layer()
+                async_to_sync(channel_layer.group_send)(
+                    f'pedido_{self.id}',
+                    {
+                        'type': 'pedido_listo',
+                        'message': f'Tu pedido {self.id} está listo para recoger.'
+                    }
+                )
+        super().save(*args, **kwargs)
+        
     def __str__(self):
         return f'Pedido {self.id} - {self.usuario.email}'
 

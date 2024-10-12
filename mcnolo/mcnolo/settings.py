@@ -11,7 +11,8 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 import os
 from pathlib import Path
-
+from django.urls import reverse_lazy
+import mcnolo.middleware
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -42,13 +43,16 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'mcnolo.middleware.AdminSessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    
 ]
 
 ROOT_URLCONF = 'mcnolo.urls'
@@ -137,6 +141,12 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 # Usar sesiones basadas en la base de datos (lo más común en Django)
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
+SESSION_COOKIE_NAME = 'client_sessionid'
+CSRF_COOKIE_NAME = 'client_csrftoken'
+
+CSRF_COOKIE_HTTPONLY = False  # Para permitir que el WebSocket use el CSRF token
+
+
 # Para mayor seguridad, puedes activar esto para asegurarte de que las cookies de sesión solo se envían por HTTPS (en producción)
 # SESSION_COOKIE_SECURE = True
 
@@ -148,7 +158,7 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [('127.0.0.1', 6379)],
+            'hosts': [('127.0.0.1', 6379)],
         },
     },
 }

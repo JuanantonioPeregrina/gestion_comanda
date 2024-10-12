@@ -362,7 +362,49 @@
             background-color: #c82333;
         }
 
+        #notification {
+            display: none;
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+        }
 
+        .show-notification {
+            display: block !important;
+            animation: fadeIn 0.5s, fadeOut 0.5s 9.5s; /* Muestra por 10 segundos */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        .notification {
+        display: none;
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background-color: #444;
+        color: white;
+        padding: 15px;
+        border-radius: 5px;
+        font-size: 1.2em;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+        .show-notification {
+        display: block;
+    }
     </style>
 </head>
 <body>
@@ -492,6 +534,16 @@
     </form>
 </div>
 
+<!-- Contenedor para las notificaciones 
+<div id="notificacion" style="display:none; background-color: yellow; padding: 10px;">
+    Aquí se mostrará el mensaje del WebSocket -->
+<!-- </div>-->
+<!-- Contenedor para la notificación -->
+<div id="notification" class="notification">
+    <p id="notification-message"></p>
+</div>
+
+
 <script>
     const anadir_boton = document.querySelector('.anadir-plato-boton');
     const anadir_form = document.getElementById('anadir-plato-form');
@@ -539,53 +591,67 @@
         });
     });
 
-    document.getElementById('checkout-btn').addEventListener('click', (event) => {
-    event.preventDefault();  // Evita que el formulario se envíe automáticamente
-
-    // Obtener el token CSRF desde el HTML
-    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
-    // Verificar si hay productos en el carrito
-    if (cart.length === 0) {
-        alert('El carrito está vacío.');
-        return;
+    // Obtener el token CSRF
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Si la cookie comienza con el nombre deseado, devolver su valor
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
     }
 
-    // Enviar la solicitud al servidor con el carrito y el total
-    fetch("{% url 'finalizar_compra' %}", {
-        method: "POST",
-        headers: {
-            "X-CSRFToken": csrftoken,  // Añadir el token CSRF en el encabezado
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            cart: cart,  // Enviar los productos del carrito
-            total: totalPriceElement.textContent
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            alert("Error: " + data.error);
-        } else {
-            // Vaciar el carrito en el frontend
-            cart.length = 0;  // Vacía el carrito en el frontend
-            updateCart();  // Actualiza el contenido del carrito
-            // Redirigir a la página principal
-            window.location.href = "{% url 'pagina_principal' %}";
+    const csrftoken = getCookie('csrftoken');
+
+    document.getElementById('checkout-btn').addEventListener('click', (event) => {
+        event.preventDefault();  // Evita que el formulario se envíe automáticamente
+
+        //Obtener el token CSRF desde el HTML
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        // Verificar si hay productos en el carrito
+        if (cart.length === 0) {
+            alert('El carrito está vacío.');
+            return;
         }
-    })
-    .catch(error => console.error("Error:", error));
-});
 
-
-
-    /*function mostrarUsuario() {
-        var nombreUsuario = "{{ user.first_name }} {{ user.last_name }}";
-        var infoUsuario = document.getElementById("info-usuario");
-        infoUsuario.innerText = "Has accedido como: " + nombreUsuario;
-        infoUsuario.style.display = "block";  // Hacer visible el mensaje
-    }*/
+        // Enviar la solicitud al servidor con el carrito y el total
+        fetch("{% url 'finalizar_compra' %}", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": csrftoken,  // Añadir el token CSRF en el encabezado
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                cart: cart,  // Enviar los productos del carrito
+                total: totalPriceElement.textContent
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Error en la respuesta de la solicitud");
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.error) {
+                alert("Error: " + data.error);
+            } else {
+                // Vaciar el carrito en el frontend
+                cart.length = 0;  // Vacía el carrito en el frontend
+                updateCart();  // Actualiza el contenido del carrito
+                // Redirigir a la página principal
+                window.location.href = "{% url 'pagina_principal' %}";
+            }
+        })
+        .catch(error => console.error("Error:", error));
+    });
 
     function toggleInfoUsuario() {
         var infoUsuario = document.getElementById("info-usuario");
@@ -606,19 +672,40 @@
         }
     }
 
-    const pedidoId = "{{ pedido.id }}";
-    const ws = new WebSocket('ws://' + window.location.host + '/ws/pedido/' + pedidoId + '/');
+    // Conexión WebSocket
+    const pedidoId = "{{ pedido.id }}";  // Inyectar el ID del pedido desde Django
 
-    ws.onmessage = function(event) {
-        const data = JSON.parse(event.data);
-        alert(data.message);  // Muestra la notificación al usuario.
-    };
+    if (pedidoId) {
+        const ws = new WebSocket('ws://' + window.location.host + '/ws/pedido/' + pedidoId + '/');
 
-    ws.onclose = function(event) {
-        console.log('WebSocket cerrado.');
-    };
+ws.onmessage = function(event) {
+    const data = JSON.parse(event.data);
+    console.log("Mensaje recibido:", data);  // Asegúrate de que ves esto en la consola
+
+    // Mostrar el mensaje en la notificación
+    const notification = document.getElementById('notification');
+    const messageElement = document.getElementById('notification-message');
+    messageElement.textContent = data.message;  // El mensaje recibido por WebSocket
+
+    // Mostrar la notificación y aplicar la clase de animación
+    notification.classList.add('show-notification');
+
+    // Ocultar la notificación después de unos segundos
+    setTimeout(() => {
+        notification.classList.remove('show-notification');
+    }, 10000);  // Ocultar después de 5 segundos
+};
+
+
+        ws.onerror = function(event) {
+            console.error("WebSocket error observed:", event);
+        };
+
+        ws.onclose = function(event) {
+            console.log('WebSocket cerrado.');
+        };
+    }
 </script>
-
 
 </body>
 </html>
