@@ -44,6 +44,7 @@ def inicio_sesion(request):
     #productos = Producto.objects.filter(activo=True)  # Solo productos activos
     #return render(request, 'app/PaginaPrincipal.html', {'productos': productos})*/
 
+
 def pagina_principal(request):
     if request.user.is_staff:
         # Si es administrador, mostrar todos los productos, tanto activos como inactivos
@@ -52,13 +53,16 @@ def pagina_principal(request):
         # Si es un usuario normal, mostrar solo los productos activos
         productos = Producto.objects.filter(activo=True)
 
-    # Obtener el último pedido del usuario (si existe)
+    # Obtener todos los pedidos del usuario (para el historial) y el último pedido (para la notificación)
     pedidos = Pedido.objects.filter(usuario=request.user) if request.user.is_authenticated else None
+    pedido = pedidos.last() if pedidos else None  # Último pedido para la notificación
 
     return render(request, 'app/PaginaPrincipal.html', {
         'productos': productos,
-        'pedidos': pedidos  # Pasamos el pedido al contexto
+        'pedidos': pedidos,  # Lista completa de pedidos para el historial
+        'pedido': pedido  # Último pedido para la notificación
     })
+
 
 def registrarse(request):
     if request.method == 'POST':

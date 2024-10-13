@@ -458,29 +458,29 @@
         {% endif %}
     </div>
     
-    <!-- Área para mostrar el nombre de usuario y pedidos -->
-    <div id="info-usuario" style="display:none; position:absolute; top:80px; left:20px; background-color: white; padding: 10px; border-radius: 5px; box-shadow: 0 0 5px rgba(0,0,0,0.2);">
+     <!-- Área para mostrar el nombre de usuario y pedidos -->
+     <div id="info-usuario" style="display:none; position:absolute; top:80px; left:20px; background-color: white; padding: 10px; border-radius: 5px; box-shadow: 0 0 5px rgba(0,0,0,0.2);">
         <p id="usuario-texto"></p>
     
         <h4>Tus pedidos:</h4>
-        {% if pedidos %}
-            <ul id="lista-pedidos">
-                {% for pedido in pedidos %}
-    <li onclick="mostrarEstadoPedido('{{ pedido.id }}')">
-        Pedido {{ pedido.id }} - Total: {{ pedido.total }}€
-        <!-- Almacenamos el estado del pedido de manera oculta -->
-        <span id="pedido-estado-{{ pedido.id }}" style="display:none;">{{ pedido.get_estado_display }}</span>
-    </li>
-{% endfor %}
+{% if pedidos %}
+    <ul id="lista-pedidos">
+        {% for pedido in pedidos %}
+            <li onclick="mostrarEstadoPedido('{{ pedido.id }}')">
+                Pedido {{ pedido.id }} - Total: {{ pedido.total }}€
+                <span id="pedido-estado-{{ pedido.id }}" style="display:none;">{{ pedido.get_estado_display }}</span>
+            </li>
+        {% endfor %}
+    </ul>
+    <div id="detalle-pedido" style="display:none; margin-top: 10px;">
+        <h5>Estado del pedido:</h5>
+        <p id="estado-pedido"></p>
+    </div>
+{% else %}
+    <p>No tienes pedidos.</p>
+{% endif %}
 
-            </ul>
-            <div id="detalle-pedido" style="display:none; margin-top: 10px;">
-                <h5>Estado del pedido:</h5>
-                <p id="estado-pedido"></p>
-            </div>
-        {% else %}
-            <p>No tienes pedidos.</p>
-        {% endif %}
+        
         
         <button onclick="toggleInfoUsuario()" class="cerrar-info-usuario" style="background-color:#dc3545; color:white; border:none; padding:5px; cursor:pointer;">Cerrar</button>
     </div>
@@ -719,28 +719,30 @@
     document.getElementById("detalle-pedido").style.display = "block";
 }
 
-    // Conexión WebSocket
-    const pedidoId = "{{ pedido.id }}";  // Inyectar el ID del pedido desde Django
+   // Conexión WebSocket
+   const pedidoId = "{{ pedido.id }}";  // Inyectar el ID del pedido desde Django
 
-    if (pedidoId) {
-        const ws = new WebSocket('ws://' + window.location.host + '/ws/pedido/' + pedidoId + '/');
+if (pedidoId) {
+    const ws = new WebSocket('ws://' + window.location.host + '/ws/pedido/' + pedidoId + '/');
 
-        ws.onmessage = function(event) {
-            const data = JSON.parse(event.data);
-            
-            // Mostrar el mensaje en la notificación
-            const notification = document.getElementById('notification');
-            const messageElement = document.getElementById('notification-message');
-            messageElement.textContent = data.message;  // El mensaje recibido por WebSocket
+    ws.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        console.log("Mensaje recibido:", data);  // Asegúrate de que ves esto en la consola
 
-            // Mostrar la notificación y aplicar la clase de animación
-            notification.classList.add('show-notification');
+    // Mostrar el mensaje en la notificación
+    const notification = document.getElementById('notification');
+    const messageElement = document.getElementById('notification-message');
+    messageElement.textContent = data.message;  // El mensaje recibido por WebSocket
 
-            // Ocultar la notificación después de unos segundos
-            setTimeout(() => {
-                notification.classList.remove('show-notification');
-            }, 5000);  // Ocultar después de 5 segundos
-        };
+    // Mostrar la notificación y aplicar la clase de animación
+    notification.classList.add('show-notification');
+
+    // Ocultar la notificación después de unos segundos
+    setTimeout(() => {
+        notification.classList.remove('show-notification');
+    }, 10000);  // Ocultar después de 5 segundos
+};
+
 
         ws.onerror = function(event) {
             console.error("WebSocket error observed:", event);
@@ -750,17 +752,6 @@
             console.log('WebSocket cerrado.');
         };
     }
-
-
-
-        ws.onerror = function(event) {
-            console.error("WebSocket error observed:", event);
-        };
-
-        ws.onclose = function(event) {
-            console.log('WebSocket cerrado.');
-        };
-    
 </script>
 
 </body>
