@@ -10,10 +10,10 @@ class Producto(models.Model):
     #descripcion = models.TextField(blank=True, null=True)
     descripcion = models.TextField(default="Sin descripción")
     precio = models.DecimalField(max_digits=10, decimal_places=2)
-    #disponible = models.BooleanField(default=True)
+    # disponible = models.BooleanField(default=True)
     imagen = models.ImageField(upload_to='productos/', blank=True, null=True)  # Campo para la imagen
     activo = models.BooleanField(default=True)  # Campo para marcar si está activo o no
-    
+    tiempo_preparacion = models.IntegerField()  # Tiempo en minutos
     def __str__(self):
         return self.nombre
         
