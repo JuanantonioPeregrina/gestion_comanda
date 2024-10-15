@@ -422,6 +422,22 @@
             border-radius: 5px;
             margin-top: 10px;
         }
+        .pagar-ya {
+            background-color: #dc3545; /* Color rojo */
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            margin-top: 20px; /* Colocado un poco más abajo */
+        }
+        
+        .pagar-ya:hover {
+            background-color: #c82333;
+            transform: scale(1.05);
+        }
+        
     </style>
 </head>
 <body>
@@ -520,6 +536,8 @@
                         <!-- Solo mostrar botón "Añadir al carrito" para productos activos a usuarios normales -->
                         {% if producto.activo %}
                             <button class="add-to-cart" data-name="{{ producto.nombre }}" data-price="{{ producto.precio }}">Añadir al carrito</button>
+                            <!-- Botón Pagar Ya -->
+                            <button class="pagar-ya" id="pagar-ya-btn">Pagar Ya</button>
                         {% endif %}
                     {% endif %}
                 </div>
@@ -755,6 +773,7 @@ if (pedidoId) {
             console.log('WebSocket cerrado.');
         };
     }
+  
 </script>
 
 </body>
