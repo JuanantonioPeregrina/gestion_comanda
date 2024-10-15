@@ -9,7 +9,8 @@ admin.site.register(ProductoPedido)
 # Usa @admin.register para vincular el modelo Pedido con PedidoAdmin
 @admin.register(Pedido)
 class PedidoAdmin(admin.ModelAdmin):
-    list_display = ('usuario', 'total', 'estado')
+    list_display = ('usuario', 'total', 'nota_especial', 'estado')
+    readonly_fields = ('nota_especial',)  # Hacer que la nota especial sea de solo lectura
 
     actions = ['notificar_pedido_listo'
                 'aceptar_pedido',

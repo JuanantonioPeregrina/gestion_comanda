@@ -165,6 +165,7 @@ def finalizar_compra(request):
         total = data.get('total', 0)
         # nota_especial = data.get('nota_especial', '')  # Obtener la nota especial
         nota_especial = json.loads(request.body).get('nota_especial')
+        # nota_especial = request.POST.get('nota_especial')  # Captura la nota especial
         # Verificar que el carrito no esté vacío
         if not cart:
             return JsonResponse({'error': 'El carrito está vacío.'}, status=400)
