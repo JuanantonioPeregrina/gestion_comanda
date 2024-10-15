@@ -590,6 +590,8 @@
     <!-- Formulario para finalizar la compra -->
     <form method="POST" action="{% url 'finalizar_compra' %}">
         {% csrf_token %}
+        <label for="nota_especial">Notas especiales:</label>
+        <textarea id="nota_especial" name="nota_especial" placeholder="Escriba sus notas aquí..."></textarea>
         <button type="submit" id="checkout-btn">Finalizar Compra</button>
     </form>
 </div>
@@ -680,7 +682,7 @@
             alert('El carrito está vacío.');
             return;
         }
-
+        const notaEspecial = document.getElementById('nota_especial').value;
         // Enviar la solicitud al servidor con el carrito y el total
         fetch("{% url 'finalizar_compra' %}", {
             method: "POST",
@@ -690,7 +692,8 @@
             },
             body: JSON.stringify({
                 cart: cart,  // Enviar los productos del carrito
-                total: totalPriceElement.textContent
+                total: totalPriceElement.textContent,
+                nota_especial: notaEspecial
             })
         })
         .then(response => {

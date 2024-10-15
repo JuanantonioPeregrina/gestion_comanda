@@ -163,13 +163,14 @@ def finalizar_compra(request):
         data = json.loads(request.body)
         cart = data.get('cart', [])
         total = data.get('total', 0)
-
+        # nota_especial = data.get('nota_especial', '')  # Obtener la nota especial
+        nota_especial = json.loads(request.body).get('nota_especial')
         # Verificar que el carrito no esté vacío
         if not cart:
             return JsonResponse({'error': 'El carrito está vacío.'}, status=400)
 
         # Crear el pedido y almacenar en la base de datos
-        pedido = Pedido.objects.create(usuario=request.user, total=total)
+        pedido = Pedido.objects.create(usuario=request.user, total=total, nota_especial=nota_especial)
 
         # Inicializar tiempo total de preparación
         tiempo_total_preparacion = 0
@@ -197,7 +198,7 @@ def finalizar_compra(request):
         # Devolver los detalles del carrito en JSON
         return JsonResponse({
             'productos': [
-                {'nombre': producto.nombre, 'precio': producto.precio, 'tiempo_preparacion': producto.tiempo_preparacion}
+                {'nombre': producto.nombre, 'precio': producto.precio, 'tiempo_preparacion': producto.tiempo_preparacion, 'nota_especial': pedido.nota_especial}
                 for producto in productos
             ],
             'tiempo_total_preparacion': tiempo_total_preparacion,
@@ -206,56 +207,6 @@ def finalizar_compra(request):
     # Si el método no es ni POST ni GET, devuelve un error
     return JsonResponse({'error': 'Método no permitido.'}, status=405)
 
-
-
-"""
-def finalizar_compra(request):
-    if request.method == 'POST':
-        # Leer el cuerpo de la solicitud que llega en formato JSON
-        data = json.loads(request.body)
-        cart = data.get('cart', [])
-        total = data.get('total', 0)
-
-        # Verificar que el carrito no esté vacío
-        if not cart:
-            return JsonResponse({'error': 'El carrito está vacío.'}, status=400)
-
-        # Crear el pedido y almacenar en la base de datos
-        pedido = Pedido.objects.create(usuario=request.user, total=total)
-
-        # Calcular el tiempo total de preparación
-        # tiempo_total_preparacion = 0
-
-        # Guardar cada producto en el pedido
-        for item in cart:
-            producto = Producto.objects.get(nombre=item['name'])
-            ProductoPedido.objects.create(pedido=pedido, producto=producto, cantidad=1)
-
-            # Sumar el tiempo de preparación de cada producto
-            # tiempo_total_preparacion += producto.tiempo_preparacion
-
-        # Redirigir a la página principal después de finalizar la compra
-        return JsonResponse({'total': total})
-    
-    return JsonResponse({'error': 'Método no permitido.'}, status=405)
-"""
-"""
-def ver_carrito(request):
-    carrito = Carrito.objects.get(usuario=request.user)  # Obtener el carrito del usuario
-    productos = carrito.productos.all()
-
-    # Calcular el tiempo total de preparación
-    tiempo_total_preparacion = sum(producto.tiempo_preparacion for producto in productos)
-    
-    # Devolver los detalles del carrito (productos y tiempo estimado de preparación)
-    return JsonResponse({
-        'productos': [
-            {'nombre': producto.nombre, 'precio': producto.precio, 'tiempo_preparacion': producto.tiempo_preparacion}
-            for producto in productos
-        ],
-        'tiempo_total_preparacion': tiempo_total_preparacion,
-    })
-"""
 
 def obtener_estado_pedido(request, pedido_id):
     pedido = Pedido.objects.get(id=pedido_id, usuario=request.user)  # Asegúrate de que el pedido pertenece al usuario autenticado

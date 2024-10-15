@@ -35,6 +35,7 @@ class Pedido(models.Model):
     fecha = models.DateTimeField(auto_now_add=True)  # Fecha automática del pedido
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     estado = models.CharField(max_length=20, choices=ESTADOS, default="Pendiente")  # Estado del pedido
+    nota_especial = models.TextField(blank=True, null=True)  # Campo para notas especiales
     
     def save(self, *args, **kwargs):
         # Verificar si el estado cambió a "listo"
