@@ -94,4 +94,15 @@ class Carrito(models.Model):
 class CarritoProducto(models.Model):
     carrito = models.ForeignKey(Carrito, on_delete=models.CASCADE)
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
-    cantidad = models.IntegerField(default=1)  
+    cantidad = models.IntegerField(default=1) 
+
+class Oferta(models.Model):
+    usuario = models.OneToOneField(User, on_delete=models.CASCADE)
+    descuento = models.DecimalField(max_digits=5, decimal_places=2)
+    codigo = .crear_codigo()
+
+    #def __str__(self):
+        #return f'Oferta de {self.usuario.username} - {self.descuento}%, código ' + self.crear_codigo()  
+    
+    def crear_codigo(self):
+        return f'{self.usuario.username}_{self.descuento}'

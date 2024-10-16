@@ -1,7 +1,7 @@
 # tests.py
 
 from django.test import TestCase
-from .models import Pedido
+from .models import *
 from django.contrib.auth.models import User
 
 class PedidoModelTests(TestCase):
@@ -18,3 +18,11 @@ class PedidoModelTests(TestCase):
         self.assertEqual(pedido.usuario.username, 'testuser')
         self.assertEqual(pedido.total, 50.00)
         self.assertEqual(pedido.estado, 'pendiente')
+    
+    def oferta_crear_usuario(self):
+        # Crear un usuario con una oferta asociada
+        user = User.objects.create_user(username='testuser', password='testpassword')
+        oferta = Oferta.objects.create(usuario=user, descuento=10)
+
+        # Verificar que la oferta se haya guardado correctamente
+        self.assertEqual(oferta.codigo, 'testuser_10')

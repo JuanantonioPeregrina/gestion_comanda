@@ -79,6 +79,7 @@ def registrarse(request):
                 # Crear el usuario
                 user = User.objects.create_user(username=email, email=email, password=password)
                 user.save()
+                
                 messages.success(request, 'Registro exitoso. Ahora puedes iniciar sesión.')
                 return redirect('inicio_sesion')  # Asegúrate de que 'inicio_sesion' esté definida en tu urls.py
         else:
