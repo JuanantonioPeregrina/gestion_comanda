@@ -486,14 +486,13 @@
             <li onclick="mostrarEstadoPedido('{{ pedido.id }}')">
                 Pedido {{ pedido.id }} - Total: {{ pedido.total }}€
                 <span id="pedido-estado-{{ pedido.id }}" style="display:none;">{{ pedido.get_estado_display }}</span>
+                <button class="volver-a-pedir" onclick="restaurarPedido({{ pedido.productos|safe }})">Volver a pedir</button>
             </li>
         {% endfor %}
     </ul>
-    <button class="volver-a-pedir" id="volver-a-pedir-btn" style="display:none;">Volver a pedir</button>
     <div id="detalle-pedido" style="display:none; margin-top: 10px;">
         <h5>Estado del pedido:</h5>
         <p id="estado-pedido"></p>
-        <button class="volver-a-pedir" id="volver-a-pedir-btn" style="display:none;">Volver a pedir</button>
 
     </div>
 {% else %}
@@ -764,13 +763,32 @@ function mostrarEstadoPedido(pedidoId, productos) {
 
 // Función para restaurar productos del pedido anterior en el carrito
 function restaurarPedido(productos) {
-    cart.length = 0;  // Limpiar el carrito actual
+    console.log("Botón 'Volver a pedir' fue clickeado.");
+    console.log("Productos del pedido:", productos);
+    
+    // Limpiar el carrito actual
+    cart.length = 0;
     productos.forEach(producto => {
         cart.push({ name: producto.name, price: producto.price });  // Añadir cada producto al carrito
     });
+    
     updateCart();  // Actualizar el carrito con los nuevos productos
-    alert("Pedido restaurado en el carrito.");
+    
+    // Mostrar notificación
+    const notification = document.getElementById('notification');
+    const messageElement = document.getElementById('notification-message');
+    messageElement.textContent = "Pedido restaurado en el carrito.";  // Mensaje de notificación
+    
+    // Mostrar la notificación y aplicarle la clase de animación
+    notification.classList.add('show-notification');
+
+    // Ocultar la notificación después de unos segundos
+    setTimeout(() => {
+        notification.classList.remove('show-notification');
+    }, 5000);  // Ocultar después de 5 segundos
 }
+
+
 
 
    // Conexión WebSocket
