@@ -77,16 +77,18 @@ def registrarse(request):
                 messages.error(request, 'El correo electrónico ya está registrado.')
             else:
                 # Crear el usuario
-                user = User.objects.create_user(username=email, email=email, password=password)
-                user.save()
-                Oferta.objects.create(usuario=user, descuento=10, codigo=f'{user.username}_10')
+                crear_usuario_oferta(email, password)
                 messages.success(request, 'Registro exitoso. Ahora puedes iniciar sesión.')
-                return redirect('inicio_sesion')  # Asegúrate de que 'inicio_sesion' esté definida en tu urls.py
+                # Asegúrate de que 'inicio_sesion' esté definida en tu urls.py
+                return redirect('inicio_sesion')
         else:
             messages.error(request, 'Las contraseñas no coinciden.')
 
     return render(request, 'app/registro.html')
-
+def crear_usuario_oferta(email, password):
+    user = User.objects.create_user(username=email, email=email, password=password)
+    user.save()
+    Oferta.objects.create(usuario=user, descuento=10, codigo=f'{user.username}_10')
 
 def anadir_plato(request):
     if request.method == 'POST':

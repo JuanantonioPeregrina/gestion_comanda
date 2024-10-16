@@ -23,8 +23,9 @@ class PedidoModelTests(TestCase):
     
     def test_oferta_crear_usuario(self):
         # Crear un usuario con una oferta asociada
-        user = User.objects.create_user(username='testuser', password='testpassword')
-        oferta = Oferta.objects.filter(usuario=user).first()
+        #user = User.objects.create_user(username='testuser', password='testpassword')
+        #crear_usuario('testuser', 'testpassword')
+        oferta = Oferta.objects.filter(usuario='testuser').first()
         print(oferta.codigo)
         self.AssertEqual(oferta.codigo, 'testuser_10')
         
