@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Página Principal</title>
-    <link rel="icon" type="image/x-icon" href="gestion_comanda/mcnolo/media/media/perfil_fotos/favicon.ico"/>
+    <link rel="icon" type="image/x-icon" href="gestion_comanda\mcnolo\media\favicon.png"/>
     <style>
         body {
             margin: 0;
@@ -489,9 +489,12 @@
             </li>
         {% endfor %}
     </ul>
+    <button class="volver-a-pedir" id="volver-a-pedir-btn" style="display:none;">Volver a pedir</button>
     <div id="detalle-pedido" style="display:none; margin-top: 10px;">
         <h5>Estado del pedido:</h5>
         <p id="estado-pedido"></p>
+        <button class="volver-a-pedir" id="volver-a-pedir-btn" style="display:none;">Volver a pedir</button>
+
     </div>
 {% else %}
     <p>No tienes pedidos.</p>
@@ -745,6 +748,31 @@
     document.getElementById("detalle-pedido").style.display = "block";
 }
 
+// Función para mostrar el estado del pedido
+function mostrarEstadoPedido(pedidoId, productos) {
+    var estadoPedidoElement = document.getElementById("estado-pedido");
+
+    // Mostrar el estado del pedido (puedes ajustar este texto según tu lógica)
+    estadoPedidoElement.textContent = "Estado del pedido: Procesado"; 
+    document.getElementById("detalle-pedido").style.display = "block"; // Mostrar la sección del pedido
+
+    // Mostrar el botón "Volver a pedir"
+    const volverBtn = document.getElementById("volver-a-pedir-btn");
+    volverBtn.style.display = "block";  // Aquí aseguramos que el botón sea visible
+    volverBtn.onclick = () => restaurarPedido(productos);  // Vincular la acción para restaurar el pedido
+}
+
+// Función para restaurar productos del pedido anterior en el carrito
+function restaurarPedido(productos) {
+    cart.length = 0;  // Limpiar el carrito actual
+    productos.forEach(producto => {
+        cart.push({ name: producto.name, price: producto.price });  // Añadir cada producto al carrito
+    });
+    updateCart();  // Actualizar el carrito con los nuevos productos
+    alert("Pedido restaurado en el carrito.");
+}
+
+
    // Conexión WebSocket
    const pedidoId = "{{ pedido.id }}";  // Inyectar el ID del pedido desde Django
 
@@ -779,6 +807,7 @@ if (pedidoId) {
         };
     }
   
+    
 </script>
 
 </body>
