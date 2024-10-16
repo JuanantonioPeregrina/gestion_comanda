@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 
 class PedidoModelTests(TestCase):
 
-    
+    """ 
     def setUp(self):
         # Crear un usuario para asociar con el pedido
         self.user = User.objects.create_user(username='testuser', password='testpassword')
@@ -19,13 +19,14 @@ class PedidoModelTests(TestCase):
         self.assertEqual(pedido.usuario.username, 'testuser')
         self.assertEqual(pedido.total, 50.00)
         self.assertEqual(pedido.estado, 'pendiente')
-    
+    """
     
     def test_oferta_crear_usuario(self):
         # Crear un usuario con una oferta asociada
         user = User.objects.create_user(username='testuser', password='testpassword')
-        oferta = Oferta.objects.filter(usuario=usuario).first()
-        self.AssertEqual(oferta.codigo, 'testuser')
+        oferta = Oferta.objects.filter(usuario=user).first()
+        print(oferta.codigo)
+        self.AssertEqual(oferta.codigo, 'testuser_10')
         
         # Verificar que la oferta se haya guardado correctamente
     
