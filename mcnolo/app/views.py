@@ -2,7 +2,7 @@ import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
-from .models import HistorialProducto, Pedido, Producto, Carrito, CarritoProducto, ProductoPedido
+from .models import HistorialProducto, Pedido, Producto, Carrito, CarritoProducto, ProductoPedido, Oferta
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from channels.layers import get_channel_layer
@@ -79,13 +79,14 @@ def registrarse(request):
                 # Crear el usuario
                 user = User.objects.create_user(username=email, email=email, password=password)
                 user.save()
-                
+                Oferta.objects.create(usuario=user, descuento=10, codigo=f'{user.username}_10')
                 messages.success(request, 'Registro exitoso. Ahora puedes iniciar sesión.')
                 return redirect('inicio_sesion')  # Asegúrate de que 'inicio_sesion' esté definida en tu urls.py
         else:
             messages.error(request, 'Las contraseñas no coinciden.')
 
     return render(request, 'app/registro.html')
+
 
 def anadir_plato(request):
     if request.method == 'POST':

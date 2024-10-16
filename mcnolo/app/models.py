@@ -99,7 +99,7 @@ class CarritoProducto(models.Model):
 class Oferta(models.Model):
     usuario = models.OneToOneField(User, on_delete=models.CASCADE)
     descuento = models.DecimalField(max_digits=5, decimal_places=2)
-    codigo = .crear_codigo()
+    codigo = models.CharField(max_length=8, unique=True, blank=True)
 
     #def __str__(self):
         #return f'Oferta de {self.usuario.username} - {self.descuento}%, código ' + self.crear_codigo()  
