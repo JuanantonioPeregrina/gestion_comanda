@@ -88,7 +88,7 @@ class Carrito(models.Model):
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
 
     def calcular_total(self):
-        self.total = sum(item.producto.precio * item.cantidad for item in self.carritoproducto_set.all())
+        self.total = sum(item.producto.precio * 2 * item.cantidad for item in self.carritoproducto_set.all())
         self.save()
 
 class CarritoProducto(models.Model):

@@ -641,8 +641,10 @@
             cartItemsContainer.appendChild(itemElement);
             totalPrice += item.price;
         });
+        let oferta = 1;
+        precio_final = totalPrice * oferta;
 
-        totalPriceElement.textContent = totalPrice.toFixed(2);
+        totalPriceElement.textContent = precio_final.toFixed(2);
     }
 
     // Agregar productos al carrito
