@@ -3,6 +3,8 @@
 from django.test import TestCase
 from .models import *
 from django.contrib.auth.models import User
+from .views import crear_usuario_oferta
+from django.core import mail
 
 class PedidoModelTests(TestCase):
 
@@ -24,10 +26,17 @@ class PedidoModelTests(TestCase):
     def test_oferta_crear_usuario(self):
         # Crear un usuario con una oferta asociada
         #user = User.objects.create_user(username='testuser', password='testpassword')
-        #crear_usuario('testuser', 'testpassword')
-        oferta = Oferta.objects.filter(usuario='testuser').first()
-        print(oferta.codigo)
-        self.AssertEqual(oferta.codigo, 'testuser_10')
+        crear_usuario_oferta('testuser@yu', 'testpassword')
+        print("Hasta aqui hace")
+        user = User.objects.get(username='testuser@yu')
+        oferta = Oferta.objects.filter(usuario=user).first()
+        self.assertEqual(oferta.codigo, 'testuser@yu_10')
         
         # Verificar que la oferta se haya guardado correctamente
-    
+    def test_envia_correo_al_crear_oferta(self):
+        email = 'mcnolorestaurante@gmail.com'
+        password = 'mcnolorestaurante99'
+
+        crear_usuario_oferta(email, password)
+        self.assertEqual(len(mail.outbox), 1)
+
