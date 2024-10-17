@@ -162,3 +162,12 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+# Configuración de envío de correos electrónicos
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = 'mcnolorestaurante@gmail.com'
+EMAIL_HOST_USER = 'mcnolorestaurante@gmail.com'
+EMAIL_HOST_PASSWORD = 'hmvb pzbo bsit tuqf'

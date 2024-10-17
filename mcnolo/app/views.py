@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from django.http import JsonResponse
+from django.core.mail import send_mail
 
 
 # Página principal
@@ -89,6 +90,17 @@ def crear_usuario_oferta(email, password):
     user = User.objects.create_user(username=email, email=email, password=password)
     user.save()
     Oferta.objects.create(usuario=user, descuento=10, codigo=f'{user.username}_10')
+    enviar_correo(email,user,f'{user.username}_10')
+    
+
+def enviar_correo(mail, user, oferta):
+    send_mail(
+        'Oferta de bienvenida',
+        f'¡Hola {user.username}! Te hemos dado una oferta del 10%. Usa el código: {oferta}',
+        'no-reply@tuapp.com',
+        [mail],
+        fail_silently=False,
+    )
 
 def anadir_plato(request):
     if request.method == 'POST':
