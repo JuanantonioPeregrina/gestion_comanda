@@ -181,45 +181,109 @@
         }
 
         .cart-sidebar {
-            height: 100%;
-            width: 0;
             position: fixed;
+            right: 0;
             top: 0;
-            right: -300px;
-            background-color: white;
-            box-shadow: -2px 0px 5px rgba(0, 0, 0, 0.5);
-            overflow-x: hidden;
-            transition: 0.5s ease;
-            padding: 60px 20px;
-            z-index: 1001;
-        }
-
-        .cart-sidebar h2 {
-            margin-top: 0;
-            font-size: 1.8rem;
-        }
-
-        .cart-sidebar a {
-            position: absolute;
-            top: 20px;
-            right: 25px;
-            font-size: 30px;
-            color: #007BFF;
-            text-decoration: none;
+            width: 300px;
+            height: 100%;
+            background-color: #ffffff;
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            overflow-y: auto;
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+            z-index: 1000;
         }
 
         .cart-sidebar.open {
-            width: 300px;
-            right: 0;
+            transform: translateX(0);
         }
-        .eliminar {
-            background-color: #dc3545;
+
+        .close-cart {
+            color: #ff6b6b;
+            font-size: 24px;
+            text-decoration: none;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            transition: color 0.3s;
+        }
+
+        .close-cart:hover {
+            color: #ff4a4a;
+        }
+
+        .cart-sidebar h2 {
+            margin-top: 40px;
+            font-size: 24px;
+            color: #333;
+            text-align: center;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        #cart-items {
+            margin: 20px 0;
+            max-height: 300px;
+            overflow-y: auto;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 20px;
+        }
+
+        #total-price {
+            font-weight: bold;
+            color: #333;
+            font-size: 18px;
+        }
+        input[type="text"], textarea {
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            width: 100%;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            border-color: #ff6b6b;
+        }
+
+        button.btn , #checkout-btn {
+            background-color: #ff6b6b;
             color: white;
             border: none;
-            padding: 10px;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button.btn:hover , #checkout-btn:hover {
+            background-color: #ff4a4a;
+        }
+        #checkout-btn {
+            width: 100%;
+        }
+
+        /* Botón de pagar */
+        .pagar-ya {
+            background-color: #dc3545; /* Color rojo */
+            color: white;
+            border: none;
+            padding: 12px;
             border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s ease, transform 0.3s ease;
+            margin-top: 20px; /* Colocado un poco más abajo */
+        }
+
+        .pagar-ya:hover {
+            background-color: #c82333;
+            transform: scale(1.05);
         }
 
         .eliminar:hover {
@@ -292,7 +356,7 @@
             cursor: pointer;
             z-index: 2000;
         }
-
+        
         .login:hover {
             background-color: #0056b3;
         }
@@ -340,7 +404,7 @@
             display: none; /* Oculto por defecto */
             z-index: 2000;
         }
-
+        
         #info-usuario p {
             margin: 0;
             font-weight: bold;
@@ -589,7 +653,12 @@
     <h2>Carrito de Compras</h2>
     <div id="cart-items"></div>
     <p>Total: <span id="total-price">0</span>€</p>
-    
+    <form action="{% url 'comprobar_oferta' %}" method="POST">
+        {% csrf_token %}
+        <label for="oferta">Introduzca el código de la oferta:</label>
+        <input type="text" id="oferta" name="codigo">
+        <button type="submit" class="btn">Aplicar Oferta</button><br><br>
+    </form>
     <!-- Formulario para finalizar la compra -->
     <form method="POST" action="{% url 'finalizar_compra' %}">
         {% csrf_token %}
@@ -641,10 +710,35 @@
             cartItemsContainer.appendChild(itemElement);
             totalPrice += item.price;
         });
-        let oferta = 1;
+        /*let oferta = 1;
         precio_final = totalPrice * oferta;
 
-        totalPriceElement.textContent = precio_final.toFixed(2);
+        totalPriceElement.textContent = precio_final.toFixed(2);*/
+        const codigoOferta = document.getElementById('oferta').value;
+
+    // Si hay un código de oferta, hacer la solicitud para obtener el descuento
+        if (codigoOferta) {
+            fetch("{% url 'comprobar_oferta' %}?codigo=" + codigoOferta)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.oferta_aplicable) {
+                        // Aplicar el descuento al total
+                        let precioFinal = totalPrice * data.oferta_aplicable;
+                        totalPriceElement.textContent = precioFinal.toFixed(2);
+                    } else {
+                        // Si hay un error en el código de oferta
+                        alert('Código de oferta no válido');
+                        totalPriceElement.textContent = totalPrice.toFixed(2);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    totalPriceElement.textContent = totalPrice.toFixed(2); // En caso de error, mostrar precio sin oferta
+                });
+        } else {
+            // Si no hay código de oferta, mostrar el total sin descuento
+            totalPriceElement.textContent = totalPrice.toFixed(2);
+        }
     }
 
     // Agregar productos al carrito

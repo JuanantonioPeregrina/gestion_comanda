@@ -203,7 +203,7 @@ def finalizar_compra(request):
             'total': total,
             'tiempo_estimado': tiempo_total_preparacion  # Enviar el tiempo total de preparación
         })
-
+    
     # Si es una solicitud GET, mostrar los detalles del carrito en formato JSON
     elif request.method == 'GET':
         carrito = Carrito.objects.get(usuario=request.user)  # Obtén el carrito del usuario
@@ -228,3 +228,13 @@ def finalizar_compra(request):
 def obtener_estado_pedido(request, pedido_id):
     pedido = Pedido.objects.get(id=pedido_id, usuario=request.user)  # Asegúrate de que el pedido pertenece al usuario autenticado
     return JsonResponse({'estado': pedido.get_estado_display()})  # Devuelve el estado legible del pedido
+
+def comprobar_oferta(request):
+    codigo = request.POST.get('codigo')
+    print(codigo)
+    oferta = Oferta.objects.filter(codigo=codigo).first()
+    print(oferta)
+    if oferta:
+        oferta_aplicable = 1 - (oferta.descuento /100)
+        return JsonResponse({'descuento': oferta_aplicable})
+    return JsonResponse({'error': 'Código de oferta no válido.'}, status=400)
