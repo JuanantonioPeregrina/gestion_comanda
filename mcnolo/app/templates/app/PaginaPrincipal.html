@@ -653,7 +653,7 @@
     <h2>Carrito de Compras</h2>
     <div id="cart-items"></div>
     <p>Total: <span id="total-price">0</span>€</p>
-    <form action="{% url 'comprobar_oferta' %}" method="POST">
+    <form id = "form-oferta" action="{% url 'comprobar_oferta' %}" method="POST">
         {% csrf_token %}
         <label for="oferta">Introduzca el código de la oferta:</label>
         <input type="text" id="oferta" name="codigo">
@@ -703,43 +703,52 @@
     function updateCart() {
         cartItemsContainer.innerHTML = '';
         let totalPrice = 0;
-
+    
+        // Iterar sobre los productos en el carrito y mostrar cada uno
         cart.forEach(item => {
             const itemElement = document.createElement('div');
             itemElement.textContent = `${item.name} - ${item.price}€`;
             cartItemsContainer.appendChild(itemElement);
             totalPrice += item.price;
         });
-        /*let oferta = 1;
-        precio_final = totalPrice * oferta;
-
-        totalPriceElement.textContent = precio_final.toFixed(2);*/
-        const codigoOferta = document.getElementById('oferta').value;
-
-    // Si hay un código de oferta, hacer la solicitud para obtener el descuento
-        if (codigoOferta) {
-            fetch("{% url 'comprobar_oferta' %}?codigo=" + codigoOferta)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.oferta_aplicable) {
-                        // Aplicar el descuento al total
-                        let precioFinal = totalPrice * data.oferta_aplicable;
-                        totalPriceElement.textContent = precioFinal.toFixed(2);
-                    } else {
-                        // Si hay un error en el código de oferta
-                        alert('Código de oferta no válido');
-                        totalPriceElement.textContent = totalPrice.toFixed(2);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    totalPriceElement.textContent = totalPrice.toFixed(2); // En caso de error, mostrar precio sin oferta
-                });
-        } else {
-            // Si no hay código de oferta, mostrar el total sin descuento
-            totalPriceElement.textContent = totalPrice.toFixed(2);
-        }
+    
+        // Actualizar el total del carrito
+        totalPriceElement.textContent = totalPrice.toFixed(2);
     }
+    // Manejador del envío del formulario de oferta
+    document.getElementById('form-oferta').addEventListener('submit', function(event) {
+        event.preventDefault();  // Evita el envío normal del formulario y recarga de la página
+
+        const codigoOferta = document.getElementById('oferta').value;  // Obtén el código de la oferta
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;  // Obtén el token CSRF
+
+        // Enviar la solicitud POST con fetch
+        fetch("{% url 'comprobar_oferta' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken  // Añade el token CSRF en los encabezados
+            },
+            body: JSON.stringify({ codigo: codigoOferta })  // Envía el código de la oferta como JSON
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.oferta_aplicable) {
+                // Aplicar el descuento al total del carrito
+                let totalPrice = 0;
+                cart.forEach(item => {
+                    totalPrice += item.price;
+                });
+                let precioFinal = totalPrice * data.oferta_aplicable;
+                document.getElementById('total-price').textContent = precioFinal.toFixed(2);
+            } else {
+                alert('Código de oferta no válido');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
 
     // Agregar productos al carrito
     document.querySelectorAll('.add-to-cart').forEach(button => {
@@ -841,48 +850,48 @@
     
     estadoPedidoElement.textContent = estado;
     document.getElementById("detalle-pedido").style.display = "block";
-}
+    }
 
 // Función para mostrar el estado del pedido
-function mostrarEstadoPedido(pedidoId, productos) {
-    var estadoPedidoElement = document.getElementById("estado-pedido");
+    function mostrarEstadoPedido(pedidoId, productos) {
+        var estadoPedidoElement = document.getElementById("estado-pedido");
 
-    // Mostrar el estado del pedido (puedes ajustar este texto según tu lógica)
-    estadoPedidoElement.textContent = "Estado del pedido: Procesado"; 
-    document.getElementById("detalle-pedido").style.display = "block"; // Mostrar la sección del pedido
+        // Mostrar el estado del pedido (puedes ajustar este texto según tu lógica)
+        estadoPedidoElement.textContent = "Estado del pedido: Procesado"; 
+        document.getElementById("detalle-pedido").style.display = "block"; // Mostrar la sección del pedido
 
-    // Mostrar el botón "Volver a pedir"
-    const volverBtn = document.getElementById("volver-a-pedir-btn");
-    volverBtn.style.display = "block";  // Aquí aseguramos que el botón sea visible
-    volverBtn.onclick = () => restaurarPedido(productos);  // Vincular la acción para restaurar el pedido
-}
+        // Mostrar el botón "Volver a pedir"
+        const volverBtn = document.getElementById("volver-a-pedir-btn");
+        volverBtn.style.display = "block";  // Aquí aseguramos que el botón sea visible
+        volverBtn.onclick = () => restaurarPedido(productos);  // Vincular la acción para restaurar el pedido
+    }
 
 // Función para restaurar productos del pedido anterior en el carrito
-function restaurarPedido(productos) {
-    console.log("Botón 'Volver a pedir' fue clickeado.");
-    console.log("Productos del pedido:", productos);
-    
-    // Limpiar el carrito actual
-    cart.length = 0;
-    productos.forEach(producto => {
-        cart.push({ name: producto.name, price: producto.price });  // Añadir cada producto al carrito
-    });
-    
-    updateCart();  // Actualizar el carrito con los nuevos productos
-    
-    // Mostrar notificación
-    const notification = document.getElementById('notification');
-    const messageElement = document.getElementById('notification-message');
-    messageElement.textContent = "Pedido restaurado en el carrito.";  // Mensaje de notificación
-    
-    // Mostrar la notificación y aplicarle la clase de animación
-    notification.classList.add('show-notification');
+    function restaurarPedido(productos) {
+        console.log("Botón 'Volver a pedir' fue clickeado.");
+        console.log("Productos del pedido:", productos);
+        
+        // Limpiar el carrito actual
+        cart.length = 0;
+        productos.forEach(producto => {
+            cart.push({ name: producto.name, price: producto.price });  // Añadir cada producto al carrito
+        });
+        
+        updateCart();  // Actualizar el carrito con los nuevos productos
+        
+        // Mostrar notificación
+        const notification = document.getElementById('notification');
+        const messageElement = document.getElementById('notification-message');
+        messageElement.textContent = "Pedido restaurado en el carrito.";  // Mensaje de notificación
+        
+        // Mostrar la notificación y aplicarle la clase de animación
+        notification.classList.add('show-notification');
 
-    // Ocultar la notificación después de unos segundos
-    setTimeout(() => {
-        notification.classList.remove('show-notification');
-    }, 5000);  // Ocultar después de 5 segundos
-}
+        // Ocultar la notificación después de unos segundos
+        setTimeout(() => {
+            notification.classList.remove('show-notification');
+        }, 5000);  // Ocultar después de 5 segundos
+    }
 
 
 
@@ -890,26 +899,26 @@ function restaurarPedido(productos) {
    // Conexión WebSocket
    const pedidoId = "{{ pedido.id }}";  // Inyectar el ID del pedido desde Django
 
-if (pedidoId) {
-    const ws = new WebSocket('ws://' + window.location.host + '/ws/pedido/' + pedidoId + '/');
+    if (pedidoId) {
+        const ws = new WebSocket('ws://' + window.location.host + '/ws/pedido/' + pedidoId + '/');
 
-    ws.onmessage = function(event) {
-        const data = JSON.parse(event.data);
-        console.log("Mensaje recibido:", data);  // Asegúrate de que ves esto en la consola
+        ws.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            console.log("Mensaje recibido:", data);  // Asegúrate de que ves esto en la consola
 
-    // Mostrar el mensaje en la notificación
-    const notification = document.getElementById('notification');
-    const messageElement = document.getElementById('notification-message');
-    messageElement.textContent = data.message;  // El mensaje recibido por WebSocket
+        // Mostrar el mensaje en la notificación
+        const notification = document.getElementById('notification');
+        const messageElement = document.getElementById('notification-message');
+        messageElement.textContent = data.message;  // El mensaje recibido por WebSocket
 
-    // Mostrar la notificación y aplicar la clase de animación
-    notification.classList.add('show-notification');
+        // Mostrar la notificación y aplicar la clase de animación
+        notification.classList.add('show-notification');
 
-    // Ocultar la notificación después de unos segundos
-    setTimeout(() => {
-        notification.classList.remove('show-notification');
-    }, 10000);  // Ocultar después de 5 segundos
-};
+        // Ocultar la notificación después de unos segundos
+        setTimeout(() => {
+            notification.classList.remove('show-notification');
+        }, 10000);  // Ocultar después de 5 segundos
+        };
 
 
         ws.onerror = function(event) {

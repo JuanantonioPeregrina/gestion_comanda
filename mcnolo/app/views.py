@@ -230,11 +230,15 @@ def obtener_estado_pedido(request, pedido_id):
     return JsonResponse({'estado': pedido.get_estado_display()})  # Devuelve el estado legible del pedido
 
 def comprobar_oferta(request):
-    codigo = request.POST.get('codigo')
-    print(codigo)
+    data = json.loads(request.body)
+    codigo = data.get('codigo')  # Obtener el código enviado desde el formulario
+    # Buscar la oferta en la base de datos
     oferta = Oferta.objects.filter(codigo=codigo).first()
-    print(oferta)
+
     if oferta:
-        oferta_aplicable = 1 - (oferta.descuento /100)
-        return JsonResponse({'descuento': oferta_aplicable})
-    return JsonResponse({'error': 'Código de oferta no válido.'}, status=400)
+        # Si se encuentra una oferta válida, calcular el descuento
+        oferta_aplicable = 1 - (oferta.descuento / 100)
+        return JsonResponse({'oferta_aplicable': oferta_aplicable})
+    else:
+        # Si el código de la oferta no es válido
+        return JsonResponse({'error': 'Código de oferta no válido'}, status=400)
