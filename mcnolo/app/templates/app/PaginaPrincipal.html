@@ -526,7 +526,7 @@
                 {% if user.profile.foto %}
                     <img src="{{ user.profile.foto.url }}" alt="Foto de perfil" class="profile-pic" onclick="toggleInfoUsuario()">
                 {% else %}
-                    <img src="{{ MEDIA_URL }}/productos/perfil.webp" alt="Foto de perfil" class="profile-pic" onclick="toggleInfoUsuario()">
+                    <img src="{{ MEDIA_URL }}/perfil_fotos/perfil.webp" alt="Foto de perfil" class="profile-pic" onclick="toggleInfoUsuario()">
                 {% endif %}
                 <p>{{ user.first_name }} {{ user.last_name }}</p> <!-- o user.username si no tienes nombres -->
             </div>
