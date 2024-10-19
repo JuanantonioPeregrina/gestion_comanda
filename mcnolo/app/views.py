@@ -9,6 +9,8 @@ from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from django.http import JsonResponse
 from django.core.mail import send_mail
+from .forms import ChangeUsernameForm
+
 
 
 # Página principal
@@ -242,3 +244,30 @@ def comprobar_oferta(request):
     else:
         # Si el código de la oferta no es válido
         return JsonResponse({'error': 'Código de oferta no válido'}, status=400)
+
+@login_required   
+def change_username(request):
+    if request.method == 'POST':
+        new_username = request.POST.get('username')
+        if new_username:
+            request.user.username = new_username
+            request.user.save()
+            messages.success(request, 'Nombre de usuario cambiado con éxito')
+            return redirect('pagina_principal')  # Redirigir después de cambiar
+        else:
+            messages.error(request, 'Por favor, introduce un nombre de usuario válido')
+    return render(request, 'app/change_username.html', {'user': request.user})
+
+@login_required
+def change_image(request):
+    if request.method == 'POST':
+        profile = request.user.profile  
+        image = request.FILES.get('image')
+        if image:
+            profile.foto = image  # 'foto' es el campo de imagen en el modelo Profile
+            profile.save()
+            messages.success(request, 'Imagen de perfil actualizada con éxito')
+            return redirect('pagina_principal')
+        else:
+            messages.error(request, 'Por favor, selecciona una imagen válida')
+    return render(request, 'app/change_image.html')

@@ -21,7 +21,11 @@ urlpatterns = [
     path('obtener-estado-pedido/<int:pedido_id>/', views.obtener_estado_pedido, name='obtener_estado_pedido'),
     # path('ver_carrito/', views.ver_carrito, name='ver_carrito'),
     #path('carrito/', views.ver_carrito, name='carrito'),
-    path('comprobar_oferta' , views.comprobar_oferta, name='comprobar_oferta'),]
+    path('comprobar_oferta' , views.comprobar_oferta, name='comprobar_oferta'),
+    path('change_username/', views.change_username, name='change_username'),
+    path('change_image/', views.change_image, name='change_image'),
+    ]
+    
 
 
 

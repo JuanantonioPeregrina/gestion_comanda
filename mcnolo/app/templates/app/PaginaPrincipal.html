@@ -542,6 +542,9 @@
      <!-- Área para mostrar el nombre de usuario y pedidos -->
      <div id="info-usuario" style="display:none; position:absolute; top:80px; left:20px; background-color: white; padding: 10px; border-radius: 5px; box-shadow: 0 0 5px rgba(0,0,0,0.2);">
         <p id="usuario-texto"></p>
+
+        <a href="{% url 'change_username' %}" class="btn btn-secondary" style="margin-bottom: 10px;">Cambiar nombre de usuario</a>
+        <a href="{% url 'change_image' %}" class="btn btn-secondary">Cambiar imagen</a>
     
         <h4>Tus pedidos:</h4>
 {% if pedidos %}
