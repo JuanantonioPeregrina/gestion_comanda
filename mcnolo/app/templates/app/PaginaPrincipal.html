@@ -962,12 +962,12 @@
                 if (data.error) {
                     alert(data.error); // Mostrar un error si lo hay
                 } else {
-                    alert('Compra realizada con éxito. Total: ' + data.total + '€. Tiempo estimado: ' + data.tiempo_estimado + ' minutos.'); // Notificar al usuario
+                //    alert('Compra realizada con éxito. Total: ' + data.total + '€. Tiempo estimado: ' + data.tiempo_estimado + ' minutos.'); // Notificar al usuario
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Ocurrió un error al procesar la compra.'); // Manejo de errores
+              //  alert('Ocurrió un error al procesar la compra.'); // Manejo de errores
             });
         });
     });
