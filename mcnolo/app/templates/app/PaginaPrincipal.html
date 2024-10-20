@@ -608,7 +608,7 @@
                         {% if producto.activo %}
                             <button class="add-to-cart" data-name="{{ producto.nombre }}" data-price="{{ producto.precio }}">Añadir al carrito</button>
                             <!-- Botón Pagar Ya -->
-                            <button class="pagar-ya" id="pagar-ya-btn">Pagar Ya</button>
+                            <button class="pagar-ya" data-name="{{ producto.nombre }}" data-price="{{ producto.precio }}">Pagar Ya</button>
                         {% endif %}
                     {% endif %}
                 </div>
@@ -932,7 +932,49 @@
             console.log('WebSocket cerrado.');
         };
     }
-  
+   // Función para manejar el pago
+   function setupPayment() {
+    // Agregar un listener para el evento de clic en el botón "Pagar Ya"
+    document.querySelectorAll('.pagar-ya').forEach(button => {
+        button.addEventListener('click', function() {
+            const nombre = this.getAttribute('data-name'); // Obtener el nombre del producto
+            const precio = this.getAttribute('data-price'); // Obtener el precio del producto
+
+            // Crear el objeto de datos para enviar
+            const data = {
+                nombre: nombre,
+                precio: parseFloat(precio), // Asegúrate de que el precio sea un número
+                nota_especial: '' // Si tienes notas especiales, puedes incluirlas aquí
+            };
+
+            // Realizar la solicitud AJAX
+            fetch('{% url "finalizar_compra" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}' // Añadir el token CSRF para seguridad
+                },
+                body: JSON.stringify(data) // Convertir el objeto de datos a JSON
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Manejar la respuesta
+                if (data.error) {
+                    alert(data.error); // Mostrar un error si lo hay
+                } else {
+                    alert('Compra realizada con éxito. Total: ' + data.total + '€. Tiempo estimado: ' + data.tiempo_estimado + ' minutos.'); // Notificar al usuario
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Ocurrió un error al procesar la compra.'); // Manejo de errores
+            });
+        });
+    });
+}
+
+// Llamar a la función para configurar el pago
+setupPayment();
     
 </script>
 

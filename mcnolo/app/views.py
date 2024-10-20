@@ -271,3 +271,38 @@ def change_image(request):
         else:
             messages.error(request, 'Por favor, selecciona una imagen válida')
     return render(request, 'app/change_image.html')
+
+
+def finalizar_compra(request):
+    # Si es una solicitud POST, se está intentando finalizar la compra
+    if request.method == 'POST':
+        # Leer el cuerpo de la solicitud que llega en formato JSON
+        data = json.loads(request.body)
+        nombre_producto = data.get('nombre')  # Obtener el nombre del producto
+        precio_producto = data.get('precio', 0)  # Obtener el precio del producto, default 0
+        nota_especial = data.get('nota_especial', '')  # Obtener la nota especial, por defecto ''
+
+        # Verificar que se haya proporcionado un nombre de producto
+        if not nombre_producto:
+            return JsonResponse({'error': 'El nombre del producto es obligatorio.'}, status=400)
+
+        # Verificar que se haya proporcionado un precio del producto
+        if precio_producto <= 0:
+            return JsonResponse({'error': 'El precio del producto debe ser mayor que cero.'}, status=400)
+
+        # Crear el pedido y almacenar en la base de datos
+        producto = Producto.objects.get(nombre=nombre_producto)  # Buscar el producto por su nombre
+        pedido = Pedido.objects.create(usuario=request.user, total=precio_producto, nota_especial=nota_especial)
+
+        # Crear el registro del producto en el pedido
+        ProductoPedido.objects.create(pedido=pedido, producto=producto, cantidad=1)
+
+        # Devolver el total y el tiempo estimado de preparación
+        return JsonResponse({
+            'total': precio_producto,
+            'tiempo_estimado': producto.tiempo_preparacion  # Enviar el tiempo de preparación del producto
+        })
+
+    # Si el método no es POST, devuelve un error
+    return JsonResponse({'error': 'Método no permitido.'}, status=405)
+
