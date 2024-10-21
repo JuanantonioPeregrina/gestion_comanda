@@ -49,6 +49,11 @@ def inicio_sesion(request):
 
 
 def pagina_principal(request):
+    if not request.user.is_authenticated:
+        # Si el usuario no está autenticado, mostrar la página de invitado
+        productos = Producto.objects.filter(activo=True)  # Mostrar solo productos activos
+        return render(request, 'app/invitado.html', {'productos': productos})
+    
     if request.user.is_staff:
         # Si es administrador, mostrar todos los productos, tanto activos como inactivos
         productos = Producto.objects.all()
@@ -305,4 +310,7 @@ def finalizar_compra(request):
 
     # Si el método no es POST, devuelve un error
     return JsonResponse({'error': 'Método no permitido.'}, status=405)
+
+def invitado(request):
+    return render(request, 'app/invitado.html')
 
