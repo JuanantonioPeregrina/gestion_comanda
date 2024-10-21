@@ -171,3 +171,6 @@ EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = 'mcnolorestaurante@gmail.com'
 EMAIL_HOST_USER = 'mcnolorestaurante@gmail.com'
 EMAIL_HOST_PASSWORD = 'hmvb pzbo bsit tuqf'
+
+# Configuración de autenticación
+LOGIN_URL = 'inicio_sesion'  # Esta línea permite que los invitados accedan sin iniciar sesión

@@ -49,27 +49,29 @@ def inicio_sesion(request):
 
 
 def pagina_principal(request):
-    if not request.user.is_authenticated:
-        # Si el usuario no está autenticado, mostrar la página de invitado
-        productos = Producto.objects.filter(activo=True)  # Mostrar solo productos activos
-        return render(request, 'app/invitado.html', {'productos': productos})
-    
-    if request.user.is_staff:
-        # Si es administrador, mostrar todos los productos, tanto activos como inactivos
-        productos = Producto.objects.all()
-    else:
-        # Si es un usuario normal, mostrar solo los productos activos
-        productos = Producto.objects.filter(activo=True)
+    productos = Producto.objects.filter(activo=True)  # Mostrar solo productos activos para todos
 
-    # Obtener todos los pedidos del usuario (para el historial) y el último pedido (para la notificación)
-    pedidos = Pedido.objects.filter(usuario=request.user) if request.user.is_authenticated else None
-    pedido = pedidos.last() if pedidos else None  # Último pedido para la notificación
+    if request.user.is_authenticated:
+        # Si el usuario es autenticado
+        if request.user.is_staff:
+            productos = Producto.objects.all()  # Mostrar todos los productos si es staff
 
+        # Obtener los pedidos del usuario autenticado
+        pedidos = Pedido.objects.filter(usuario=request.user) 
+        pedido = pedidos.last() if pedidos else None  # Último pedido para la notificación
+        return render(request, 'app/PaginaPrincipal.html', {
+            'productos': productos,
+            'pedidos': pedidos,  # Lista de pedidos para historial
+            'pedido': pedido,  # Último pedido
+            'invitado': False  # Indicar que no es invitado
+        })
+
+    # Si el usuario es invitado (no autenticado)
     return render(request, 'app/PaginaPrincipal.html', {
         'productos': productos,
-        'pedidos': pedidos,  # Lista completa de pedidos para el historial
-        'pedido': pedido  # Último pedido para la notificación
+        'invitado': True  # Indicar que es invitado para limitar acciones
     })
+
 
 
 def registrarse(request):
