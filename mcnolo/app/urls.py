@@ -20,6 +20,8 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(next_page='index'), name='logout'),
     path('finalizar-compra/', views.finalizar_compra, name='finalizar_compra'),
     path('obtener-estado-pedido/<int:pedido_id>/', views.obtener_estado_pedido, name='obtener_estado_pedido'),
+    path('obtener-pedido/<int:pedido_id>/', views.obtener_pedido, name='obtener_pedido'),
+
     # path('ver_carrito/', views.ver_carrito, name='ver_carrito'),
     #path('carrito/', views.ver_carrito, name='carrito'),
     path('comprobar_oferta' , views.comprobar_oferta, name='comprobar_oferta'),

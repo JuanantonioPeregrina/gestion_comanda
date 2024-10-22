@@ -542,34 +542,33 @@
      <!-- Área para mostrar el nombre de usuario y pedidos -->
      <div id="info-usuario" style="display:none; position:absolute; top:80px; left:20px; background-color: white; padding: 10px; border-radius: 5px; box-shadow: 0 0 5px rgba(0,0,0,0.2);">
         <p id="usuario-texto"></p>
-
+    
         <a href="{% url 'change_username' %}" class="btn btn-secondary" style="margin-bottom: 10px;">Cambiar nombre de usuario</a>
         <a href="{% url 'change_image' %}" class="btn btn-secondary">Cambiar imagen</a>
-    
-        <h4>Tus pedidos:</h4>
-{% if pedidos %}
-    <ul id="lista-pedidos">
-        {% for pedido in pedidos %}
-            <li onclick="mostrarEstadoPedido('{{ pedido.id }}')">
-                Pedido {{ pedido.id }} - Total: {{ pedido.total }}€
-                <span id="pedido-estado-{{ pedido.id }}" style="display:none;">{{ pedido.get_estado_display }}</span>
-                <button class="volver-a-pedir" onclick="restaurarPedido({{ pedido.productos|safe }})">Volver a pedir</button>
-            </li>
-        {% endfor %}
-    </ul>
-    <div id="detalle-pedido" style="display:none; margin-top: 10px;">
-        <h5>Estado del pedido:</h5>
-        <p id="estado-pedido"></p>
-
-    </div>
-{% else %}
-    <p>No tienes pedidos.</p>
-{% endif %}
-
         
+        <h4>Tus pedidos:</h4>
+        {% if pedidos %}
+            <ul id="lista-pedidos">
+                {% for pedido in pedidos %}
+                    <li>
+                        Pedido {{ pedido.id }} - Total: {{ pedido.total }}€
+                        <span id="pedido-estado-{{ pedido.id }}" style="display:none;">{{ pedido.get_estado_display }}</span>
+                        <!-- Aquí pasamos el ID del pedido para que se repita correctamente -->
+                        <button class="volver-a-pedir" onclick="restaurarPedido('{{ pedido.id }}')">Volver a pedir</button>
+                    </li>
+                {% endfor %}
+            </ul>
+            <div id="detalle-pedido" style="display:none; margin-top: 10px;">
+                <h5>Estado del pedido:</h5>
+                <p id="estado-pedido"></p>
+            </div>
+        {% else %}
+            <p>No tienes pedidos.</p>
+        {% endif %}
         
         <button onclick="toggleInfoUsuario()" class="cerrar-info-usuario" style="background-color:#dc3545; color:white; border:none; padding:5px; cursor:pointer;">Cerrar</button>
     </div>
+    
     
     
     
@@ -870,31 +869,54 @@
     }
 
 // Función para restaurar productos del pedido anterior en el carrito
-    function restaurarPedido(productos) {
-        console.log("Botón 'Volver a pedir' fue clickeado.");
-        console.log("Productos del pedido:", productos);
-        
-        // Limpiar el carrito actual
-        cart.length = 0;
-        productos.forEach(producto => {
-            cart.push({ name: producto.name, price: producto.price });  // Añadir cada producto al carrito
-        });
-        
-        updateCart();  // Actualizar el carrito con los nuevos productos
-        
-        // Mostrar notificación
-        const notification = document.getElementById('notification');
-        const messageElement = document.getElementById('notification-message');
-        messageElement.textContent = "Pedido restaurado en el carrito.";  // Mensaje de notificación
-        
-        // Mostrar la notificación y aplicarle la clase de animación
-        notification.classList.add('show-notification');
-
-        // Ocultar la notificación después de unos segundos
-        setTimeout(() => {
-            notification.classList.remove('show-notification');
-        }, 5000);  // Ocultar después de 5 segundos
+function restaurarPedido(pedidoId) {
+    // Verificar que el pedidoId no esté undefined
+    if (!pedidoId) {
+        console.error('Pedido ID no encontrado');
+        return;
     }
+
+    // Hacemos una solicitud para obtener los detalles del pedido
+    fetch(`/obtener-pedido/${pedidoId}/`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert(data.error);
+        } else {
+            // Procesar los productos del pedido anterior
+            const productos = data.productos;
+
+            // Crear un nuevo pedido basado en el pedido anterior
+            fetch('{% url "finalizar_compra" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    cart: productos.map(producto => ({
+                        name: producto.nombre,
+                        price: producto.precio,
+                        cantidad: producto.cantidad
+                    })),
+                    total: data.total,
+                    nota_especial: ''  // Si necesitas incluir una nota especial, puedes añadirla aquí
+                })
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.error) {
+                    alert("Error: " + result.error);
+                } else {
+                    alert('Pedido repetido con éxito. Total: ' + result.total + '€. Tiempo estimado: ' + result.tiempo_estimado + ' minutos.');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
 
 
 

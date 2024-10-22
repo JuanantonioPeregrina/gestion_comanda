@@ -241,6 +241,27 @@ def obtener_estado_pedido(request, pedido_id):
     pedido = Pedido.objects.get(id=pedido_id, usuario=request.user)  # Asegúrate de que el pedido pertenece al usuario autenticado
     return JsonResponse({'estado': pedido.get_estado_display()})  # Devuelve el estado legible del pedido
 
+def obtener_pedido(request, pedido_id):
+    try:
+        pedido = Pedido.objects.get(id=pedido_id, usuario=request.user)
+        productos_pedido = ProductoPedido.objects.filter(pedido=pedido)
+
+        productos = [
+            {
+                'nombre': producto_pedido.producto.nombre,
+                'precio': producto_pedido.producto.precio,
+                'cantidad': producto_pedido.cantidad
+            }
+            for producto_pedido in productos_pedido
+        ]
+
+        return JsonResponse({
+            'productos': productos,
+            'total': pedido.total
+        })
+    
+    except Pedido.DoesNotExist:
+        return JsonResponse({'error': 'Pedido no encontrado.'}, status=404)
 def comprobar_oferta(request):
     data = json.loads(request.body)
     codigo = data.get('codigo')  # Obtener el código enviado desde el formulario
