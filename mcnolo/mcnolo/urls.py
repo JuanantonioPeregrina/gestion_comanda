@@ -24,8 +24,8 @@ from django.contrib.auth import views as auth_views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index, name='index'),
+    path('invitado/', views.invitado, name='invitado'),  # Ruta para invitados
     path('inicio-sesion/', views.inicio_sesion, name='inicio_sesion'),
-    path('invitado/', views.invitado, name='invitado'),
     path('pagina-principal/', views.pagina_principal, name='pagina_principal'),
     path('registrarse/', views.registrarse, name='registrarse'),
     path('anadir_plato/', views.anadir_plato, name='anadir_plato'),

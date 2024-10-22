@@ -41,15 +41,14 @@ def inicio_sesion(request):
 
 # Página mostrada cuando el usuario ha iniciado sesión
 # Página mostrada cuando el usuario ha iniciado sesión
-@login_required  # Esto asegura que solo los usuarios autenticados puedan acceder
-#def pagina_principal(request):
-    #productos = Producto.objects.all()  # Solo muestra los productos disponibles
-    #productos = Producto.objects.filter(activo=True)  # Solo productos activos
-    #return render(request, 'app/PaginaPrincipal.html', {'productos': productos})*/
-
+#@login_required  # Esto asegura que solo los usuarios autenticados puedan acceder
 
 def pagina_principal(request):
-    productos = Producto.objects.filter(activo=True)  # Mostrar solo productos activos para todos
+    # Mostrar solo productos activos para todos los usuarios
+    productos = Producto.objects.filter(activo=True)
+
+    # Comprobar si el usuario es autenticado o si es invitado
+    es_invitado = request.session.get('es_invitado', False)
 
     if request.user.is_authenticated:
         # Si el usuario es autenticado
@@ -67,10 +66,14 @@ def pagina_principal(request):
         })
 
     # Si el usuario es invitado (no autenticado)
-    return render(request, 'app/PaginaPrincipal.html', {
-        'productos': productos,
-        'invitado': True  # Indicar que es invitado para limitar acciones
-    })
+    elif es_invitado:
+        return render(request, 'app/PaginaPrincipal.html', {
+            'productos': productos,
+            'invitado': True  # Indicar que es invitado
+        })
+    
+    # Si el usuario no está autenticado ni es invitado, redirigir al inicio de sesión
+    return redirect('inicio_sesion')
 
 
 
@@ -314,5 +317,6 @@ def finalizar_compra(request):
     return JsonResponse({'error': 'Método no permitido.'}, status=405)
 
 def invitado(request):
-    return render(request, 'app/invitado.html')
-
+     # Configura una variable en la sesión para identificar que es un "invitado"
+    request.session['es_invitado'] = True
+    return redirect('pagina_principal')  # Redirige a la página principal
