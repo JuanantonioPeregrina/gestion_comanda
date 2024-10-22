@@ -284,63 +284,61 @@ def change_image(request):
 
 
 def finalizar_compra(request):
-    # Si es una solicitud POST, se está intentando finalizar la compra
     if request.method == 'POST':
         try:
             # Leer el cuerpo de la solicitud que llega en formato JSON
             data = json.loads(request.body)
             cart = data.get('cart', [])
-            total = data.get('total', 0)
+            nombre_producto = data.get('nombre', None)  # Para el caso de "Pagar Ya" (producto individual)
+            total = float(data.get('total', 0))  # Convertir a float para asegurarse
             nota_especial = data.get('nota_especial', '')  # Obtener la nota especial desde los datos enviados
-            
-            # Verificar que el carrito no esté vacío
-            if not cart:
-                return JsonResponse({'error': 'El carrito está vacío.'}, status=400)
 
-            # Crear el pedido y almacenar en la base de datos
-            pedido = Pedido.objects.create(usuario=request.user, total=total, nota_especial=nota_especial)
+            # Verificar que el carrito no esté vacío y que se haya enviado un producto o carrito válido
+            if not cart and not nombre_producto:
+                return JsonResponse({'error': 'El carrito está vacío y no se seleccionó un producto.'}, status=400)
 
-            # Inicializar tiempo total de preparación
-            tiempo_total_preparacion = 0
+            # Caso 1: Si el pedido proviene del carrito
+            if cart:
+                # Crear el pedido y almacenar en la base de datos
+                pedido = Pedido.objects.create(usuario=request.user, total=total, nota_especial=nota_especial)
 
-            # Guardar cada producto en el pedido y calcular el tiempo de preparación
-            for item in cart:
-                producto = Producto.objects.get(nombre=item['name'])  # Obtener el producto por nombre
-                ProductoPedido.objects.create(pedido=pedido, producto=producto, cantidad=item.get('cantidad', 1))
-                tiempo_total_preparacion += producto.tiempo_preparacion  # Sumar el tiempo de preparación
+                # Inicializar el tiempo total de preparación
+                tiempo_total_preparacion = 0
+
+                # Guardar cada producto en el pedido y calcular el tiempo de preparación
+                for item in cart:
+                    producto = Producto.objects.get(nombre=item['name'])  # Obtener el producto por nombre
+                    cantidad = item.get('cantidad', 1)
+                    ProductoPedido.objects.create(pedido=pedido, producto=producto, cantidad=cantidad)
+                    tiempo_total_preparacion += producto.tiempo_preparacion * cantidad  # Sumar el tiempo de preparación
+
+            # Caso 2: Si es un pedido individual (Pagar Ya)
+            elif nombre_producto:
+                producto = Producto.objects.get(nombre=nombre_producto)  # Obtener el producto directamente
+                # Asegúrate de que el precio esté presente y sea válido
+                precio = data.get('precio', 0)
+                if precio <= 0:
+                    return JsonResponse({'error': 'Precio inválido.'}, status=400)
+
+                # Crear el pedido para el producto individual
+                pedido = Pedido.objects.create(usuario=request.user, total=precio, nota_especial=nota_especial)
+                ProductoPedido.objects.create(pedido=pedido, producto=producto, cantidad=1)
+                tiempo_total_preparacion = producto.tiempo_preparacion  # Tiempo de preparación del producto individual
 
             # Devolver el total y el tiempo estimado de preparación
             return JsonResponse({
-                'total': total,
+                'total': total if cart else precio,
                 'tiempo_estimado': tiempo_total_preparacion  # Enviar el tiempo total de preparación
             })
 
         except Exception as e:
             # Capturar cualquier excepción y devolver un mensaje de error
             return JsonResponse({'error': str(e)}, status=500)
-    
-    # Si es una solicitud GET, mostrar los detalles del carrito en formato JSON
-    elif request.method == 'GET':
-        try:
-            carrito = Carrito.objects.get(usuario=request.user)  # Obtén el carrito del usuario
-            productos = carrito.productos.all()
 
-            # Calcular el tiempo total de preparación
-            tiempo_total_preparacion = sum(producto.tiempo_preparacion for producto in productos)
-
-            # Devolver los detalles del carrito en JSON
-            return JsonResponse({
-                'productos': [
-                    {'nombre': producto.nombre, 'precio': producto.precio, 'tiempo_preparacion': producto.tiempo_preparacion}
-                    for producto in productos
-                ],
-                'tiempo_total_preparacion': tiempo_total_preparacion,
-            })
-        except Carrito.DoesNotExist:
-            return JsonResponse({'error': 'Carrito no encontrado.'}, status=404)
-
-    # Si el método no es ni POST ni GET, devuelve un error
+    # Si es una solicitud GET
     return JsonResponse({'error': 'Método no permitido.'}, status=405)
+
+
 
 
 def invitado(request):
