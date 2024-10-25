@@ -29,13 +29,11 @@ class Pedido(models.Model):
         ('enviado', 'Enviado'),
     ]
 
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE)  # Usuario que hace el pedido
-    #productos = models.ManyToManyField(Producto, through='ProductoPedido')  # Relación muchos a muchos
-    #productos = models.ManyToManyField(Producto)
-    fecha = models.DateTimeField(auto_now_add=True)  # Fecha automática del pedido
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)  # Usuario que hace el pedido (puede ser None)
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    estado = models.CharField(max_length=20, choices=ESTADOS, default="Pendiente")  # Estado del pedido
-    nota_especial = models.TextField(blank=True, null=True)  # Campo para notas especiales
+    estado = models.CharField(max_length=20, choices=ESTADOS, default="Pendiente")
+    nota_especial = models.TextField(blank=True, null=True)
+    fecha = models.DateTimeField(auto_now_add=True)
     
     def save(self, *args, **kwargs):
         # Verificar si el estado cambió a "listo"
@@ -56,7 +54,11 @@ class Pedido(models.Model):
 
 
     def __str__(self):
-        return f'Pedido {self.id} - {self.usuario.email}'
+       
+        if self.usuario:
+            return f'Pedido {self.id} - {self.usuario.email}'
+        else:
+            return f'Pedido {self.id} - Invitado'
 
 
 class ProductoPedido(models.Model):

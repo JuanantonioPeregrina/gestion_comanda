@@ -569,9 +569,6 @@
         <button onclick="toggleInfoUsuario()" class="cerrar-info-usuario" style="background-color:#dc3545; color:white; border:none; padding:5px; cursor:pointer;">Cerrar</button>
     </div>
     
-    
-    
-    
     <section class="products">
         <h2>Productos</h2>
         <div class="product-list">
@@ -585,9 +582,8 @@
                     <h3>{{ producto.nombre }}</h3>
                     <p>{{ producto.descripcion }}</p>
                     <p><strong>Tiempo de preparación: {{ producto.tiempo_preparacion }} minutos</strong></p>
-                    <p><strong>{{ producto.precio }}€</strong></p>
+                    <p><strong>{{ producto.precio|floatformat:2 }}€</strong></p>
     
-                    <!-- Si es administrador, mostrar botones de ocultar/restaurar -->
                     {% if request.user.is_staff %}
                         {% if producto.activo %}
                             <!-- Si el producto está activo, mostrar botón de "Ocultar" -->
@@ -603,11 +599,17 @@
                             </form>
                         {% endif %}
                     {% else %}
-                        <!-- Solo mostrar botón "Añadir al carrito" para productos activos a usuarios normales -->
+                        <!-- Mostrar botones solo para productos activos -->
                         {% if producto.activo %}
-                            <button class="add-to-cart" data-name="{{ producto.nombre }}" data-price="{{ producto.precio }}">Añadir al carrito</button>
+                            <!-- Botón Añadir al carrito -->
+                            <button class="add-to-cart" data-name="{{ producto.nombre }}" data-price="{{ producto.precio|floatformat:2 }}">
+                                Añadir al carrito
+                            </button>
+    
                             <!-- Botón Pagar Ya -->
-                            <button class="pagar-ya" data-name="{{ producto.nombre }}" data-price="{{ producto.precio }}">Pagar Ya</button>
+                            <button class="pagar-ya" data-name="{{ producto.nombre }}" data-price="{{ producto.precio|floatformat:2 }}">
+                                Pagar Ya
+                            </button>
                         {% endif %}
                     {% endif %}
                 </div>
@@ -616,6 +618,7 @@
             {% endfor %}
         </div>
     </section>
+    
     
     <!-- Botón para abrir el carrito -->
     <button class="cart-toggle">Ver Carrito</button>
@@ -955,16 +958,22 @@ function restaurarPedido(pedidoId) {
         };
     }
    // Función para manejar el pago
-   function setupPayment() {
+// Función para manejar el pago de un solo producto
+function setupPayment() {
     document.querySelectorAll('.pagar-ya').forEach(button => {
         button.addEventListener('click', function() {
             const nombre = this.getAttribute('data-name'); // Obtener el nombre del producto
-            const precio = this.getAttribute('data-price'); // Obtener el precio del producto
+            const precio = parseFloat(this.getAttribute('data-price')); // Obtener el precio del producto
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value; // Obtener el token CSRF
 
             // Crear el objeto de datos para el pago de un solo producto
             const data = {
-                nombre: nombre,
-                precio: parseFloat(precio), // Asegurarse de que el precio sea un número
+                cart: [{  // Simular un carrito con solo este producto
+                    name: nombre,
+                    price: precio,
+                    cantidad: 1  // Asumimos que la cantidad es 1
+                }],
+                total: precio.toFixed(2),
                 nota_especial: '' // Si tienes notas especiales, puedes incluirlas aquí
             };
 
@@ -973,7 +982,7 @@ function restaurarPedido(pedidoId) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}' // Añadir el token CSRF para seguridad
+                    'X-CSRFToken': csrfToken // Añadir el token CSRF para seguridad
                 },
                 body: JSON.stringify(data) // Convertir el objeto de datos a JSON
             })
@@ -984,6 +993,7 @@ function restaurarPedido(pedidoId) {
                     alert(data.error); // Mostrar un error si lo hay
                 } else {
                     alert('Compra realizada con éxito. Total: ' + data.total + '€. Tiempo estimado: ' + data.tiempo_estimado + ' minutos.');
+                    // Aquí podrías redirigir a la página de confirmación o vaciar el carrito, etc.
                 }
             })
             .catch(error => {
@@ -993,6 +1003,10 @@ function restaurarPedido(pedidoId) {
         });
     });
 }
+
+// Llamar a la función para configurar el pago de un solo producto
+setupPayment();
+
 
 
 // Llamar a la función para configurar el pago
