@@ -101,6 +101,7 @@ def registrarse(request):
             messages.error(request, 'Las contraseñas no coinciden.')
 
     return render(request, 'app/registro.html')
+
 def crear_usuario_oferta(email, password):
     user = User.objects.create_user(username=email, email=email, password=password)
     user.save()

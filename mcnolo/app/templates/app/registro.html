@@ -185,30 +185,30 @@
     </div>
 
     <script>
-        // Obtener referencias al checkbox, enlace, pop-up y botón
+        // Referencias al checkbox, enlace de términos, popup y botón de registrarse
         const checkbox = document.getElementById("miCheckbox");
         const linkLey = document.getElementById("linkLey");
         const popupLey = document.getElementById("popupLey");
         const cerrarPopupBtn = document.getElementById("cerrarPopup");
         const botonRegistrarse = document.getElementById("registrarseBtn");
-
-        // Abrir el pop-up al hacer clic en el enlace
+    
+        // Mostrar el pop-up al hacer clic en el enlace de términos y condiciones
         linkLey.addEventListener("click", function(event) {
-            event.preventDefault(); // Evitar el comportamiento predeterminado del enlace
-            popupLey.style.display = "flex"; // Mostrar el pop-up
+            event.preventDefault();  // Prevenir la acción predeterminada del enlace
+            popupLey.style.display = "flex";  // Mostrar el pop-up de términos y condiciones
         });
-
-        // Cerrar el pop-up y marcar el checkbox al hacer clic en "Aceptar la Política de Privacidad"
+    
+        // Cerrar el pop-up y habilitar el checkbox al aceptar los términos
         cerrarPopupBtn.addEventListener("click", function() {
-            popupLey.style.display = "none"; // Ocultar el pop-up
-            checkbox.checked = true; // Marcar el checkbox
-            botonRegistrarse.disabled = false; // Habilitar el botón de registrarse
+            popupLey.style.display = "none";  // Ocultar el pop-up
+            checkbox.checked = true;  // Marcar el checkbox
+            botonRegistrarse.disabled = false;  // Habilitar el botón de registrarse
         });
-
-        // Evitar que el checkbox sea desmarcado manualmente
+    
+        // Prevenir que el usuario desmarque el checkbox manualmente
         checkbox.addEventListener("click", function(event) {
-            event.preventDefault(); // Evitar que el usuario pueda desmarcar el checkbox manualmente
+            event.preventDefault();  // Evitar que el usuario desmarque el checkbox
         });
     </script>
-</body>
+    
 </html>
