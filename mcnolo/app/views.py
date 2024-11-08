@@ -189,45 +189,46 @@ def agregar_al_carrito(request, producto_id):
 
 
 
+
+
 @csrf_exempt
 def finalizar_compra(request):
     if request.method == 'POST':
         try:
-            # Leer el cuerpo de la solicitud que llega en formato JSON
             data = json.loads(request.body)
             cart = data.get('cart', [])
             total = data.get('total', 0)
             nota_especial = data.get('nota_especial', '')
 
-            # Verificar que el carrito no esté vacío
             if not cart:
                 return JsonResponse({'error': 'El carrito está vacío.'}, status=400)
 
-            # Si el usuario está autenticado, usar el usuario actual, si no, dejarlo vacío (para invitados)
             usuario = request.user if request.user.is_authenticated else None
+            print(f"Usuario autenticado: {usuario}")  # Mensaje de depuración
 
-            # Crear el pedido y almacenar en la base de datos
+            # Crear el pedido sin usuario si es un invitado
             pedido = Pedido.objects.create(usuario=usuario, total=total, nota_especial=nota_especial)
+            print(f"Pedido creado: {pedido}")  # Mensaje de depuración
 
-            # Inicializar tiempo total de preparación
             tiempo_total_preparacion = 0
 
-            # Guardar cada producto en el pedido y calcular el tiempo de preparación
             for item in cart:
                 producto = Producto.objects.get(nombre=item['name'])
                 ProductoPedido.objects.create(pedido=pedido, producto=producto, cantidad=item.get('cantidad', 1))
-                tiempo_total_preparacion += producto.tiempo_preparacion  # Sumar el tiempo de preparación
+                tiempo_total_preparacion += producto.tiempo_preparacion
 
-            # Devolver el total y el tiempo estimado de preparación
             return JsonResponse({
                 'total': total,
-                'tiempo_estimado': tiempo_total_preparacion  # Enviar el tiempo total de preparación
+                'tiempo_estimado_preparacion': tiempo_total_preparacion,
+                'mensaje': 'Pedido completado correctamente.'
             })
 
         except Exception as e:
+            print(f"Error durante la finalización de la compra: {e}")  # Mensaje de depuración
             return JsonResponse({'error': str(e)}, status=500)
 
     return JsonResponse({'error': 'Método no permitido.'}, status=405)
+
 
 
 def obtener_estado_pedido(request, pedido_id):
@@ -303,46 +304,41 @@ from django.contrib.auth.models import AnonymousUser
 def finalizar_compra(request):
     if request.method == 'POST':
         try:
-            # Leer el cuerpo de la solicitud que llega en formato JSON
             data = json.loads(request.body)
             cart = data.get('cart', [])
             total = data.get('total', 0)
             nota_especial = data.get('nota_especial', '')
 
-            # Verificar que el carrito no esté vacío
             if not cart:
                 return JsonResponse({'error': 'El carrito está vacío.'}, status=400)
 
-            # Si el usuario está autenticado, usa el usuario actual. Si no, usa un usuario invitado o anónimo
-            if request.user.is_authenticated:
-                usuario = request.user
-            else:
-                # Aquí puedes crear un usuario predeterminado para invitados o usar un campo como "Usuario Anónimo"
-                usuario = User.objects.get(username='invitado')  # Asegúrate de que existe un usuario con nombre 'invitado'
+            usuario = request.user if request.user.is_authenticated else None
+            print(f"Usuario autenticado: {usuario}")  # Mensaje de depuración
 
-            # Crear el pedido y almacenar en la base de datos
+            # Crear el pedido sin usuario si es un invitado
             pedido = Pedido.objects.create(usuario=usuario, total=total, nota_especial=nota_especial)
+            print(f"Pedido creado: {pedido}")  # Mensaje de depuración
 
-            # Inicializar tiempo total de preparación
             tiempo_total_preparacion = 0
 
-            # Guardar cada producto en el pedido y calcular el tiempo de preparación
             for item in cart:
-                producto = Producto.objects.get(nombre=item['name'])  # Obtener el producto por nombre
+                producto = Producto.objects.get(nombre=item['name'])
+                print(f"Producto encontrado: {producto}")  # Mensaje de depuración
                 ProductoPedido.objects.create(pedido=pedido, producto=producto, cantidad=item.get('cantidad', 1))
-                tiempo_total_preparacion += producto.tiempo_preparacion  # Sumar el tiempo de preparación
+                tiempo_total_preparacion += producto.tiempo_preparacion
 
-            # Devolver el total y el tiempo estimado de preparación
             return JsonResponse({
                 'total': total,
-                'tiempo_estimado': tiempo_total_preparacion  # Enviar el tiempo total de preparación
+                'tiempo_estimado_preparacion': tiempo_total_preparacion,
+                'mensaje': 'Pedido completado correctamente.'
             })
 
         except Exception as e:
+            print(f"Error durante la finalización de la compra: {e}")  # Mensaje de depuración detallada
             return JsonResponse({'error': str(e)}, status=500)
-    
-    # Si el método no es POST, devolver un error
+
     return JsonResponse({'error': 'Método no permitido.'}, status=405)
+
 
 
 def invitado(request):
