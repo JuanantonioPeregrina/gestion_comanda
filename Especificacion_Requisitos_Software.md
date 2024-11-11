@@ -13,7 +13,7 @@ Requisitos Funcionales
 •   El cliente podrá modificar el contenido de su carrito (añadir, eliminar o cambiar cantidades) antes de finalizar el pedido. Se comprobará realizando modificaciones en el carrito y revisando que se actualizan correctamente.
 5.  Confirmar el pedido sin registro
 •   Los clientes podrán confirmar y enviar su pedido sin estar registrados en la plataforma. La validación se hará comprobando que el pedido se envía a la cocina sin necesidad de iniciar sesión.
-6.  Notificación de pedido recibido
+6.  Notificación de pedido recibido cliente
 •   Al enviar un pedido a la cocina, el cliente recibirá una confirmación visual en la pantalla. Se comprobará que la notificación aparece correctamente tras hacer un pedido.
 7.  Seguimiento del estado del pedido
 •   El cliente podrá consultar el estado de su pedido en tiempo real (por ejemplo, en preparación o listo para recoger). Para validarlo, se verificarán los cambios de estado de los pedidos en la interfaz del cliente.
@@ -21,7 +21,7 @@ Requisitos Funcionales
 •   El sistema debe notificar al cliente cuando el pedido esté listo para entregar. Se probará simulando un pedido que pasa a estar listo y revisando que la notificación aparece en la pantalla del cliente.
 9.  Historial temporal de pedidos
 •   El cliente podrá ver un historial temporal de sus pedidos realizados durante la misma sesión, sin necesidad de estar registrado. Se validará realizando varios pedidos y revisando que el historial se mantiene mientras la sesión esté activa.
-10. Pago sin necesidad de cuenta
+10. Pago invitado
 •   Los usuarios podrán realizar el pago de su pedido utilizando diversas formas de pago (tarjeta de crédito/débito, por ejemplo) sin registrarse. Se probará completando un pago con un cliente no registrado y verificando que se procesa correctamente.
 11. Registro opcional para recibir ofertas o ver su historial.
 •   Los clientes tendrán la opción de registrarse para recibir promociones especiales o bien ver sus compras previas. Se verificará permitiendo a los usuarios registrarse y comprobar que reciben las promociones como corresponde.
@@ -29,7 +29,7 @@ Requisitos Funcionales
 •   El personal de cocina o administración podrá crear, modificar y eliminar ofertas y descuentos especiales. Se validará añadiendo una oferta y comprobando que se muestra correctamente en la interfaz del cliente.
 13. Aplicación automática de descuentos
 •   Si el cliente tiene derecho a una oferta o descuento, estos deben aplicarse automáticamente al total de su pedido. Se comprobará realizando pedidos con descuentos activos y validando que el sistema los aplica correctamente.
-14. Selección de métodos de pago
+14. pago cliente
 •   El cliente podrá elegir entre diferentes métodos de pago disponibles, como tarjetas de crédito, débito o plataformas de pago online. Se validará seleccionando varios métodos de pago y verificando que todos funcionan correctamente.
 15. Generación de factura digital
 •   Tras completar el pedido, el sistema debe generar y enviar una factura digital al cliente si lo desea. Se probará haciendo un pedido y verificando que la factura llega al correo electrónico del cliente.
@@ -78,8 +78,8 @@ Requisitos No Funcionales
 32. Temporizador de pedidos en cocina
 •   La cocina debe ver un temporizador que muestre cuánto tiempo lleva cada pedido en preparación. Se validará haciendo varios pedidos y verificando que el temporizador se actualiza correctamente en la interfaz de la cocina.
 
-33. Confirmación de pedidos por email registrado
-•   Los clientes registrados deben poder recibir una confirmación de su pedido por email. Se validará haciendo un pedido desde una cuenta registrada y comprobando que el SMS de confirmación llega correctamente al número asociado.
+33. Confirmación de pedidos por email o SMS registrado
+•   Los clientes registrados deben poder recibir una confirmación de su pedido por email/SMS. Se validará haciendo un pedido desde una cuenta registrada y comprobando que el SMS de confirmación llega correctamente al número asociado.
 34. Revisión del pedido antes de la confirmación
 •   El cliente podrá revisar todos los detalles de su pedido (platos, personalización, precios) antes de confirmar la compra. Se probará haciendo un pedido y verificando que la pantalla de confirmación muestra toda la información correctamente.
 
@@ -102,8 +102,8 @@ El sistema debe alertar al cliente sobre alérgenos presentes en los platos sele
 41. Autocompletado de datos de usuario registrado
 Los usuarios registrados deben ver sus datos de contacto y pago autocompletados al realizar un pedido. Se probará verificando que los datos se llenan automáticamente en un pedido.
 
-42. Filtrado de platos por dietas especiales
-Los clientes podrán filtrar el menú según dietas especiales como vegana, vegetariana o sin gluten. Se validará haciendo búsquedas en el menú y verificando que se muestra el filtro correcto.
+42. Filtrador de productos en menú.
+Los clientes podrán filtrar el menú con  botones según dietas especiales como vegana, vegetariana o sin gluten, precios(rango), . Se validará haciendo búsquedas en el menú y verificando que se muestra el filtro correcto.
 43. Visualización de platos más pedidos
 El sistema mostrará los platos más solicitados en un restaurante. Se validará haciendo varios pedidos y comprobando que los platos populares se actualizan correctamente.
 
@@ -195,7 +195,7 @@ El cliente podrá hacer pedidos de bebidas independientemente de los platos prin
     Verificar que cada pedido se guarda correctamente con su detalle en la base de datos.
 
 67. **Notificación de pedido realizado** 
-    Tras completar el pedido, el usuario debe recibir una notificación visual indicando que el pedido ha sido procesado con éxito. 
+    Tras completar el pedido, el cliente y el invitado debe recibir una notificación visual indicando que el pedido ha sido procesado con éxito. 
     Comprobar que el sistema muestra la notificación una vez el pedido ha sido registrado.
 
 68. **Manejo de errores en el proceso de pedido** 
@@ -214,4 +214,22 @@ El cliente podrá hacer pedidos de bebidas independientemente de los platos prin
     Al registrarse un usuario, su sesión debe mantenerse activa de forma persistente. Al apagar la máquina y volver a iniciar el programa, la sesión debe seguir en pie. 
     Verificar que la sesión del usuario se mantiene activa después de apagar y reiniciar la máquina.
 
+72. **Clasificar por categorías** 
+ La página principal debe tener menu y carta, con su primero,segundo y postre, por otro lado, entrantes, primero,segundo y postre, respectivamente
+
+73. **Añadir función registrarse desde Invitado** 
+ Añadir boton registrarse para el invitado desde su interfaz alladodelboton azul, y al pinchar en iniciar sesion que te ponga ahi crear cuenta también. Debe verse visualmente y funcionar al pinchar que te redirije a la ventana correspondiente.
+
+ 74.  **Notificación de pedido recibido invitado**
+•   Al enviar un pedido a la cocina, el invitado recibirá una confirmación visual en la pantalla. Se comprobará que la notificación aparece correctamente tras hacer un pedido.
+
+ 75.  **Al registrarse recibir un email**
+ Al registrarse un cliente debe llegarle un email a través de su servidor de correo. 
+
+ 76. **El sistema debe soportar 5 usuarios al momento**
+ Comprobar que tiene la capacidad de soportar clientes en paralelo y realizar funciones sin que se caiga.
+
+ 77. **Formulario de login con olvidaste clave** 
+    La pantalla de login debe mostrar un formulario donde el usuario pueda recuperar su nombre de usuario y contraseña. 
+    Comprobar que el formulario recoge correctamente los datos y valida las credenciales nuevas del usuario,verificando desde email.
 
