@@ -2,7 +2,7 @@
 
 La comanda que le manda un cliente a cocina directamente, desde una app o página web.
 
-## despliegue inicial
+## despliegue inicial de desarrollador
 pip install django
 pip install channels_redis
 .\env\Scripts\activate
