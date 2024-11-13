@@ -502,6 +502,29 @@
             background-color: #c82333;
             transform: scale(1.05);
         }
+        /* Estilo para botones de autenticación */
+.btn.login {
+    background-color: #007bff; /* Azul intenso */
+    color: white;
+    padding: 10px 20px;
+    margin: 10px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    text-decoration: none;
+    display: inline-block;
+    transition: background-color 0.3s, transform 0.3s;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra ligera */
+    border: none; /* Sin borde */
+}
+
+.btn.login:hover {
+    background-color: #0056b3; /* Azul más oscuro */
+    transform: translateY(-3px); /* Efecto de elevación */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Mayor sombra en hover */
+}
+
         
     </style>
 </head>
@@ -536,6 +559,7 @@
             </form>
         {% else %}
             <a href="{% url 'inicio_sesion' %}" class="btn login">Iniciar sesión</a>
+            <a href="{% url 'registrarse' %}"  class= "btn login"> Registrarse</a>
         {% endif %}
     </div>
     
