@@ -845,6 +845,33 @@ document.getElementById('checkout-btn').addEventListener('click', (event) => {
 
     const notaEspecial = document.getElementById('nota_especial').value;
 
+    //String factura--------------------------------------------------------------------
+    const total = parseFloat(totalPriceElement.textContent).toFixed(2);
+    const nombreUsuario = "{{ user.first_name }} {{ user.last_name }}";   //|| "Cliente";  // "Cliente" como predeterminado si está vacío
+
+    // Crear el string de la factura
+    
+    let facturaString = `¡GRACIAS POR CONFIAR EN MCNOLO!\nEstimado ${nombreUsuario} \nLe adjuntamos la factura de su compra\n\n`;
+    facturaString += "Productos:\n";
+
+    cart.forEach(item => {
+        facturaString += `- ${item.name}: ${item.price.toFixed(2)}€\n`;
+    });
+
+    facturaString += `\nTotal: ${total}€\n`;
+    if (notaEspecial) {
+        facturaString += `\nNota Especial: ${notaEspecial}\n`;
+    }
+    facturaString += "\nGracias por su compra!";
+
+    // Mostrar el string de la factura en un pop-up para revisión
+    alert(facturaString);
+
+    // Habilitar de nuevo el botón después de revisar
+    checkoutBtn.disabled = false
+
+    //----------------
+
     fetch("{% url 'finalizar_compra' %}", {
         method: "POST",
         headers: {
@@ -857,6 +884,7 @@ document.getElementById('checkout-btn').addEventListener('click', (event) => {
             nota_especial: notaEspecial
         })
     })
+    
     .then(response => response.json())
     .then(data => {
         if (data.mensaje) {

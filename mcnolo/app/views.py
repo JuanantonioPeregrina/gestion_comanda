@@ -204,28 +204,58 @@ def finalizar_compra(request):
             if not cart:
                 return JsonResponse({'error': 'El carrito está vacío.'}, status=400)
 
+            # Obtener el usuario autenticado o usar None si es un invitado
             usuario = request.user if request.user.is_authenticated else None
-            print(f"Usuario autenticado: {usuario}")  # Mensaje de depuración
+            email_usuario = usuario.email if usuario else None  # Obtener el email del usuario si está autenticado
 
-            # Crear el pedido sin usuario si es un invitado
+            # Crear el pedido en la base de datos
             pedido = Pedido.objects.create(usuario=usuario, total=total, nota_especial=nota_especial)
-            print(f"Pedido creado: {pedido}")  # Mensaje de depuración
 
             tiempo_total_preparacion = 0
+            factura_string = f"Factura de Compra\n\nCliente: {usuario.get_full_name() if usuario else 'Invitado'}\n\nProductos:\n"
 
+            # Construir el detalle de la factura
             for item in cart:
                 producto = Producto.objects.get(nombre=item['name'])
-                ProductoPedido.objects.create(pedido=pedido, producto=producto, cantidad=item.get('cantidad', 1))
+                cantidad = item.get('cantidad', 1)
+                ProductoPedido.objects.create(pedido=pedido, producto=producto, cantidad=cantidad)
                 tiempo_total_preparacion += producto.tiempo_preparacion
+                factura_string += f"- {producto.nombre}: {producto.precio}€ x {cantidad} unidades\n"
 
+            factura_string += f"\nTotal: {total}€\n"
+            if nota_especial:
+                factura_string += f"\nNota Especial: {nota_especial}\n"
+            factura_string += "\nGracias por su compra!"
+
+            # Intentar enviar el correo
+            if email_usuario:
+                print("hola")
+                try:
+                    send_mail(
+                        'Factura de su compra',
+                        factura_string,
+                        'no-reply@tuapp.com',  # Cambia esto por tu dirección de correo configurada
+                        [email_usuario],
+                        fail_silently=False,
+                    )
+                    email_status = 'Correo enviado con éxito.'
+
+                except (BadHeaderError, SMTPException) as e:
+                    email_status = f'Error al enviar el correo: {e}'
+
+            else:
+                email_status = 'No se pudo enviar el correo: usuario sin dirección de correo.'
+
+            # Responder con éxito y detalles del pedido
             return JsonResponse({
                 'total': total,
                 'tiempo_estimado_preparacion': tiempo_total_preparacion,
-                'mensaje': 'Pedido completado correctamente.'
+                'mensaje': 'Pedido completado correctamente.',
+                'email_status': email_status
             })
 
         except Exception as e:
-            print(f"Error durante la finalización de la compra: {e}")  # Mensaje de depuración
+            print(f"Error durante la finalización de la compra: {e}")
             return JsonResponse({'error': str(e)}, status=500)
 
     return JsonResponse({'error': 'Método no permitido.'}, status=405)
@@ -301,6 +331,7 @@ def change_image(request):
 
 from django.contrib.auth.models import AnonymousUser
 
+""""
 @csrf_exempt
 def finalizar_compra(request):
     if request.method == 'POST':
@@ -332,6 +363,7 @@ def finalizar_compra(request):
                 'total': total,
                 'tiempo_estimado_preparacion': tiempo_total_preparacion,
                 'mensaje': 'Pedido completado correctamente.'
+                'email_status': email_status
             })
 
         except Exception as e:
@@ -340,7 +372,7 @@ def finalizar_compra(request):
 
     return JsonResponse({'error': 'Método no permitido.'}, status=405)
 
-
+"""
 
 def invitado(request):
      # Configura una variable en la sesión para identificar que es un "invitado"
