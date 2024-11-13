@@ -524,6 +524,30 @@
     transform: translateY(-3px); /* Efecto de elevación */
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Mayor sombra en hover */
 }
+.tip-section {
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+.tip-section input {
+    padding: 5px;
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+.tip-section button {
+    padding: 5px 10px;
+    background-color:#ff6b6b;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.tip-section button:hover {
+    background-color: #c82333;
+}
+
 
         
     </style>
@@ -688,6 +712,12 @@
         <input type="text" id="oferta" name="codigo">
         <button type="submit" class="btn">Aplicar Oferta</button><br><br>
     </form>
+    <!-- Propina -->
+<div class="tip-section">
+    <label for="tip-amount">Propina:</label>
+    <input type="number" id="tip-amount" placeholder="Ingrese la cantidad" step="0.01">
+    <button id="apply-tip" class="btn">Aplicar Propina</button>
+</div>
     <!-- Formulario para finalizar la compra -->
     <form method="POST" action="{% url 'finalizar_compra' %}">
         {% csrf_token %}
@@ -1011,6 +1041,33 @@ function restaurarPedido(pedidoId) {
             console.log('WebSocket cerrado.');
         };
     }
+    // Obtener elementos de la propina
+const tipAmountInput = document.getElementById('tip-amount');
+const applyTipButton = document.getElementById('apply-tip');
+
+// Función para aplicar la propina
+applyTipButton.addEventListener('click', () => {
+    const tipAmount = parseFloat(tipAmountInput.value);
+
+    // Verificar si el valor ingresado es válido
+    if (isNaN(tipAmount) || tipAmount < 0) {
+        alert('Por favor ingrese una cantidad válida para la propina.');
+    } else {
+        // Mostrar la propina en un alert
+        alert(`La propina es: ${tipAmount.toFixed(2)}€`);
+
+        // Actualizar el carrito con la nueva cantidad total
+        const totalPriceElement = document.getElementById('total-price');
+        let totalPrice = parseFloat(totalPriceElement.textContent);
+        
+        // Sumar la propina al total
+        totalPrice += tipAmount;
+
+        // Actualizar el precio total con la propina
+        totalPriceElement.textContent = totalPrice.toFixed(2);
+    }
+});
+
    
 </script>
 
