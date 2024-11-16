@@ -200,70 +200,42 @@ def finalizar_compra(request):
         if not cart:
             return JsonResponse({'error': 'El carrito está vacío.'}, status=400)
 
-        # Determinar si es usuario autenticado o invitado
-        if request.user.is_authenticated:
-            usuario = request.user
-            invitado_id = None
-        else:
-            usuario = None
-            invitado_id = request.session.get('invitado_id', str(uuid.uuid4()))
-            request.session['invitado_id'] = invitado_id
-
         # Crear el pedido
         pedido = Pedido.objects.create(
-            usuario=usuario,
+            usuario=request.user if request.user.is_authenticated else None,
             total=total,
-            nota_especial=nota_especial
+            nota_especial=nota_especial,
         )
 
-        # Inicializar tiempo total de preparación y productos en la factura
-        tiempo_total_preparacion = 0
-        productos_factura = []
-
+        # Guardar productos del pedido
         for item in cart:
             producto = Producto.objects.get(nombre=item['name'])
-            ProductoPedido.objects.create(pedido=pedido, producto=producto, cantidad=item.get('cantidad', 1))
-            tiempo_total_preparacion += producto.tiempo_preparacion
-            productos_factura.append(f"- {producto.nombre}: {producto.precio}€")
+            ProductoPedido.objects.create(pedido=pedido, producto=producto, cantidad=1)
 
-        # Crear la factura como texto
-        factura = f"""
-        ¡GRACIAS POR CONFIAR EN MCNOLO!
-        Estimado cliente,
-        Le adjuntamos la factura de su compra:
-
-        Productos:
-        {chr(10).join(productos_factura)}
-
-        Total: {total}€
-        Nota Especial: {nota_especial if nota_especial else "N/A"}
-
-        Tiempo estimado de preparación: {tiempo_total_preparacion} minutos.
-
-        ¡Gracias por su compra!
-        """
-
-        # Notificar al usuario si es invitado
-        if not usuario and invitado_id:
-            channel_layer = get_channel_layer()
-            async_to_sync(channel_layer.group_send)(
-                f'invitado_{invitado_id}',
-                {
-                    'type': 'pedido_listo',
-                    'message': f'Tu pedido {pedido.id} está listo para ser entregado.'
-                }
+        # Crear sesión de pago en Stripe
+        try:
+            session = stripe.checkout.Session.create(
+                payment_method_types=['card'],
+                line_items=[
+                    {
+                        'price_data': {
+                            'currency': 'eur',
+                            'product_data': {'name': item['name']},
+                            'unit_amount': int(float(item['price']) * 100),
+                        },
+                        'quantity': 1,  # Asume que siempre es 1 por simplicidad
+                    }
+                    for item in cart
+                ],
+                mode='payment',
+                success_url='http://127.0.0.1:8000/success/',
+                cancel_url='http://127.0.0.1:8000/cancel/',
             )
-
-        return JsonResponse({
-            'mensaje': 'Compra finalizada. Gracias por su pedido.',
-            'factura': factura,
-            'pedido_id': pedido.id,
-            'total': total,
-            'tiempo_estimado': tiempo_total_preparacion
-        })
+            return JsonResponse({'url': session.url})  # Devuelve la URL de Stripe
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
 
     return JsonResponse({'error': 'Método no permitido.'}, status=405)
-
 
 
 
@@ -343,3 +315,77 @@ def invitado(request):
     if 'invitado_id' not in request.session:
         request.session['invitado_id'] = str(uuid.uuid4())
     return redirect('pagina_principal')
+
+import stripe
+from django.conf import settings
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
+
+# Configura tu clave secreta de Stripe
+stripe.api_key = "TU_CLAVE_SECRETA_DE_STRIPE"
+
+def procesar_pago(request):
+    if request.method == "POST":
+        # Obtener detalles del pedido
+        total = request.POST.get("total")
+        try:
+            # Crear el Intento de Pago (PaymentIntent)
+            intent = stripe.PaymentIntent.create(
+                amount=int(float(total) * 100),  # El total en centavos
+                currency="eur",  # Moneda
+                payment_method_types=["card"],  # Métodos de pago disponibles
+            )
+            # Retornar el ID del Intento de Pago a la plantilla
+            return JsonResponse({"clientSecret": intent["client_secret"]})
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+    return render(request, "app/procesar_pago.html")
+
+from django.http import JsonResponse
+import stripe
+
+
+stripe.api_key = settings.STRIPE_SECRET_KEY  # Usar la clave secreta
+@csrf_exempt 
+def crear_sesion_pago(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        cart = data.get('cart', [])
+        total = data.get('total', 0)
+
+        if not cart:
+            return JsonResponse({'error': 'El carrito está vacío.'}, status=400)
+
+        try:
+            # Crear la sesión de pago en Stripe
+            session = stripe.checkout.Session.create(
+                payment_method_types=['card'],
+                line_items=[
+                    {
+                        'price_data': {
+                            'currency': 'eur',
+                            'product_data': {'name': item['name']},
+                            'unit_amount': int(item['price'] * 100),
+                        },
+                        'quantity': item['cantidad'],
+                    }
+                    for item in cart
+                ],
+                mode='payment',
+                success_url='http://127.0.0.1:8000/success/',
+                cancel_url='http://127.0.0.1:8000/cancel/',
+            )
+
+            return JsonResponse({'url': session.url})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    return JsonResponse({'error': 'Método no permitido.'}, status=405)
+
+
+
+def payment_success(request):
+    return render(request, 'app/success.html')
+
+def payment_cancel(request):
+    return render(request, 'app/cancel.html')

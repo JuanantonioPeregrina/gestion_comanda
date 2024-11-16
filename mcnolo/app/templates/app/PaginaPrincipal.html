@@ -737,6 +737,8 @@
     <p id="notification-message"></p>
 </div>
 
+
+
 <script>
 const anadir_boton = document.querySelector('.anadir-plato-boton');
 const anadir_form = document.getElementById('anadir-plato-form');
@@ -871,27 +873,20 @@ document.getElementById('checkout-btn').addEventListener('click', (event) => {
     })
     .then(response => response.json())
     .then(data => {
-        if (data.mensaje) {
-            // Mostrar la factura en un pop-up o modal
-            alert(data.factura); // La factura se encuentra en el campo "factura"
-            clearCart(); // Vaciar el carrito después de la compra
-             // Conectar al WebSocket dinámicamente con el nuevo pedido
-        const nuevoPedidoId = data.pedido_id; // Asegúrate de que la API envíe este ID
-
-        conectarWebSocket(nuevoPedidoId);
+        if (data.url) {
+            // Redirige a la pasarela de pago de Stripe
+            window.location.href = data.url;
         } else if (data.error) {
-            alert(data.error); // Mostrar errores
+            alert(data.error);
         }
     })
     .catch(error => {
         console.error('Error:', error);
     })
     .finally(() => {
-        checkoutBtn.disabled = false; // Rehabilita el botón
+        checkoutBtn.disabled = false;
     });
 });
-
-
 
 
 
@@ -907,26 +902,25 @@ function setupPayment() {
                 { name: name, price: price, cantidad: 1 }
             ];
 
-            fetch("{% url 'finalizar_compra' %}", {
+            fetch("{% url 'crear_sesion_pago' %}", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': csrfToken
                 },
                 body: JSON.stringify({
-                    cart: singleItemCart,
-                    total: price.toFixed(2),
-                    nota_especial: ''
+                    cart: singleItemCart, // Producto seleccionado
+                    total: price.toFixed(2), // Precio del producto
+                    nota_especial: '' // Sin notas especiales
                 })
             })
             .then(response => response.json())
             .then(data => {
-                if (data.error) {
+                if (data.url) {
+                    // Redirigir a la pasarela de pago de Stripe
+                    window.location.href = data.url;
+                } else if (data.error) {
                     alert(data.error);
-                } else {
-                    alert(data.factura);
-                    clearCart();
-                    conectarWebSocket(data.pedido_id);
                 }
             })
             .catch(error => {
@@ -936,6 +930,7 @@ function setupPayment() {
         });
     });
 }
+
 
 
 
