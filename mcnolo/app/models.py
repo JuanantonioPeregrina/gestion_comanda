@@ -36,13 +36,23 @@ class Pedido(models.Model):
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     estado = models.CharField(max_length=20, choices=ESTADOS, default='en_espera')  # Estado del pedido
     nota_especial = models.TextField(blank=True, null=True)  # Campo para notas especiales
-    
+    invitado_id = models.CharField(max_length=36, null=True, blank=True)  # Identificador para invitados
+
     def save(self, *args, **kwargs):
-        if self.pk:
+        if self.pk is not None:  # Asegurarse de que el pedido ya existe
             previous = Pedido.objects.get(pk=self.pk)
+
+            # Si el estado cambió a "listo", notificar
             if previous.estado != self.estado and self.estado == 'listo':
                 channel_layer = get_channel_layer()
-                group_name = f'pedido_{self.id}' if self.usuario else f'invitado_{self.invitado_id}'
+                
+                if self.usuario:
+                    # Notificar al grupo de usuarios autenticados
+                    group_name = f'pedido_{self.id}'
+                else:
+                    # Notificar al grupo de invitados
+                    group_name = f'invitado_{self.id}'
+
                 async_to_sync(channel_layer.group_send)(
                     group_name,
                     {
@@ -52,14 +62,6 @@ class Pedido(models.Model):
                 )
         super().save(*args, **kwargs)
 
-
-
-
-    def __str__(self):
-        if self.usuario:
-            return f'Pedido {self.id} - {self.usuario.email}'
-        else:
-            return f'Pedido {self.id} - Invitado'
 
 
 class ProductoPedido(models.Model):

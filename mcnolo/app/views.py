@@ -155,15 +155,15 @@ def cambiar_visibilidad_producto(request, producto_id):
 
 
 def pedido_listo(request, pedido_id):
-    # Lógica para marcar el pedido como listo
     pedido = get_object_or_404(Pedido, id=pedido_id)
     pedido.estado = 'listo'
     pedido.save()
 
-    # Notificar al cliente vía WebSocket
     channel_layer = get_channel_layer()
+    group_name = f'pedido_{pedido.id}' if pedido.usuario else f'invitado_{pedido.invitado_id}'
+
     async_to_sync(channel_layer.group_send)(
-        f'pedido_{pedido_id}',
+        group_name,
         {
             'type': 'pedido_listo',
             'message': 'Tu pedido está listo para recoger.'
