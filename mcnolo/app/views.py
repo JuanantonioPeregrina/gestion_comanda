@@ -235,11 +235,13 @@ def finalizar_compra(request):
         return JsonResponse({
             'mensaje': 'Compra finalizada. Gracias por su pedido.',
             'factura': factura,
+            'pedido_id': pedido.id,  # Incluir el ID del pedido
             'total': total,
             'tiempo_estimado': tiempo_total_preparacion
         })
 
     return JsonResponse({'error': 'Método no permitido.'}, status=405)
+
 
 
 
