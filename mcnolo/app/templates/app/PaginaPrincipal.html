@@ -875,6 +875,10 @@ document.getElementById('checkout-btn').addEventListener('click', (event) => {
             // Mostrar la factura en un pop-up o modal
             alert(data.factura); // La factura se encuentra en el campo "factura"
             clearCart(); // Vaciar el carrito después de la compra
+             // Conectar al WebSocket dinámicamente con el nuevo pedido
+        const nuevoPedidoId = data.pedido_id; // Asegúrate de que la API envíe este ID
+
+        conectarWebSocket(nuevoPedidoId);
         } else if (data.error) {
             alert(data.error); // Mostrar errores
         }
@@ -925,6 +929,9 @@ function setupPayment() {
 
                     // Vaciar el carrito (aunque aquí es solo un producto)
                     clearCart();
+                     // Conectar al WebSocket dinámicamente con el nuevo pedido
+            const nuevoPedidoId = data.pedido_id; // ID retornado por la API
+            conectarWebSocket(nuevoPedidoId);
 
                     // Mensaje de éxito
                    // alert('Compra realizada con éxito. Total: ' + data.total + '€. Tiempo estimado: ' + data.tiempo_estimado + ' minutos.');
@@ -1039,36 +1046,39 @@ function restaurarPedido(pedidoId) {
    // Conexión WebSocket
    const pedidoId = "{{ pedido.id }}";  // Inyectar el ID del pedido desde Django
 
-if (pedidoId) {
+   function conectarWebSocket(pedidoId) {
+    if (!pedidoId) {
+        console.error("No se puede conectar al WebSocket: pedidoId no proporcionado.");
+        return;
+    }
+
     const ws = new WebSocket('ws://' + window.location.host + '/ws/pedido/' + pedidoId + '/');
 
     ws.onmessage = function(event) {
         const data = JSON.parse(event.data);
-        console.log("Mensaje recibido:", data);  // Asegúrate de que ves esto en la consola
+        console.log("Mensaje recibido:", data);
 
-    // Mostrar el mensaje en la notificación
-    const notification = document.getElementById('notification');
-    const messageElement = document.getElementById('notification-message');
-    messageElement.textContent = data.message;  // El mensaje recibido por WebSocket
+        // Mostrar la notificación
+        const notification = document.getElementById('notification');
+        const messageElement = document.getElementById('notification-message');
+        messageElement.textContent = data.message;
+        notification.classList.add('show-notification');
 
-    // Mostrar la notificación y aplicar la clase de animación
-    notification.classList.add('show-notification');
+        // Ocultar después de 10 segundos
+        setTimeout(() => {
+            notification.classList.remove('show-notification');
+        }, 10000);
+    };
 
-    // Ocultar la notificación después de unos segundos
-    setTimeout(() => {
-        notification.classList.remove('show-notification');
-    }, 10000);  // Ocultar después de 5 segundos
-};
+    ws.onerror = function(event) {
+        console.error("WebSocket error observado:", event);
+    };
 
+    ws.onclose = function(event) {
+        console.log('WebSocket cerrado.');
+    };
+}
 
-        ws.onerror = function(event) {
-            console.error("WebSocket error observed:", event);
-        };
-
-        ws.onclose = function(event) {
-            console.log('WebSocket cerrado.');
-        };
-    }
 
     // Obtener elementos de la propina
 const tipAmountInput = document.getElementById('tip-amount');
