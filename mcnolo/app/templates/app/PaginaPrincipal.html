@@ -655,7 +655,7 @@
                             </button>
     
                             <!-- Botón Pagar Ya -->
-                            <button class="pagar-ya" data-name="{{ producto.nombre }}" data-price="{{ producto.precio|floatformat:2 }}">
+                            <button class="pagar-ya" id="pagar-ya-btn" data-name="{{ producto.nombre }}" data-price="{{ producto.precio|floatformat:2 }}">
                                 Pagar Ya
                             </button>
                         {% endif %}
@@ -830,13 +830,23 @@ function getCookie(name) {
     return cookieValue;
 }
 
+function clearCart() {
+    // Vacía el array del carrito
+    cart.length = 0;
+
+    // Actualiza la interfaz del carrito en el DOM
+    cartItemsContainer.innerHTML = ''; // Limpia la lista del carrito
+    totalPriceElement.textContent = "0.00"; // Reinicia el precio total
+}
+
 const csrftoken = getCookie('csrftoken');
+
 
 document.getElementById('checkout-btn').addEventListener('click', (event) => {
     event.preventDefault();
 
     const checkoutBtn = document.getElementById('checkout-btn');
-    if (checkoutBtn.disabled) return;  // Evita múltiples envíos
+    if (checkoutBtn.disabled) return; // Evita múltiples envíos
     checkoutBtn.disabled = true;
 
     if (cart.length === 0) {
@@ -846,33 +856,6 @@ document.getElementById('checkout-btn').addEventListener('click', (event) => {
     }
 
     const notaEspecial = document.getElementById('nota_especial').value;
-
-    //String factura--------------------------------------------------------------------
-    const total = parseFloat(totalPriceElement.textContent).toFixed(2);
-    const nombreUsuario = "{{ user.first_name }} {{ user.last_name }}";   //|| "Cliente";  // "Cliente" como predeterminado si está vacío
-
-    // Crear el string de la factura
-    
-    let facturaString = `¡GRACIAS POR CONFIAR EN MCNOLO!\nEstimado ${nombreUsuario} \nLe adjuntamos la factura de su compra\n\n`;
-    facturaString += "Productos:\n";
-
-    cart.forEach(item => {
-        facturaString += `- ${item.name}: ${item.price.toFixed(2)}€\n`;
-    });
-
-    facturaString += `\nTotal: ${total}€\n`;
-    if (notaEspecial) {
-        facturaString += `\nNota Especial: ${notaEspecial}\n`;
-    }
-    facturaString += "\nGracias por su compra!";
-
-    // Mostrar el string de la factura en un pop-up para revisión
-    alert(facturaString);
-
-    // Habilitar de nuevo el botón después de revisar
-    checkoutBtn.disabled = false
-
-    //----------------
 
     fetch("{% url 'finalizar_compra' %}", {
         method: "POST",
@@ -886,24 +869,28 @@ document.getElementById('checkout-btn').addEventListener('click', (event) => {
             nota_especial: notaEspecial
         })
     })
-    
     .then(response => response.json())
     .then(data => {
         if (data.mensaje) {
-            alert(data.mensaje);
-            cart.length = 0;
-            updateCart();
+            // Mostrar la factura en un pop-up o modal
+            alert(data.factura); // La factura se encuentra en el campo "factura"
+            clearCart(); // Vaciar el carrito después de la compra
         } else if (data.error) {
-            alert(data.error);
+            alert(data.error); // Mostrar errores
         }
     })
     .catch(error => {
         console.error('Error:', error);
     })
     .finally(() => {
-        checkoutBtn.disabled = false;
+        checkoutBtn.disabled = false; // Rehabilita el botón
     });
 });
+
+
+
+
+
 function setupPayment() {
         document.querySelectorAll('.pagar-ya').forEach(button => {
             button.addEventListener('click', function() {
@@ -1036,34 +1023,29 @@ function restaurarPedido(pedidoId) {
 
 
 
-
-
    // Conexión WebSocket
    const pedidoId = "{{ pedido.id }}";  // Inyectar el ID del pedido desde Django
 
-    if (pedidoId) {
-        const ws = new WebSocket('ws://' + window.location.host + '/ws/pedido/' + pedidoId + '/');
-        ws.onopen = function () {
-        console.log("WebSocket conectado");
+if (pedidoId) {
+    const ws = new WebSocket('ws://' + window.location.host + '/ws/pedido/' + pedidoId + '/');
+
+    ws.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        console.log("Mensaje recibido:", data);  // Asegúrate de que ves esto en la consola
+
+    // Mostrar el mensaje en la notificación
+    const notification = document.getElementById('notification');
+    const messageElement = document.getElementById('notification-message');
+    messageElement.textContent = data.message;  // El mensaje recibido por WebSocket
+
+    // Mostrar la notificación y aplicar la clase de animación
+    notification.classList.add('show-notification');
+
+    // Ocultar la notificación después de unos segundos
+    setTimeout(() => {
+        notification.classList.remove('show-notification');
+    }, 10000);  // Ocultar después de 5 segundos
 };
-
-        ws.onmessage = function(event) {
-            const data = JSON.parse(event.data);
-            console.log("Mensaje recibido:", data);  // Asegúrate de que ves esto en la consola
-
-        // Mostrar el mensaje en la notificación
-        const notification = document.getElementById('notification');
-        const messageElement = document.getElementById('notification-message');
-        messageElement.textContent = data.message;  // El mensaje recibido por WebSocket
-
-        // Mostrar la notificación y aplicar la clase de animación
-        notification.classList.add('show-notification');
-
-        // Ocultar la notificación después de unos segundos
-        setTimeout(() => {
-            notification.classList.remove('show-notification');
-        }, 10000);  // Ocultar después de 5 segundos
-        };
 
 
         ws.onerror = function(event) {
@@ -1074,6 +1056,7 @@ function restaurarPedido(pedidoId) {
             console.log('WebSocket cerrado.');
         };
     }
+
     // Obtener elementos de la propina
 const tipAmountInput = document.getElementById('tip-amount');
 const applyTipButton = document.getElementById('apply-tip');

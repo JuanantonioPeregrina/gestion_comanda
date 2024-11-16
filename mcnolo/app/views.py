@@ -191,88 +191,56 @@ def agregar_al_carrito(request, producto_id):
 @csrf_exempt
 def finalizar_compra(request):
     if request.method == 'POST':
-        try:
-            # Leer el cuerpo de la solicitud que llega en formato JSON
-            data = json.loads(request.body)
-            cart = data.get('cart', [])
-            total = data.get('total', 0)
-            nota_especial = data.get('nota_especial', '')
+        data = json.loads(request.body)
+        cart = data.get('cart', [])
+        total = data.get('total', 0)
+        nota_especial = data.get('nota_especial', '')
 
-            # Verificar que el carrito tenga productos
-            if not cart:
-                return JsonResponse({'error': 'El carrito está vacío.'}, status=400)
+        if not cart:
+            return JsonResponse({'error': 'El carrito está vacío.'}, status=400)
 
-            # Obtener el usuario autenticado o configurarlo como None si es un invitado
-            usuario = request.user if request.user.is_authenticated else None
-            email_usuario = usuario.email if usuario else None  # Obtener el email del usuario si está autenticado
+        # Crear el pedido
+        pedido = Pedido.objects.create(usuario=request.user, total=total, nota_especial=nota_especial)
 
-            # Crear el pedido en la base de datos
-            pedido = Pedido.objects.create(usuario=usuario, total=total, nota_especial=nota_especial)
-            tiempo_total_preparacion = 0
+        # Inicializar tiempo total de preparación
+        tiempo_total_preparacion = 0
+        productos_factura = []  # Lista para los productos en la factura
 
-            # Construir el detalle de la factura
-            factura_string = f"Factura de Compra\n\nCliente: {usuario.get_full_name() if usuario else 'Invitado'}\n\nProductos:\n"
-            for item in cart:
-                # Obtener el producto y su cantidad
-                producto = Producto.objects.get(nombre=item['name'])
-                cantidad = item.get('cantidad', 1)
+        # Guardar productos del pedido y calcular el tiempo de preparación
+        for item in cart:
+            producto = Producto.objects.get(nombre=item['name'])
+            ProductoPedido.objects.create(pedido=pedido, producto=producto, cantidad=1)
+            tiempo_total_preparacion += producto.tiempo_preparacion
+            productos_factura.append(f"- {producto.nombre}: {producto.precio}€")  # Añadir producto a la factura
 
-                # Registrar el producto en el pedido
-                ProductoPedido.objects.create(pedido=pedido, producto=producto, cantidad=cantidad)
+        # Crear la factura como string
+        nombre_usuario = request.user.first_name + " " + request.user.last_name if request.user.first_name else "Cliente"
+        factura = f"""
+        ¡GRACIAS POR CONFIAR EN MCNOLO!
+        Estimado/a {nombre_usuario},
+        Le adjuntamos la factura de su compra:
 
-                # Actualizar el tiempo total de preparación
-                tiempo_total_preparacion += producto.tiempo_preparacion
+        Productos:
+        {chr(10).join(productos_factura)}
 
-                # Agregar el detalle del producto a la factura
-                factura_string += f"- {producto.nombre}: {producto.precio}€ x {cantidad} unidades\n"
+        Total: {total}€
+        Nota Especial: {nota_especial if nota_especial else "N/A"}
 
-            # Agregar el total y la nota especial a la factura
-            factura_string += f"\nTotal: {total}€\n"
-            if nota_especial:
-                factura_string += f"\nNota Especial: {nota_especial}\n"
-            factura_string += "\nGracias por su compra!"
+        Tiempo estimado de preparación: {tiempo_total_preparacion} minutos.
 
-            # Intentar enviar el correo con la factura si el usuario tiene email
-            if email_usuario:
-                try:
-                    send_mail(
-                        'Factura de su compra',
-                        factura_string,
-                        'no-reply@tuapp.com',  # Cambia esto por tu dirección de correo configurada
-                        [email_usuario],
-                        fail_silently=False,
-                    )
-                    email_status = 'Correo enviado con éxito.'
-                except (BadHeaderError, SMTPException) as e:
-                    email_status = f'Error al enviar el correo: {e}'
-            else:
-                email_status = 'No se pudo enviar el correo: usuario sin dirección de correo.'
+        ¡Gracias por su compra!
+        """
 
-            # Notificar vía WebSocket que el pedido ha sido realizado
-            channel_layer = get_channel_layer()
-            async_to_sync(channel_layer.group_send)(
-                f'pedido_{pedido.id}',  # Grupo de WebSocket asociado al pedido
-                {
-                    'type': 'pedido_realizado',  # Tipo de evento manejado por el consumidor
-                    'message': f'Tu pedido ha sido realizado con éxito. Tiempo estimado: {tiempo_total_preparacion} minutos.'
-                }
-            )
+        # Devuelve la respuesta JSON con la factura y detalles del pedido
+        return JsonResponse({
+            'mensaje': 'Compra finalizada. Gracias por su pedido.',
+            'factura': factura,
+            'total': total,
+            'tiempo_estimado': tiempo_total_preparacion
+        })
 
-            # Responder con el total, el tiempo estimado y el estado del email
-            return JsonResponse({
-                'total': total,
-                'tiempo_estimado_preparacion': tiempo_total_preparacion,
-                'mensaje': 'Pedido completado correctamente.',
-                'email_status': email_status
-            })
-
-        except Exception as e:
-            # Registrar el error en la consola para depuración
-            print(f"Error durante la finalización de la compra: {e}")
-            return JsonResponse({'error': str(e)}, status=500)
-
-    # Si el método no es POST, devuelve un error
     return JsonResponse({'error': 'Método no permitido.'}, status=405)
+
 
 
 def obtener_estado_pedido(request, pedido_id):
