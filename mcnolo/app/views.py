@@ -14,6 +14,8 @@ from .forms import ChangeUsernameForm
 from django.contrib.auth.models import AnonymousUser
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
+from django.template.loader import render_to_string
+
 
 
 
@@ -159,18 +161,18 @@ def pedido_listo(request, pedido_id):
     pedido.estado = 'listo'
     pedido.save()
 
-    channel_layer = get_channel_layer()
+    channel_layer = conectarWebSocketget_channel_layer()
     group_name = f'pedido_{pedido.id}' if pedido.usuario else f'invitado_{pedido.invitado_id}'
 
     async_to_sync(channel_layer.group_send)(
         group_name,
         {
             'type': 'pedido_listo',
-            'message': 'Tu pedido está listo para recoger.'
+            'message': f'Tu pedido #{pedido.id} está listo para recoger.'
         }
     )
 
-    return redirect('admin:index')  # Redirigir a donde prefieras en el admin
+    return redirect('admin:index')  # Redirigir a la página de administración
 
 def anadir_al_carrito(request, producto_id):
     carrito = request.session.get('carrito', [])
@@ -385,7 +387,24 @@ def crear_sesion_pago(request):
 
 
 def payment_success(request):
-    return render(request, 'app/success.html')
+    # Obtener el último pedido realizado por el usuario
+    if request.user.is_authenticated:
+        pedido = Pedido.objects.filter(usuario=request.user).last()
+    else:
+        invitado_id = request.session.get('invitado_id')
+        pedido = Pedido.objects.filter(invitado_id=invitado_id).last()
+
+    if not pedido:
+        messages.error(request, 'No se encontró el pedido.')
+        return redirect('pagina_principal')
+
+    # Renderizar la factura como HTML
+    factura_html = render_to_string('app/factura.html', {'pedido': pedido})
+
+    return render(request, 'app/success.html', {
+        'pedido': pedido,
+        'factura_html': factura_html
+    })
 
 def payment_cancel(request):
     return render(request, 'app/cancel.html')

@@ -1,0 +1,14 @@
+<div style="border: 1px solid #ddd; padding: 20px; margin-top: 20px;">
+    <h2>Factura</h2>
+    <p><strong>Número de Pedido:</strong> {{ pedido.id }}</p>
+    <p><strong>Fecha:</strong> {{ pedido.created_at|date:"d/m/Y H:i" }}</p>
+    <p><strong>Total:</strong> {{ pedido.total }}€</p>
+    <p><strong>Estado:</strong> {{ pedido.get_estado_display }}</p>
+    <hr>
+    <h3>Productos:</h3>
+    <ul>
+        {% for producto_pedido in pedido.productos.all %}
+            <li>{{ producto_pedido.producto.nombre }} - {{ producto_pedido.cantidad }} x {{ producto_pedido.producto.precio }}€</li>
+        {% endfor %}
+    </ul>
+</div>
