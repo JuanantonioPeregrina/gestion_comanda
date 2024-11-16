@@ -731,10 +731,12 @@
 <div id="notificacion" style="display:none; background-color: yellow; padding: 10px;">
     Aquí se mostrará el mensaje del WebSocket -->
 <!-- </div>-->
+
 <!-- Contenedor para la notificación -->
 <div id="notification" class="notification">
     <p id="notification-message"></p>
 </div>
+
 <script>
 const anadir_boton = document.querySelector('.anadir-plato-boton');
 const anadir_form = document.getElementById('anadir-plato-form');
@@ -1041,6 +1043,9 @@ function restaurarPedido(pedidoId) {
 
     if (pedidoId) {
         const ws = new WebSocket('ws://' + window.location.host + '/ws/pedido/' + pedidoId + '/');
+        ws.onopen = function () {
+        console.log("WebSocket conectado");
+};
 
         ws.onmessage = function(event) {
             const data = JSON.parse(event.data);

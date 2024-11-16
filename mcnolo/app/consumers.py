@@ -22,9 +22,18 @@ class PedidoConsumer(AsyncWebsocketConsumer):
 
     async def pedido_listo(self, event):
         message = event['message']
-
+        print(f"Enviando mensaje de pedido realizado: {message}")  # Agregar log
         # Enviar el mensaje al WebSocket
         await self.send(text_data=json.dumps({
             'message': message
         }))
+    
+    async def pedido_realizado(self, event):
+        message = event['message']
+        print(f"Enviando mensaje de pedido realizado: {message}")  # Agregar log
+        # Enviar el mensaje al WebSocket
+        await self.send(text_data=json.dumps({
+            'message': message
+        }))
+
  

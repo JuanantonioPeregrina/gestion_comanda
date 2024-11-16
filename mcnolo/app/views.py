@@ -188,48 +188,52 @@ def agregar_al_carrito(request, producto_id):
     carrito.calcular_total()
     return JsonResponse({'status': 'success', 'total': carrito.total})
 
-
-
-
-
 @csrf_exempt
 def finalizar_compra(request):
     if request.method == 'POST':
         try:
+            # Leer el cuerpo de la solicitud que llega en formato JSON
             data = json.loads(request.body)
             cart = data.get('cart', [])
             total = data.get('total', 0)
             nota_especial = data.get('nota_especial', '')
 
+            # Verificar que el carrito tenga productos
             if not cart:
                 return JsonResponse({'error': 'El carrito está vacío.'}, status=400)
 
-            # Obtener el usuario autenticado o usar None si es un invitado
+            # Obtener el usuario autenticado o configurarlo como None si es un invitado
             usuario = request.user if request.user.is_authenticated else None
             email_usuario = usuario.email if usuario else None  # Obtener el email del usuario si está autenticado
 
             # Crear el pedido en la base de datos
             pedido = Pedido.objects.create(usuario=usuario, total=total, nota_especial=nota_especial)
-
             tiempo_total_preparacion = 0
-            factura_string = f"Factura de Compra\n\nCliente: {usuario.get_full_name() if usuario else 'Invitado'}\n\nProductos:\n"
 
             # Construir el detalle de la factura
+            factura_string = f"Factura de Compra\n\nCliente: {usuario.get_full_name() if usuario else 'Invitado'}\n\nProductos:\n"
             for item in cart:
+                # Obtener el producto y su cantidad
                 producto = Producto.objects.get(nombre=item['name'])
                 cantidad = item.get('cantidad', 1)
+
+                # Registrar el producto en el pedido
                 ProductoPedido.objects.create(pedido=pedido, producto=producto, cantidad=cantidad)
+
+                # Actualizar el tiempo total de preparación
                 tiempo_total_preparacion += producto.tiempo_preparacion
+
+                # Agregar el detalle del producto a la factura
                 factura_string += f"- {producto.nombre}: {producto.precio}€ x {cantidad} unidades\n"
 
+            # Agregar el total y la nota especial a la factura
             factura_string += f"\nTotal: {total}€\n"
             if nota_especial:
                 factura_string += f"\nNota Especial: {nota_especial}\n"
             factura_string += "\nGracias por su compra!"
 
-            # Intentar enviar el correo
+            # Intentar enviar el correo con la factura si el usuario tiene email
             if email_usuario:
-                print("hola")
                 try:
                     send_mail(
                         'Factura de su compra',
@@ -239,14 +243,22 @@ def finalizar_compra(request):
                         fail_silently=False,
                     )
                     email_status = 'Correo enviado con éxito.'
-
                 except (BadHeaderError, SMTPException) as e:
                     email_status = f'Error al enviar el correo: {e}'
-
             else:
                 email_status = 'No se pudo enviar el correo: usuario sin dirección de correo.'
 
-            # Responder con éxito y detalles del pedido
+            # Notificar vía WebSocket que el pedido ha sido realizado
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f'pedido_{pedido.id}',  # Grupo de WebSocket asociado al pedido
+                {
+                    'type': 'pedido_realizado',  # Tipo de evento manejado por el consumidor
+                    'message': f'Tu pedido ha sido realizado con éxito. Tiempo estimado: {tiempo_total_preparacion} minutos.'
+                }
+            )
+
+            # Responder con el total, el tiempo estimado y el estado del email
             return JsonResponse({
                 'total': total,
                 'tiempo_estimado_preparacion': tiempo_total_preparacion,
@@ -255,11 +267,12 @@ def finalizar_compra(request):
             })
 
         except Exception as e:
+            # Registrar el error en la consola para depuración
             print(f"Error durante la finalización de la compra: {e}")
             return JsonResponse({'error': str(e)}, status=500)
 
+    # Si el método no es POST, devuelve un error
     return JsonResponse({'error': 'Método no permitido.'}, status=405)
-
 
 
 def obtener_estado_pedido(request, pedido_id):
@@ -331,48 +344,6 @@ def change_image(request):
 
 from django.contrib.auth.models import AnonymousUser
 
-""""
-@csrf_exempt
-def finalizar_compra(request):
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            cart = data.get('cart', [])
-            total = data.get('total', 0)
-            nota_especial = data.get('nota_especial', '')
-
-            if not cart:
-                return JsonResponse({'error': 'El carrito está vacío.'}, status=400)
-
-            usuario = request.user if request.user.is_authenticated else None
-            print(f"Usuario autenticado: {usuario}")  # Mensaje de depuración
-
-            # Crear el pedido sin usuario si es un invitado
-            pedido = Pedido.objects.create(usuario=usuario, total=total, nota_especial=nota_especial)
-            print(f"Pedido creado: {pedido}")  # Mensaje de depuración
-
-            tiempo_total_preparacion = 0
-
-            for item in cart:
-                producto = Producto.objects.get(nombre=item['name'])
-                print(f"Producto encontrado: {producto}")  # Mensaje de depuración
-                ProductoPedido.objects.create(pedido=pedido, producto=producto, cantidad=item.get('cantidad', 1))
-                tiempo_total_preparacion += producto.tiempo_preparacion
-
-            return JsonResponse({
-                'total': total,
-                'tiempo_estimado_preparacion': tiempo_total_preparacion,
-                'mensaje': 'Pedido completado correctamente.'
-                'email_status': email_status
-            })
-
-        except Exception as e:
-            print(f"Error durante la finalización de la compra: {e}")  # Mensaje de depuración detallada
-            return JsonResponse({'error': str(e)}, status=500)
-
-    return JsonResponse({'error': 'Método no permitido.'}, status=405)
-
-"""
 
 def invitado(request):
      # Configura una variable en la sesión para identificar que es un "invitado"

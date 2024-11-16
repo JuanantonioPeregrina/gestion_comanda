@@ -29,24 +29,39 @@ class Pedido(models.Model):
         ('enviado', 'Enviado'),
     ]
 
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)  # Usuario que hace el pedido (puede ser None)
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE, null=True)  # Usuario que hace el pedido
+    #productos = models.ManyToManyField(Producto, through='ProductoPedido')  # Relación muchos a muchos
+    #productos = models.ManyToManyField(Producto)
+    fecha = models.DateTimeField(auto_now_add=True)  # Fecha automática del pedido
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    estado = models.CharField(max_length=20, choices=ESTADOS, default="Pendiente")
-    nota_especial = models.TextField(blank=True, null=True)
-    fecha = models.DateTimeField(auto_now_add=True)
+    estado = models.CharField(max_length=20, choices=ESTADOS, default='en_espera')  # Estado del pedido
+    nota_especial = models.TextField(blank=True, null=True)  # Campo para notas especiales
     
     def save(self, *args, **kwargs):
         # Verificar si el estado cambió a "listo"
         if self.pk is not None:  # Asegurarse de que el pedido ya existe
             previous = Pedido.objects.get(pk=self.pk)
+          # Si el estado cambió a "listo", notificar que el pedido está listo
             if previous.estado != self.estado and self.estado == 'listo':
-                # Enviar notificación al cliente vía WebSocket
+                print(f"Notificando que el pedido {self.id} está listo.")
                 channel_layer = get_channel_layer()
                 async_to_sync(channel_layer.group_send)(
                     f'pedido_{self.id}',
                     {
                         'type': 'pedido_listo',
-                        'message': f'Tu pedido {self.id} está listo para recoger.'
+                        'message': f'Tu pedido {self.id} está listo para entregarse.'
+                    }
+                )
+
+            # Si el estado cambió a "en_proceso", notificar que el pedido ha sido realizado
+            elif previous.estado != self.estado and self.estado == 'en_proceso':
+                print(f"Notificando que el pedido {self.id} está listo.")
+                channel_layer = get_channel_layer()
+                async_to_sync(channel_layer.group_send)(
+                    f'pedido_{self.id}',
+                    {
+                        'type': 'pedido_realizado',
+                        'message': f'Tu pedido {self.id} está en proceso.'
                     }
                 )
         super().save(*args, **kwargs)
@@ -54,7 +69,6 @@ class Pedido(models.Model):
 
 
     def __str__(self):
-       
         if self.usuario:
             return f'Pedido {self.id} - {self.usuario.email}'
         else:
