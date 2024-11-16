@@ -1,4 +1,5 @@
 import json
+import uuid
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
@@ -199,25 +200,36 @@ def finalizar_compra(request):
         if not cart:
             return JsonResponse({'error': 'El carrito está vacío.'}, status=400)
 
+        # Determinar si es usuario autenticado o invitado
+        if request.user.is_authenticated:
+            usuario = request.user
+            invitado_id = None
+        else:
+            usuario = None
+            invitado_id = request.session.get('invitado_id', str(uuid.uuid4()))
+            request.session['invitado_id'] = invitado_id
+
         # Crear el pedido
-        pedido = Pedido.objects.create(usuario=request.user, total=total, nota_especial=nota_especial)
+        pedido = Pedido.objects.create(
+            usuario=usuario,
+            total=total,
+            nota_especial=nota_especial
+        )
 
-        # Inicializar tiempo total de preparación
+        # Inicializar tiempo total de preparación y productos en la factura
         tiempo_total_preparacion = 0
-        productos_factura = []  # Lista para los productos en la factura
+        productos_factura = []
 
-        # Guardar productos del pedido y calcular el tiempo de preparación
         for item in cart:
             producto = Producto.objects.get(nombre=item['name'])
-            ProductoPedido.objects.create(pedido=pedido, producto=producto, cantidad=1)
+            ProductoPedido.objects.create(pedido=pedido, producto=producto, cantidad=item.get('cantidad', 1))
             tiempo_total_preparacion += producto.tiempo_preparacion
-            productos_factura.append(f"- {producto.nombre}: {producto.precio}€")  # Añadir producto a la factura
+            productos_factura.append(f"- {producto.nombre}: {producto.precio}€")
 
-        # Crear la factura como string
-        nombre_usuario = request.user.first_name + " " + request.user.last_name if request.user.first_name else "Cliente"
+        # Crear la factura como texto
         factura = f"""
         ¡GRACIAS POR CONFIAR EN MCNOLO!
-        Estimado/a {nombre_usuario},
+        Estimado cliente,
         Le adjuntamos la factura de su compra:
 
         Productos:
@@ -231,16 +243,27 @@ def finalizar_compra(request):
         ¡Gracias por su compra!
         """
 
-        # Devuelve la respuesta JSON con la factura y detalles del pedido
+        # Notificar al usuario si es invitado
+        if not usuario and invitado_id:
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f'invitado_{invitado_id}',
+                {
+                    'type': 'pedido_listo',
+                    'message': f'Tu pedido {pedido.id} está listo para ser entregado.'
+                }
+            )
+
         return JsonResponse({
             'mensaje': 'Compra finalizada. Gracias por su pedido.',
             'factura': factura,
-            'pedido_id': pedido.id,  # Incluir el ID del pedido
+            'pedido_id': pedido.id,
             'total': total,
             'tiempo_estimado': tiempo_total_preparacion
         })
 
     return JsonResponse({'error': 'Método no permitido.'}, status=405)
+
 
 
 
@@ -316,6 +339,7 @@ from django.contrib.auth.models import AnonymousUser
 
 
 def invitado(request):
-     # Configura una variable en la sesión para identificar que es un "invitado"
     request.session['es_invitado'] = True
-    return redirect('pagina_principal')  # Redirige a la página principal
+    if 'invitado_id' not in request.session:
+        request.session['invitado_id'] = str(uuid.uuid4())
+    return redirect('pagina_principal')

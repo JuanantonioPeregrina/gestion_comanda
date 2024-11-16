@@ -3,28 +3,29 @@ import json
 
 class PedidoConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.pedido_id = self.scope['url_route']['kwargs']['pedido_id']
-        self.pedido_group_name = f'pedido_{self.pedido_id}'
+        self.pedido_id = self.scope['url_route']['kwargs'].get('pedido_id', None)
+        self.invitado_id = self.scope['url_route']['kwargs'].get('invitado_id', None)
 
-        # Unirse al grupo del pedido
+        if self.pedido_id:
+            self.group_name = f'pedido_{self.pedido_id}'
+        elif self.invitado_id:
+            self.group_name = f'invitado_{self.invitado_id}'
+        else:
+            await self.close()
+            return
+
         await self.channel_layer.group_add(
-            self.pedido_group_name,
+            self.group_name,
             self.channel_name
         )
         await self.accept()
 
     async def disconnect(self, close_code):
-        # Salir del grupo del pedido
         await self.channel_layer.group_discard(
-            self.pedido_group_name,
+            self.group_name,
             self.channel_name
         )
 
     async def pedido_listo(self, event):
         message = event['message']
-
-        # Enviar el mensaje al WebSocket
-        await self.send(text_data=json.dumps({
-            'message': message
-        }))
- 
+        await self.send(text_data=json.dumps({'message': message}))

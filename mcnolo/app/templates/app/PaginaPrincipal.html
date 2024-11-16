@@ -898,25 +898,25 @@ document.getElementById('checkout-btn').addEventListener('click', (event) => {
 function setupPayment() {
     document.querySelectorAll('.pagar-ya').forEach(button => {
         button.addEventListener('click', function() {
-            const nombre = this.getAttribute('data-name');
-            const precio = parseFloat(this.getAttribute('data-price'));
-            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            const name = this.getAttribute('data-name');
+            const price = parseFloat(this.getAttribute('data-price'));
+            const csrfToken = getCookie('csrftoken');
 
-            // Crear un carrito con un solo producto (el que se va a pagar directamente)
+            // Crear un carrito con un solo producto
             const singleItemCart = [
-                { name: nombre, price: precio, cantidad: 1 }
+                { name: name, price: price, cantidad: 1 }
             ];
 
-            fetch('{% url "finalizar_compra" %}', {
+            fetch("{% url 'finalizar_compra' %}", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': csrfToken
                 },
                 body: JSON.stringify({
-                    cart: singleItemCart, // Enviamos solo este producto
-                    total: precio.toFixed(2),
-                    nota_especial: '' // No hay nota especial para "Pagar Ya"
+                    cart: singleItemCart,
+                    total: price.toFixed(2),
+                    nota_especial: ''
                 })
             })
             .then(response => response.json())
@@ -924,17 +924,9 @@ function setupPayment() {
                 if (data.error) {
                     alert(data.error);
                 } else {
-                    // Mostrar factura en un alert
                     alert(data.factura);
-
-                    // Vaciar el carrito (aunque aquí es solo un producto)
                     clearCart();
-                     // Conectar al WebSocket dinámicamente con el nuevo pedido
-            const nuevoPedidoId = data.pedido_id; // ID retornado por la API
-            conectarWebSocket(nuevoPedidoId);
-
-                    // Mensaje de éxito
-                   // alert('Compra realizada con éxito. Total: ' + data.total + '€. Tiempo estimado: ' + data.tiempo_estimado + ' minutos.');
+                    conectarWebSocket(data.pedido_id);
                 }
             })
             .catch(error => {
@@ -944,6 +936,7 @@ function setupPayment() {
         });
     });
 }
+
 
 
     setupPayment();

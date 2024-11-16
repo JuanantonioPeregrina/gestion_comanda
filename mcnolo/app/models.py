@@ -11,7 +11,7 @@ class Producto(models.Model):
     descripcion = models.TextField(default="Sin descripción")
     precio = models.DecimalField(max_digits=10, decimal_places=2)
     # disponible = models.BooleanField(default=True)
-    imagen = models.ImageField(upload_to='productos/', blank=True, null=True)  # Campo para la imagen
+    imagen = models.ImageField(upload_to='productos/', blank=True, null=True,)  # Campo para la imagen
     activo = models.BooleanField(default=True)  # Campo para marcar si está activo o no
     tiempo_preparacion = models.IntegerField()  # Tiempo en minutos
     def __str__(self):
@@ -29,7 +29,7 @@ class Pedido(models.Model):
         ('enviado', 'Enviado'),
     ]
 
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE, null=True)  # Usuario que hace el pedido
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)  # Usuario que hace el pedido
     #productos = models.ManyToManyField(Producto, through='ProductoPedido')  # Relación muchos a muchos
     #productos = models.ManyToManyField(Producto)
     fecha = models.DateTimeField(auto_now_add=True)  # Fecha automática del pedido
@@ -38,33 +38,20 @@ class Pedido(models.Model):
     nota_especial = models.TextField(blank=True, null=True)  # Campo para notas especiales
     
     def save(self, *args, **kwargs):
-        # Verificar si el estado cambió a "listo"
-        if self.pk is not None:  # Asegurarse de que el pedido ya existe
+        if self.pk:
             previous = Pedido.objects.get(pk=self.pk)
-          # Si el estado cambió a "listo", notificar que el pedido está listo
             if previous.estado != self.estado and self.estado == 'listo':
-                print(f"Notificando que el pedido {self.id} está listo.")
                 channel_layer = get_channel_layer()
+                group_name = f'pedido_{self.id}' if self.usuario else f'invitado_{self.invitado_id}'
                 async_to_sync(channel_layer.group_send)(
-                    f'pedido_{self.id}',
+                    group_name,
                     {
                         'type': 'pedido_listo',
-                        'message': f'Tu pedido {self.id} está listo para entregarse.'
-                    }
-                )
-
-            # Si el estado cambió a "en_proceso", notificar que el pedido ha sido realizado
-            elif previous.estado != self.estado and self.estado == 'en_proceso':
-                print(f"Notificando que el pedido {self.id} está listo.")
-                channel_layer = get_channel_layer()
-                async_to_sync(channel_layer.group_send)(
-                    f'pedido_{self.id}',
-                    {
-                        'type': 'pedido_realizado',
-                        'message': f'Tu pedido {self.id} está en proceso.'
+                        'message': f'Tu pedido {self.id} está listo para ser entregado.'
                     }
                 )
         super().save(*args, **kwargs)
+
 
 
 
