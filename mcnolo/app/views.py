@@ -16,7 +16,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 
-
+from .models import get_invitado_user
 
 
 # Página principal
@@ -161,11 +161,17 @@ def pedido_listo(request, pedido_id):
     pedido.estado = 'listo'
     pedido.save()
 
-    # Obtener el canal correspondiente (usuario o invitado)
     channel_layer = get_channel_layer()
-    group_name = f'pedido_{pedido.id}' if pedido.usuario else f'invitado_{request.session.get("invitado_id", "default")}'
+    if pedido.usuario:
+        group_name = f'pedido_{pedido.id}'
+    else:
+        invitado_id = request.session.get('invitado_id', None)
+        if invitado_id:
+            group_name = f'invitado_{invitado_id}'
+        else:
+            return JsonResponse({'error': 'Usuario no identificado'}, status=400)
 
-    # Enviar el mensaje al grupo WebSocket
+    # Enviar mensaje al grupo WebSocket
     async_to_sync(channel_layer.group_send)(
         group_name,
         {
@@ -175,6 +181,7 @@ def pedido_listo(request, pedido_id):
     )
 
     return redirect('pagina_principal')
+
 
 
 def anadir_al_carrito(request, producto_id):
@@ -194,6 +201,8 @@ def agregar_al_carrito(request, producto_id):
     carrito.calcular_total()
     return JsonResponse({'status': 'success', 'total': carrito.total})
 
+import uuid
+
 @csrf_exempt
 def finalizar_compra(request):
     if request.method == 'POST':
@@ -205,9 +214,21 @@ def finalizar_compra(request):
         if not cart:
             return JsonResponse({'error': 'El carrito está vacío.'}, status=400)
 
+        # Determinar el usuario o el invitado
+        if request.user.is_authenticated:
+            user = request.user
+            invitado_id = None  # No aplica para usuarios autenticados
+        else:
+            # Generar un invitado_id para la sesión y usar el usuario predeterminado
+            if 'invitado_id' not in request.session:
+                request.session['invitado_id'] = str(uuid.uuid4())
+            invitado_id = request.session['invitado_id']
+            user = get_invitado_user()  # Método que obtienes o creas un usuario "invitado_default"
+
         # Crear el pedido
         pedido = Pedido.objects.create(
-            usuario=request.user if request.user.is_authenticated else None,
+            usuario=user,
+            invitado_id=invitado_id,
             total=total,
             nota_especial=nota_especial,
         )
@@ -242,6 +263,12 @@ def finalizar_compra(request):
 
     return JsonResponse({'error': 'Método no permitido.'}, status=405)
 
+
+
+def generar_invitado_id(request):
+    if 'invitado_id' not in request.session:
+        request.session['invitado_id'] = str(uuid.uuid4())
+    return request.session['invitado_id']
 
 
 
@@ -354,30 +381,39 @@ import stripe
 
 stripe.api_key = settings.STRIPE_SECRET_KEY  # Usar la clave secreta
 
+
 @csrf_exempt
 def crear_sesion_pago(request):
     if request.method == 'POST':
         data = json.loads(request.body)
         cart = data.get('cart', [])
         total = data.get('total', 0)
+        nota_especial = data.get('nota_especial', '')
 
         if not cart:
             return JsonResponse({'error': 'El carrito está vacío.'}, status=400)
 
+        # Asigna el usuario o el usuario genérico para invitados
+        user = request.user if request.user.is_authenticated else get_invitado_user()
+
         # Crear el pedido
         pedido = Pedido.objects.create(
-            usuario=request.user if request.user.is_authenticated else None,
+            usuario=user,
             total=total,
-            nota_especial=data.get('nota_especial', ''),
+            nota_especial=nota_especial,
         )
 
-        # Guardar productos del pedido
+        # Guardar los productos del pedido
         for item in cart:
             producto = Producto.objects.get(nombre=item['name'])
-            ProductoPedido.objects.create(pedido=pedido, producto=producto, cantidad=item.get('cantidad', 1))
+            ProductoPedido.objects.create(
+                pedido=pedido,
+                producto=producto,
+                cantidad=item.get('cantidad', 1),
+            )
 
         try:
-            # Crear sesión de Stripe asociada con el pedido
+            # Crear sesión de pago en Stripe
             session = stripe.checkout.Session.create(
                 payment_method_types=['card'],
                 line_items=[
@@ -396,11 +432,12 @@ def crear_sesion_pago(request):
                 cancel_url='http://127.0.0.1:8000/cancel/',
             )
 
-            return JsonResponse({'url': session.url})  # Devuelve la URL de Stripe
+            return JsonResponse({'url': session.url})
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
 
     return JsonResponse({'error': 'Método no permitido.'}, status=405)
+
 
 
 

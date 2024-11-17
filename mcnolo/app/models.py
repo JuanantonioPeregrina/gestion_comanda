@@ -16,8 +16,16 @@ class Producto(models.Model):
     tiempo_preparacion = models.IntegerField()  # Tiempo en minutos
     def __str__(self):
         return self.nombre
-        
-        
+
+
+def get_invitado_user():
+    # Crear o reutilizar un usuario genérico para invitados
+    invitado_user, created = User.objects.get_or_create(
+        username='invitado_default',
+        defaults={'email': 'invitado@default.com', 'password': 'defaultpassword'}
+    )
+    return invitado_user
+
 class Pedido(models.Model):
     METODOS_PAGO = [
         ('credit_card', 'Tarjeta de Crédito'),
@@ -43,22 +51,27 @@ class Pedido(models.Model):
     metodo_pago = models.CharField(max_length=20, choices=METODOS_PAGO, default='credit_card')
 
     def save(self, *args, **kwargs):
-        if self.pk is not None:  # Verifica que ya existe
-            previous = Pedido.objects.get(pk=self.pk)
+            if self.pk is not None:  # Si el pedido ya existe
+                previous = Pedido.objects.get(pk=self.pk)
+                if previous.estado != self.estado and self.estado == 'listo':
+                    # Obtener el canal de notificaciones
+                    channel_layer = get_channel_layer()
+                    
+                    # Determinar el grupo de WebSocket para el usuario o el invitado
+                    if self.usuario.username == 'invitado_default':
+                        group_name = f'invitado_{self.invitado_id}'
+                    else:
+                        group_name = f'pedido_{self.id}'
 
-            if previous.estado != self.estado and self.estado == 'listo':
-                channel_layer = get_channel_layer()
-                group_name = f'pedido_{self.id}' if self.usuario else f'invitado_{self.invitado_id}'
-
-                if group_name:
+                    # Enviar la notificación al grupo correspondiente
                     async_to_sync(channel_layer.group_send)(
                         group_name,
                         {
                             'type': 'pedido_listo',
-                            'message': f'Tu pedido {self.id} está listo para ser entregado.',
+                            'message': f'Tu pedido #{self.id} está listo para recoger.',
                         }
                     )
-        super().save(*args, **kwargs)
+            super().save(*args, **kwargs)
 
     def __str__(self):
         if self.usuario:
