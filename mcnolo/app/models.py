@@ -19,7 +19,6 @@ class Producto(models.Model):
         
         
 class Pedido(models.Model):
-
     METODOS_PAGO = [
         ('credit_card', 'Tarjeta de Crédito'),
         ('debit_card', 'Tarjeta de Débito'),
@@ -35,49 +34,36 @@ class Pedido(models.Model):
         ('enviado', 'Enviado'),
     ]
 
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)  # Usuario autenticado
-    fecha = models.DateTimeField(auto_now_add=True)  # Fecha automática del pedido
-    total = models.DecimalField(max_digits=10, decimal_places=2, default=0)  # Total del pedido
-    estado = models.CharField(max_length=20, choices=ESTADOS, default='en_espera')  # Estado del pedido
-    nota_especial = models.TextField(blank=True, null=True)  # Campo para notas especiales
-    invitado_id = models.CharField(max_length=36, null=True, blank=True)  # Identificador para invitados
-    metodo_pago = models.CharField(max_length=20, choices=METODOS_PAGO, default='credit_card')  # Método de pago
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    invitado_id = models.CharField(max_length=36, null=True, blank=True)
+    fecha = models.DateTimeField(auto_now_add=True)
+    total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    estado = models.CharField(max_length=20, choices=ESTADOS, default='en_espera')
+    nota_especial = models.TextField(blank=True, null=True)
+    metodo_pago = models.CharField(max_length=20, choices=METODOS_PAGO, default='credit_card')
 
     def save(self, *args, **kwargs):
-        if self.pk is not None:  # Asegurarse de que el pedido ya existe
+        if self.pk is not None:  # Verifica que ya existe
             previous = Pedido.objects.get(pk=self.pk)
 
-            # Si el estado cambió a "listo", enviar notificación
             if previous.estado != self.estado and self.estado == 'listo':
                 channel_layer = get_channel_layer()
+                group_name = f'pedido_{self.id}' if self.usuario else f'invitado_{self.invitado_id}'
 
-                if self.usuario:
-                    # Notificar al grupo de usuarios autenticados
-                    group_name = f'pedido_{self.id}'
-                elif self.invitado_id:
-                    # Notificar al grupo de invitados
-                    group_name = f'invitado_{self.invitado_id}'
-                else:
-                    return
-
-                # Enviar notificación al grupo
-                async_to_sync(channel_layer.group_send)(
-                    group_name,
-                    {
-                        'type': 'pedido_listo',
-                        'message': f'Tu pedido {self.id} está listo para ser entregado.',
-                    }
-                )
-
+                if group_name:
+                    async_to_sync(channel_layer.group_send)(
+                        group_name,
+                        {
+                            'type': 'pedido_listo',
+                            'message': f'Tu pedido {self.id} está listo para ser entregado.',
+                        }
+                    )
         super().save(*args, **kwargs)
-
 
     def __str__(self):
         if self.usuario:
             return f'Pedido {self.id} - {self.usuario.email}'
-        else:
-            return f'Pedido {self.id} - Invitado'
-
+        return f'Pedido {self.id} - Invitado'
 
 
 
