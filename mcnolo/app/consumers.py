@@ -3,8 +3,17 @@ import json
 
 class PedidoConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        pedido_id = self.scope['url_route']['kwargs']['pedido_id']
-        self.group_name = f'pedido_{pedido_id}'
+        # Determinar si es un pedido de usuario o invitado
+        pedido_id = self.scope['url_route']['kwargs'].get('pedido_id')
+        invitado_id = self.scope['url_route']['kwargs'].get('invitado_id')
+
+        if pedido_id:
+            self.group_name = f'pedido_{pedido_id}'
+        elif invitado_id:
+            self.group_name = f'invitado_{invitado_id}'
+        else:
+            await self.close()
+            return
 
         # Agregar al grupo
         await self.channel_layer.group_add(

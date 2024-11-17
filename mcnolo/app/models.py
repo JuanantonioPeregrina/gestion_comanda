@@ -47,25 +47,30 @@ class Pedido(models.Model):
         if self.pk is not None:  # Asegurarse de que el pedido ya existe
             previous = Pedido.objects.get(pk=self.pk)
 
-            # Si el estado cambió a "listo", notificar
+            # Si el estado cambió a "listo", enviar notificación
             if previous.estado != self.estado and self.estado == 'listo':
                 channel_layer = get_channel_layer()
-                
+
                 if self.usuario:
                     # Notificar al grupo de usuarios autenticados
                     group_name = f'pedido_{self.id}'
-                else:
+                elif self.invitado_id:
                     # Notificar al grupo de invitados
-                    group_name = f'invitado_{self.id}'
+                    group_name = f'invitado_{self.invitado_id}'
+                else:
+                    return
 
+                # Enviar notificación al grupo
                 async_to_sync(channel_layer.group_send)(
                     group_name,
                     {
                         'type': 'pedido_listo',
-                        'message': f'Tu pedido {self.id} está listo para ser entregado.'
+                        'message': f'Tu pedido {self.id} está listo para ser entregado.',
                     }
                 )
+
         super().save(*args, **kwargs)
+
 
     def __str__(self):
         if self.usuario:

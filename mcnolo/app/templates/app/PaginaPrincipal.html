@@ -1034,41 +1034,45 @@ function restaurarPedido(pedidoId) {
 
 
 
-   // Conexión WebSocket
-   const pedidoId = "{{ pedido.id }}";  // Inyectar el ID del pedido desde Django
+document.addEventListener('DOMContentLoaded', () => {
+    const pedidoId = "{{ pedido.id }}";  // Para usuarios autenticados
+    const invitadoId = "{{ request.session.invitado_id }}";  // Para invitados
 
-   function conectarWebSocket(pedidoId) {
-    if (!pedidoId) {
-        console.error("No se puede conectar al WebSocket: pedidoId no proporcionado.");
-        return;
+    let wsUrl;
+    if (pedidoId) {
+        wsUrl = `ws://${window.location.host}/ws/pedido/${pedidoId}/`;
+    } else if (invitadoId) {
+        wsUrl = `ws://${window.location.host}/ws/invitado/${invitadoId}/`;
     }
 
-    const ws = new WebSocket('ws://' + window.location.host + '/ws/pedido/' + pedidoId + '/');
+    if (wsUrl) {
+        const ws = new WebSocket(wsUrl);
 
-    ws.onmessage = function(event) {
-        const data = JSON.parse(event.data);
-        console.log("Mensaje recibido:", data);
+        ws.onmessage = function(event) {
+            const data = JSON.parse(event.data);
 
-        // Mostrar la notificación
-        const notification = document.getElementById('notification');
-        const messageElement = document.getElementById('notification-message');
-        messageElement.textContent = data.message;
-        notification.classList.add('show-notification');
+            // Mostrar la notificación
+            const notification = document.getElementById('notification');
+            const messageElement = document.getElementById('notification-message');
+            messageElement.textContent = data.message;
+            notification.classList.add('show-notification');
 
-        // Ocultar después de 10 segundos
-        setTimeout(() => {
-            notification.classList.remove('show-notification');
-        }, 10000);
-    };
+            // Ocultar después de 10 segundos
+            setTimeout(() => {
+                notification.classList.remove('show-notification');
+            }, 10000);
+        };
 
-    ws.onerror = function(event) {
-        console.error("WebSocket error observado:", event);
-    };
+        ws.onerror = function(event) {
+            console.error("WebSocket error:", event);
+        };
 
-    ws.onclose = function(event) {
-        console.log('WebSocket cerrado.');
-    };
-}
+        ws.onclose = function(event) {
+            console.log('WebSocket cerrado.');
+        };
+    }
+});
+
 
 
     // Obtener elementos de la propina

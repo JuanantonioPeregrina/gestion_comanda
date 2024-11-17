@@ -270,6 +270,7 @@ def obtener_pedido(request, pedido_id):
     
     except Pedido.DoesNotExist:
         return JsonResponse({'error': 'Pedido no encontrado.'}, status=404)
+    
 def comprobar_oferta(request):
     data = json.loads(request.body)
     codigo = data.get('codigo')  # Obtener el código enviado desde el formulario
