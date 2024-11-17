@@ -1076,6 +1076,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
+
     // Obtener elementos de la propina
 const tipAmountInput = document.getElementById('tip-amount');
 const applyTipButton = document.getElementById('apply-tip');
@@ -1103,7 +1104,24 @@ applyTipButton.addEventListener('click', () => {
     }
 });
 
-   
+    const userId = "{{ user.id|default:'' }}";  // Si no está autenticado, será vacío
+    const invitadoId = "{{ invitado_id|default:'' }}";
+
+    // URL para el WebSocket
+    const wsUrl = userId ? `/ws/pedido/${userId}/` : `/ws/invitado/${invitadoId}/`;
+    const socket = new WebSocket(`ws://${window.location.host}${wsUrl}`);
+
+    // Recibir mensajes desde el servidor
+    socket.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        alert(data.message);  // Mostrar la notificación
+    };
+
+    socket.onclose = function() {
+        console.error("WebSocket cerrado inesperadamente");
+    };
+</script>
+
 </script>
 
 </body>

@@ -202,7 +202,6 @@ def agregar_al_carrito(request, producto_id):
     return JsonResponse({'status': 'success', 'total': carrito.total})
 
 import uuid
-
 @csrf_exempt
 def finalizar_compra(request):
     if request.method == 'POST':
@@ -216,19 +215,19 @@ def finalizar_compra(request):
 
         # Determinar el usuario o el invitado
         if request.user.is_authenticated:
-            user = request.user
+            user = request.user  # Usuario autenticado
             invitado_id = None  # No aplica para usuarios autenticados
         else:
-            # Generar un invitado_id para la sesión y usar el usuario predeterminado
+            # Generar un `invitado_id` único si no existe
             if 'invitado_id' not in request.session:
                 request.session['invitado_id'] = str(uuid.uuid4())
             invitado_id = request.session['invitado_id']
-            user = get_invitado_user()  # Método que obtienes o creas un usuario "invitado_default"
+            user = get_invitado_user()  # Usuario genérico "invitado_default"
 
         # Crear el pedido
         pedido = Pedido.objects.create(
-            usuario=user,
-            invitado_id=invitado_id,
+            usuario=user,  # Usuario autenticado o "invitado_default"
+            invitado_id=invitado_id,  # Solo se asigna para invitados
             total=total,
             nota_especial=nota_especial,
         )
@@ -257,6 +256,23 @@ def finalizar_compra(request):
                 success_url=f'http://127.0.0.1:8000/success/?pedido_id={pedido.id}',
                 cancel_url='http://127.0.0.1:8000/cancel/',
             )
+
+            # Vincular el WebSocket para el pedido
+            channel_layer = get_channel_layer()
+            if invitado_id:  # Si es un invitado
+                group_name = f'invitado_{invitado_id}'
+            else:  # Si es un usuario autenticado
+                group_name = f'pedido_{pedido.id}'
+
+            # Enviar notificación al grupo WebSocket (solo si se genera el pedido correctamente)
+            async_to_sync(channel_layer.group_add)(
+                group_name,
+                {
+                    'type': 'pedido_creado',
+                    'message': f'Tu pedido #{pedido.id} se está procesando.',
+                }
+            )
+
             return JsonResponse({'url': session.url})  # Devuelve la URL de Stripe
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
@@ -265,9 +281,12 @@ def finalizar_compra(request):
 
 
 
+
+
 def generar_invitado_id(request):
     if 'invitado_id' not in request.session:
         request.session['invitado_id'] = str(uuid.uuid4())
+    print("Generado invitado_id:", request.session['invitado_id'])  # Confirmar ID generado
     return request.session['invitado_id']
 
 

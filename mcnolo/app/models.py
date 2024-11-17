@@ -51,27 +51,26 @@ class Pedido(models.Model):
     metodo_pago = models.CharField(max_length=20, choices=METODOS_PAGO, default='credit_card')
 
     def save(self, *args, **kwargs):
-            if self.pk is not None:  # Si el pedido ya existe
-                previous = Pedido.objects.get(pk=self.pk)
-                if previous.estado != self.estado and self.estado == 'listo':
-                    # Obtener el canal de notificaciones
-                    channel_layer = get_channel_layer()
-                    
-                    # Determinar el grupo de WebSocket para el usuario o el invitado
-                    if self.usuario.username == 'invitado_default':
-                        group_name = f'invitado_{self.invitado_id}'
-                    else:
-                        group_name = f'pedido_{self.id}'
+        if self.pk is not None:  # Si el pedido ya existe
+            previous = Pedido.objects.get(pk=self.pk)
+            if previous.estado != self.estado and self.estado == 'listo':
+                channel_layer = get_channel_layer()
+                
+                if self.usuario and self.usuario.username != 'invitado_default':  # Usuario autenticado
+                    group_name = f'pedido_{self.id}'
+                else:  # Invitado
+                    group_name = 'invitados'
 
-                    # Enviar la notificación al grupo correspondiente
-                    async_to_sync(channel_layer.group_send)(
-                        group_name,
-                        {
-                            'type': 'pedido_listo',
-                            'message': f'Tu pedido #{self.id} está listo para recoger.',
-                        }
-                    )
-            super().save(*args, **kwargs)
+                async_to_sync(channel_layer.group_send)(
+                    group_name,
+                    {
+                        'type': 'pedido_listo',
+                        'message': f'Tu pedido #{self.id} está listo para recoger.',
+                    }
+                )
+        super().save(*args, **kwargs)
+
+
 
     def __str__(self):
         if self.usuario:
