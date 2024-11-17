@@ -859,7 +859,7 @@ document.getElementById('checkout-btn').addEventListener('click', (event) => {
 
     const notaEspecial = document.getElementById('nota_especial').value;
 
-    fetch("{% url 'finalizar_compra' %}", {
+    fetch("{% url 'crear_sesion_pago' %}", { // Asegúrate de que esta URL es correcta
         method: "POST",
         headers: {
             "X-CSRFToken": csrftoken,
@@ -887,6 +887,9 @@ document.getElementById('checkout-btn').addEventListener('click', (event) => {
         checkoutBtn.disabled = false;
     });
 });
+
+
+
 
 
 
