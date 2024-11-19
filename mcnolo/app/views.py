@@ -521,25 +521,44 @@ def forgot_password(request):
 
     return render(request, 'app/forgot_password.html')
 
+from django.contrib.auth.hashers import make_password
 def cambio_password(request):
-    email = temporary_data.get('email', 'Usuario')  # Recupera el correo temporal
+    email = temporary_data.get('email')  # Recupera el correo guardado temporalmente
+
+    if not email:  # Si no hay correo temporal, redirigir al inicio
+        return redirect('forgot_password')
 
     if request.method == 'POST':
         entered_code = request.POST.get('code')
         new_password = request.POST.get('new_password')
         confirm_password = request.POST.get('confirm_password')
 
-        # Comprobar el código y que las contraseñas coincidan
-        if entered_code == temporary_data.get('code'):
-            if new_password == confirm_password:
-                return JsonResponse({'success': True, 'message': 'Contraseña cambiada correctamente'})
-            else:
-                return JsonResponse({'success': False, 'message': 'Las contraseñas no coinciden'})
-        else:
-            return JsonResponse({'success': False, 'message': 'Código incorrecto'})
+        # Verificar que el código ingresado sea correcto
+        if entered_code != temporary_data.get('code'):
+            messages.error(request, 'Código incorrecto')
+            return render(request, 'app/cambio_password.html', {'email': email})
+
+        # Verificar que las contraseñas coincidan
+        if new_password != confirm_password:
+            messages.error(request, 'Las contraseñas no coinciden')
+            return render(request, 'app/cambio_password.html', {'email': email})
+
+        # Verificar si el username (que en este caso es el email) pertenece a un usuario existente
+        try:
+            user = User.objects.get(username=email)  # Busca al usuario por el campo `username`
+        except User.DoesNotExist:
+            messages.error(request, 'No se encontró un usuario con ese correo electrónico')
+            return render(request, 'app/cambio_password.html', {'email': email})
+
+        # Cambiar la contraseña del usuario
+        user.password = make_password(new_password)  # Usar `make_password` para encriptar la contraseña
+        user.save()  # Guardar los cambios en la base de datos
+
+        # Éxito: Mostrar mensaje y redirigir
+        messages.success(request, 'Contraseña cambiada exitosamente. Ahora puedes iniciar sesión.')
+        return redirect('inicio_sesion')
 
     return render(request, 'app/cambio_password.html', {'email': email})
-
 
 def enviar_correoVerificacion(mail, user, oferta):
     send_mail(
