@@ -97,7 +97,7 @@ class HistorialProducto(models.Model):
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    foto = models.ImageField(upload_to='perfil_fotos/', default='productos/perfil.webp')
+    foto = models.ImageField(upload_to='perfil_fotos/', default='perfil_fotos/avatar.webp')
 
     def __str__(self):
         return f'Perfil de {self.user.username}'
