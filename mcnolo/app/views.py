@@ -497,6 +497,9 @@ def payment_success(request):
 def payment_cancel(request):
     return render(request, 'app/cancel.html')
 
+
+temporary_data = {}
+
 def forgot_password(request):
     if request.method == 'POST':
         email = request.POST.get('email')  # Obtiene el correo del formulario
@@ -504,14 +507,35 @@ def forgot_password(request):
             # Generar un código numérico aleatorio
             code = random.randint(100000, 999999)
 
-            # Crear un objeto con atributo `username`
-            user = SimpleNamespace(username=email.split('@')[0])
+            # Guardar temporalmente el correo y código (para pruebas, sin BBDD)
+            temporary_data['email'] = email
+            temporary_data['code'] = str(code)
 
-            # Llamar a la función `enviar_correo`
+            # Simular el envío de correo
+            user = SimpleNamespace(username=email.split('@')[0])
             try:
                 enviar_correo(email, user, code)
-                return JsonResponse({'success': True, 'message': 'Correo enviado con éxito'})
+                return redirect('cambio_password')  # Redirigir a la nueva página
             except Exception as e:
                 return JsonResponse({'success': False, 'message': str(e)})
 
     return render(request, 'app/forgot_password.html')
+
+def cambio_password(request):
+    email = temporary_data.get('email', 'Usuario')  # Recupera el correo temporal
+
+    if request.method == 'POST':
+        entered_code = request.POST.get('code')
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
+
+        # Comprobar el código y que las contraseñas coincidan
+        if entered_code == temporary_data.get('code'):
+            if new_password == confirm_password:
+                return JsonResponse({'success': True, 'message': 'Contraseña cambiada correctamente'})
+            else:
+                return JsonResponse({'success': False, 'message': 'Las contraseñas no coinciden'})
+        else:
+            return JsonResponse({'success': False, 'message': 'Código incorrecto'})
+
+    return render(request, 'app/cambio_password.html', {'email': email})

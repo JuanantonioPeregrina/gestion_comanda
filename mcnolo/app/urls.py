@@ -31,6 +31,7 @@ urlpatterns = [
     path('success/', views.payment_success, name='payment_success'),
     path('cancel/', views.payment_cancel, name='payment_cancel'),
     path('forgot-password/', views.forgot_password, name='forgot_password'),
+    path('cambio-password/', views.cambio_password, name='cambio_password'),
 ]
 
     
