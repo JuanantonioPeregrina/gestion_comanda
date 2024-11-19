@@ -1,5 +1,7 @@
 import json
+import random
 import uuid
+from types import SimpleNamespace  # Para crear un objeto dinámico
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
@@ -494,3 +496,22 @@ def payment_success(request):
 
 def payment_cancel(request):
     return render(request, 'app/cancel.html')
+
+def forgot_password(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')  # Obtiene el correo del formulario
+        if email:
+            # Generar un código numérico aleatorio
+            code = random.randint(100000, 999999)
+
+            # Crear un objeto con atributo `username`
+            user = SimpleNamespace(username=email.split('@')[0])
+
+            # Llamar a la función `enviar_correo`
+            try:
+                enviar_correo(email, user, code)
+                return JsonResponse({'success': True, 'message': 'Correo enviado con éxito'})
+            except Exception as e:
+                return JsonResponse({'success': False, 'message': str(e)})
+
+    return render(request, 'app/forgot_password.html')

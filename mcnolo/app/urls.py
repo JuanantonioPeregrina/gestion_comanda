@@ -30,6 +30,7 @@ urlpatterns = [
     path('crear-sesion-pago/', views.crear_sesion_pago, name='crear_sesion_pago'),
     path('success/', views.payment_success, name='payment_success'),
     path('cancel/', views.payment_cancel, name='payment_cancel'),
+    path('forgot-password/', views.forgot_password, name='forgot_password'),
 ]
 
     
