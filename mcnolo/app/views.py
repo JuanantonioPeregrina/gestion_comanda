@@ -514,7 +514,7 @@ def forgot_password(request):
             # Simular el envío de correo
             user = SimpleNamespace(username=email.split('@')[0])
             try:
-                enviar_correo(email, user, code)
+                enviar_correoVerificacion(email, user, code)
                 return redirect('cambio_password')  # Redirigir a la nueva página
             except Exception as e:
                 return JsonResponse({'success': False, 'message': str(e)})
@@ -539,3 +539,13 @@ def cambio_password(request):
             return JsonResponse({'success': False, 'message': 'Código incorrecto'})
 
     return render(request, 'app/cambio_password.html', {'email': email})
+
+
+def enviar_correoVerificacion(mail, user, oferta):
+    send_mail(
+        'Código de Verificacion',
+        f'¡Hola! Tu código de confirmación es:{oferta}',
+        'no-reply@tuapp.com',
+        [mail],
+        fail_silently=False,
+    )
