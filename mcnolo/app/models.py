@@ -11,14 +11,27 @@ class Producto(models.Model):
     descripcion = models.TextField(default="Sin descripción")
     precio = models.DecimalField(max_digits=10, decimal_places=2)
     # disponible = models.BooleanField(default=True)
-    imagen = models.ImageField(upload_to='productos/', blank=True, null=True)  # Campo para la imagen
+    imagen = models.ImageField(upload_to='productos/', blank=True, null=True,)  # Campo para la imagen
     activo = models.BooleanField(default=True)  # Campo para marcar si está activo o no
     tiempo_preparacion = models.IntegerField()  # Tiempo en minutos
     def __str__(self):
         return self.nombre
-        
-        
+
+
+def get_invitado_user():
+    # Crear o reutilizar un usuario genérico para invitados
+    invitado_user, created = User.objects.get_or_create(
+        username='invitado_default',
+        defaults={'email': 'invitado@default.com', 'password': 'defaultpassword'}
+    )
+    return invitado_user
+
 class Pedido(models.Model):
+    METODOS_PAGO = [
+        ('credit_card', 'Tarjeta de Crédito'),
+        ('debit_card', 'Tarjeta de Débito'),
+        ('paypal', 'PayPal'),
+    ]
 
     ESTADOS = [
         ('en_espera', 'En Espera'),
@@ -29,24 +42,30 @@ class Pedido(models.Model):
         ('enviado', 'Enviado'),
     ]
 
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)  # Usuario que hace el pedido (puede ser None)
-    total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    estado = models.CharField(max_length=20, choices=ESTADOS, default="Pendiente")
-    nota_especial = models.TextField(blank=True, null=True)
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    invitado_id = models.CharField(max_length=36, null=True, blank=True)
     fecha = models.DateTimeField(auto_now_add=True)
-    
+    total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    estado = models.CharField(max_length=20, choices=ESTADOS, default='en_espera')
+    nota_especial = models.TextField(blank=True, null=True)
+    metodo_pago = models.CharField(max_length=20, choices=METODOS_PAGO, default='credit_card')
+
     def save(self, *args, **kwargs):
-        # Verificar si el estado cambió a "listo"
-        if self.pk is not None:  # Asegurarse de que el pedido ya existe
+        if self.pk is not None:  # Si el pedido ya existe
             previous = Pedido.objects.get(pk=self.pk)
             if previous.estado != self.estado and self.estado == 'listo':
-                # Enviar notificación al cliente vía WebSocket
                 channel_layer = get_channel_layer()
+                
+                if self.usuario and self.usuario.username != 'invitado_default':  # Usuario autenticado
+                    group_name = f'pedido_{self.id}'
+                else:  # Invitado
+                    group_name = 'invitados'
+
                 async_to_sync(channel_layer.group_send)(
-                    f'pedido_{self.id}',
+                    group_name,
                     {
                         'type': 'pedido_listo',
-                        'message': f'Tu pedido {self.id} está listo para recoger.'
+                        'message': f'Tu pedido #{self.id} está listo para recoger.',
                     }
                 )
         super().save(*args, **kwargs)
@@ -54,11 +73,10 @@ class Pedido(models.Model):
 
 
     def __str__(self):
-       
         if self.usuario:
             return f'Pedido {self.id} - {self.usuario.email}'
-        else:
-            return f'Pedido {self.id} - Invitado'
+        return f'Pedido {self.id} - Invitado'
+
 
 
 class ProductoPedido(models.Model):
@@ -79,7 +97,7 @@ class HistorialProducto(models.Model):
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    foto = models.ImageField(upload_to='perfil_fotos/', default='productos/perfil.webp')
+    foto = models.ImageField(upload_to='perfil_fotos/', default='perfil_fotos/avatar.webp')
 
     def __str__(self):
         return f'Perfil de {self.user.username}'

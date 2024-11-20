@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pagar</title>
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+    <h1>Pagar con Tarjeta</h1>
+    <form id="payment-form">
+        <div id="card-element">
+            <!-- El formulario de Stripe -->
+        </div>
+        <button type="submit" id="submit-button">Pagar</button>
+    </form>
+
+    <script>
+        const stripe = Stripe("TU_CLAVE_PUBLICA_DE_STRIPE");
+        const elements = stripe.elements();
+        const cardElement = elements.create("card");
+        cardElement.mount("#card-element");
+
+        const form = document.getElementById("payment-form");
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const { clientSecret } = await fetch("/procesar-pago/", { method: "POST" })
+                .then((response) => response.json());
+
+            const result = await stripe.confirmCardPayment(clientSecret, {
+                payment_method: {
+                    card: cardElement,
+                },
+            });
+
+            if (result.error) {
+                alert("Error: " + result.error.message);
+            } else {
+                alert("Pago exitoso. Gracias por tu compra.");
+                window.location.href = "/pagina-principal";  // Redirige después del pago
+            }
+        });
+    </script>
+</body>
+</html>

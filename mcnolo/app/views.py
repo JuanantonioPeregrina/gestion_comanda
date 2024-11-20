@@ -1,4 +1,7 @@
 import json
+import random
+import uuid
+from types import SimpleNamespace  # Para crear un objeto dinámico
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
@@ -13,7 +16,9 @@ from .forms import ChangeUsernameForm
 from django.contrib.auth.models import AnonymousUser
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
+from django.template.loader import render_to_string
 
+from .models import get_invitado_user
 
 
 # Página principal
@@ -154,22 +159,32 @@ def cambiar_visibilidad_producto(request, producto_id):
 
 
 def pedido_listo(request, pedido_id):
-    # Lógica para marcar el pedido como listo
     pedido = get_object_or_404(Pedido, id=pedido_id)
     pedido.estado = 'listo'
     pedido.save()
 
-    # Notificar al cliente vía WebSocket
     channel_layer = get_channel_layer()
+    if pedido.usuario:
+        group_name = f'pedido_{pedido.id}'
+    else:
+        invitado_id = request.session.get('invitado_id', None)
+        if invitado_id:
+            group_name = f'invitado_{invitado_id}'
+        else:
+            return JsonResponse({'error': 'Usuario no identificado'}, status=400)
+
+    # Enviar mensaje al grupo WebSocket
     async_to_sync(channel_layer.group_send)(
-        f'pedido_{pedido_id}',
+        group_name,
         {
             'type': 'pedido_listo',
-            'message': 'Tu pedido está listo para recoger.'
+            'message': f'Tu pedido #{pedido.id} está listo para recoger.',
         }
     )
 
-    return redirect('admin:index')  # Redirigir a donde prefieras en el admin
+    return redirect('pagina_principal')
+
+
 
 def anadir_al_carrito(request, producto_id):
     carrito = request.session.get('carrito', [])
@@ -188,77 +203,93 @@ def agregar_al_carrito(request, producto_id):
     carrito.calcular_total()
     return JsonResponse({'status': 'success', 'total': carrito.total})
 
-
-
-
-
+import uuid
 @csrf_exempt
 def finalizar_compra(request):
     if request.method == 'POST':
+        data = json.loads(request.body)
+        cart = data.get('cart', [])
+        total = data.get('total', 0)
+        nota_especial = data.get('nota_especial', '')
+
+        if not cart:
+            return JsonResponse({'error': 'El carrito está vacío.'}, status=400)
+
+        # Determinar el usuario o el invitado
+        if request.user.is_authenticated:
+            user = request.user  # Usuario autenticado
+            invitado_id = None  # No aplica para usuarios autenticados
+        else:
+            # Generar un `invitado_id` único si no existe
+            if 'invitado_id' not in request.session:
+                request.session['invitado_id'] = str(uuid.uuid4())
+            invitado_id = request.session['invitado_id']
+            user = get_invitado_user()  # Usuario genérico "invitado_default"
+
+        # Crear el pedido
+        pedido = Pedido.objects.create(
+            usuario=user,  # Usuario autenticado o "invitado_default"
+            invitado_id=invitado_id,  # Solo se asigna para invitados
+            total=total,
+            nota_especial=nota_especial,
+        )
+
+        # Guardar productos del pedido
+        for item in cart:
+            producto = Producto.objects.get(nombre=item['name'])
+            ProductoPedido.objects.create(pedido=pedido, producto=producto, cantidad=1)
+
+        # Crear sesión de pago en Stripe
         try:
-            data = json.loads(request.body)
-            cart = data.get('cart', [])
-            total = data.get('total', 0)
-            nota_especial = data.get('nota_especial', '')
+            session = stripe.checkout.Session.create(
+                payment_method_types=['card'],
+                line_items=[
+                    {
+                        'price_data': {
+                            'currency': 'eur',
+                            'product_data': {'name': item['name']},
+                            'unit_amount': int(float(item['price']) * 100),
+                        },
+                        'quantity': 1,  # Asume que siempre es 1 por simplicidad
+                    }
+                    for item in cart
+                ],
+                mode='payment',
+                success_url=f'http://127.0.0.1:8000/success/?pedido_id={pedido.id}',
+                cancel_url='http://127.0.0.1:8000/cancel/',
+            )
 
-            if not cart:
-                return JsonResponse({'error': 'El carrito está vacío.'}, status=400)
+            # Vincular el WebSocket para el pedido
+            channel_layer = get_channel_layer()
+            if invitado_id:  # Si es un invitado
+                group_name = f'invitado_{invitado_id}'
+            else:  # Si es un usuario autenticado
+                group_name = f'pedido_{pedido.id}'
 
-            # Obtener el usuario autenticado o usar None si es un invitado
-            usuario = request.user if request.user.is_authenticated else None
-            email_usuario = usuario.email if usuario else None  # Obtener el email del usuario si está autenticado
+            # Enviar notificación al grupo WebSocket (solo si se genera el pedido correctamente)
+            async_to_sync(channel_layer.group_add)(
+                group_name,
+                {
+                    'type': 'pedido_creado',
+                    'message': f'Tu pedido #{pedido.id} se está procesando.',
+                }
+            )
 
-            # Crear el pedido en la base de datos
-            pedido = Pedido.objects.create(usuario=usuario, total=total, nota_especial=nota_especial)
-
-            tiempo_total_preparacion = 0
-            factura_string = f"Factura de Compra\n\nCliente: {usuario.get_full_name() if usuario else 'Invitado'}\n\nProductos:\n"
-
-            # Construir el detalle de la factura
-            for item in cart:
-                producto = Producto.objects.get(nombre=item['name'])
-                cantidad = item.get('cantidad', 1)
-                ProductoPedido.objects.create(pedido=pedido, producto=producto, cantidad=cantidad)
-                tiempo_total_preparacion += producto.tiempo_preparacion
-                factura_string += f"- {producto.nombre}: {producto.precio}€ x {cantidad} unidades\n"
-
-            factura_string += f"\nTotal: {total}€\n"
-            if nota_especial:
-                factura_string += f"\nNota Especial: {nota_especial}\n"
-            factura_string += "\nGracias por su compra!"
-
-            # Intentar enviar el correo
-            if email_usuario:
-                print("hola")
-                try:
-                    send_mail(
-                        'Factura de su compra',
-                        factura_string,
-                        'no-reply@tuapp.com',  # Cambia esto por tu dirección de correo configurada
-                        [email_usuario],
-                        fail_silently=False,
-                    )
-                    email_status = 'Correo enviado con éxito.'
-
-                except (BadHeaderError, SMTPException) as e:
-                    email_status = f'Error al enviar el correo: {e}'
-
-            else:
-                email_status = 'No se pudo enviar el correo: usuario sin dirección de correo.'
-
-            # Responder con éxito y detalles del pedido
-            return JsonResponse({
-                'total': total,
-                'tiempo_estimado_preparacion': tiempo_total_preparacion,
-                'mensaje': 'Pedido completado correctamente.',
-                'email_status': email_status
-            })
-
+            return JsonResponse({'url': session.url})  # Devuelve la URL de Stripe
         except Exception as e:
-            print(f"Error durante la finalización de la compra: {e}")
             return JsonResponse({'error': str(e)}, status=500)
 
     return JsonResponse({'error': 'Método no permitido.'}, status=405)
+
+
+
+
+
+def generar_invitado_id(request):
+    if 'invitado_id' not in request.session:
+        request.session['invitado_id'] = str(uuid.uuid4())
+    print("Generado invitado_id:", request.session['invitado_id'])  # Confirmar ID generado
+    return request.session['invitado_id']
 
 
 
@@ -287,6 +318,7 @@ def obtener_pedido(request, pedido_id):
     
     except Pedido.DoesNotExist:
         return JsonResponse({'error': 'Pedido no encontrado.'}, status=404)
+    
 def comprobar_oferta(request):
     data = json.loads(request.body)
     codigo = data.get('codigo')  # Obtener el código enviado desde el formulario
@@ -331,50 +363,208 @@ def change_image(request):
 
 from django.contrib.auth.models import AnonymousUser
 
-""""
-@csrf_exempt
-def finalizar_compra(request):
-    if request.method == 'POST':
+
+def invitado(request):
+    request.session['es_invitado'] = True
+    if 'invitado_id' not in request.session:
+        request.session['invitado_id'] = str(uuid.uuid4())
+    return redirect('pagina_principal')
+
+import stripe
+from django.conf import settings
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
+
+# Configura tu clave secreta de Stripe
+stripe.api_key = settings.STRIPE_SECRET_KEY
+
+
+def procesar_pago(request):
+    if request.method == "POST":
+        # Obtener detalles del pedido
+        total = request.POST.get("total")
         try:
-            data = json.loads(request.body)
-            cart = data.get('cart', [])
-            total = data.get('total', 0)
-            nota_especial = data.get('nota_especial', '')
-
-            if not cart:
-                return JsonResponse({'error': 'El carrito está vacío.'}, status=400)
-
-            usuario = request.user if request.user.is_authenticated else None
-            print(f"Usuario autenticado: {usuario}")  # Mensaje de depuración
-
-            # Crear el pedido sin usuario si es un invitado
-            pedido = Pedido.objects.create(usuario=usuario, total=total, nota_especial=nota_especial)
-            print(f"Pedido creado: {pedido}")  # Mensaje de depuración
-
-            tiempo_total_preparacion = 0
-
-            for item in cart:
-                producto = Producto.objects.get(nombre=item['name'])
-                print(f"Producto encontrado: {producto}")  # Mensaje de depuración
-                ProductoPedido.objects.create(pedido=pedido, producto=producto, cantidad=item.get('cantidad', 1))
-                tiempo_total_preparacion += producto.tiempo_preparacion
-
-            return JsonResponse({
-                'total': total,
-                'tiempo_estimado_preparacion': tiempo_total_preparacion,
-                'mensaje': 'Pedido completado correctamente.'
-                'email_status': email_status
-            })
-
+            # Crear el Intento de Pago (PaymentIntent)
+            intent = stripe.PaymentIntent.create(
+                amount=int(float(total) * 100),  # El total en centavos
+                currency="eur",  # Moneda
+                payment_method_types=["card"],  # Métodos de pago disponibles
+            )
+            # Retornar el ID del Intento de Pago a la plantilla
+            return JsonResponse({"clientSecret": intent["client_secret"]})
         except Exception as e:
-            print(f"Error durante la finalización de la compra: {e}")  # Mensaje de depuración detallada
+            return JsonResponse({"error": str(e)}, status=400)
+    return render(request, "app/procesar_pago.html")
+
+from django.http import JsonResponse
+import stripe
+
+
+stripe.api_key = settings.STRIPE_SECRET_KEY  # Usar la clave secreta
+
+
+@csrf_exempt
+def crear_sesion_pago(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        cart = data.get('cart', [])
+        total = data.get('total', 0)
+        nota_especial = data.get('nota_especial', '')
+
+        if not cart:
+            return JsonResponse({'error': 'El carrito está vacío.'}, status=400)
+
+        # Asigna el usuario o el usuario genérico para invitados
+        user = request.user if request.user.is_authenticated else get_invitado_user()
+
+        # Crear el pedido
+        pedido = Pedido.objects.create(
+            usuario=user,
+            total=total,
+            nota_especial=nota_especial,
+        )
+
+        # Guardar los productos del pedido
+        for item in cart:
+            producto = Producto.objects.get(nombre=item['name'])
+            ProductoPedido.objects.create(
+                pedido=pedido,
+                producto=producto,
+                cantidad=item.get('cantidad', 1),
+            )
+
+        try:
+            # Crear sesión de pago en Stripe
+            session = stripe.checkout.Session.create(
+                payment_method_types=['card'],
+                line_items=[
+                    {
+                        'price_data': {
+                            'currency': 'eur',
+                            'product_data': {'name': item['name']},
+                            'unit_amount': int(float(item['price']) * 100),
+                        },
+                        'quantity': item.get('cantidad', 1),
+                    }
+                    for item in cart
+                ],
+                mode='payment',
+                success_url=f'http://127.0.0.1:8000/success/?pedido_id={pedido.id}',
+                cancel_url='http://127.0.0.1:8000/cancel/',
+            )
+
+            return JsonResponse({'url': session.url})
+        except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
 
     return JsonResponse({'error': 'Método no permitido.'}, status=405)
 
-"""
 
-def invitado(request):
-     # Configura una variable en la sesión para identificar que es un "invitado"
-    request.session['es_invitado'] = True
-    return redirect('pagina_principal')  # Redirige a la página principal
+
+
+from django.template.loader import render_to_string
+
+def payment_success(request):
+    # Obtener el pedido utilizando el parámetro `pedido_id`
+    pedido_id = request.GET.get('pedido_id')
+    if not pedido_id:
+        messages.error(request, 'No se proporcionó un pedido válido.')
+        return redirect('pagina_principal')
+
+    try:
+        pedido = Pedido.objects.get(id=pedido_id)
+    except Pedido.DoesNotExist:
+        messages.error(request, 'El pedido no existe.')
+        return redirect('pagina_principal')
+
+    # Obtener los productos del pedido
+    productos = ProductoPedido.objects.filter(pedido=pedido)
+
+    # Renderizar la factura como HTML
+    factura_html = render_to_string('app/factura.html', {
+        'pedido': pedido,
+        'productos': productos,
+    })
+
+    # Redirigir a la página de éxito con la factura
+    return render(request, 'app/success.html', {
+        'pedido': pedido,
+        'productos': productos,
+        'factura_html': factura_html,
+    })
+
+
+def payment_cancel(request):
+    return render(request, 'app/cancel.html')
+
+
+temporary_data = {}
+
+def forgot_password(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')  # Obtiene el correo del formulario
+        if email:
+            # Generar un código numérico aleatorio
+            code = random.randint(100000, 999999)
+
+            # Guardar temporalmente el correo y código (para pruebas, sin BBDD)
+            temporary_data['email'] = email
+            temporary_data['code'] = str(code)
+
+            # Simular el envío de correo
+            user = SimpleNamespace(username=email.split('@')[0])
+            try:
+                enviar_correoVerificacion(email, user, code)
+                return redirect('cambio_password')  # Redirigir a la nueva página
+            except Exception as e:
+                return JsonResponse({'success': False, 'message': str(e)})
+
+    return render(request, 'app/forgot_password.html')
+
+from django.contrib.auth.hashers import make_password
+def cambio_password(request):
+    email = temporary_data.get('email')  # Recupera el correo guardado temporalmente
+
+    if not email:  # Si no hay correo temporal, redirigir al inicio
+        return redirect('forgot_password')
+
+    if request.method == 'POST':
+        entered_code = request.POST.get('code')
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
+
+        # Verificar que el código ingresado sea correcto
+        if entered_code != temporary_data.get('code'):
+            messages.error(request, 'Código incorrecto')
+            return render(request, 'app/cambio_password.html', {'email': email})
+
+        # Verificar que las contraseñas coincidan
+        if new_password != confirm_password:
+            messages.error(request, 'Las contraseñas no coinciden')
+            return render(request, 'app/cambio_password.html', {'email': email})
+
+        # Verificar si el username (que en este caso es el email) pertenece a un usuario existente
+        try:
+            user = User.objects.get(username=email)  # Busca al usuario por el campo `username`
+        except User.DoesNotExist:
+            messages.error(request, 'No se encontró un usuario con ese correo electrónico')
+            return render(request, 'app/cambio_password.html', {'email': email})
+
+        # Cambiar la contraseña del usuario
+        user.password = make_password(new_password)  # Usar `make_password` para encriptar la contraseña
+        user.save()  # Guardar los cambios en la base de datos
+
+        # Éxito: Mostrar mensaje y redirigir
+        messages.success(request, 'Contraseña cambiada exitosamente. Ahora puedes iniciar sesión.')
+        return redirect('inicio_sesion')
+
+    return render(request, 'app/cambio_password.html', {'email': email})
+
+def enviar_correoVerificacion(mail, user, oferta):
+    send_mail(
+        'Código de Verificacion',
+        f'¡Hola! Tu código de confirmación es:{oferta}',
+        'no-reply@tuapp.com',
+        [mail],
+        fail_silently=False,
+    )

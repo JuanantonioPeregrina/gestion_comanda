@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-=8^o*j^=^l&^-+sacx91^2#qopsqly%q6((82_5&2hc=r4&-9u
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', '10.60.116.207']
 
 
 # Application definition
@@ -176,3 +176,6 @@ EMAIL_HOST_PASSWORD = 'hmvb pzbo bsit tuqf'
 LOGIN_URL = 'inicio_sesion'  # Esta línea permite que los invitados accedan sin iniciar sesión
 
 DEBUG = True
+
+STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY', 'sk_test_51QLsXtFbnZOINmh969z5EkS3NBRLbu8oeDGExMcB6Yg14nD3SzurfkXtpFvsg5tqXjYHZXp8eDRga6o0zDgfNMjv00IFMVLuZr')
+STRIPE_PUBLIC_KEY = os.getenv('STRIPE_PUBLIC_KEY', 'pk_test_51QLsXtFbnZOINmh9dklrByRQGQrJPpxvnTboYEcEYwsMVrDAIIkLcGpwiswvGUEPIosI7i6aTMZJ85e70el4rl1c00zlnlMczy')

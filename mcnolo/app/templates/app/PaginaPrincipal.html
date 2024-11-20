@@ -573,7 +573,7 @@
                 {% if user.profile.foto %}
                     <img src="{{ user.profile.foto.url }}" alt="Foto de perfil" class="profile-pic" onclick="toggleInfoUsuario()">
                 {% else %}
-                    <img src="{{ MEDIA_URL }}/perfil_fotos/perfil.webp" alt="Foto de perfil" class="profile-pic" onclick="toggleInfoUsuario()">
+                    <img src="{{ MEDIA_URL }}perfil_fotos/avatar.webp" alt="Foto de perfil" class="profile-pic" onclick="toggleInfoUsuario()">
                 {% endif %}
                 <p>{{ user.first_name }} {{ user.last_name }}</p> <!-- o user.username si no tienes nombres -->
             </div>
@@ -679,7 +679,7 @@
                             </button>
     
                             <!-- Botón Pagar Ya -->
-                            <button class="pagar-ya" data-name="{{ producto.nombre }}" data-price="{{ producto.precio|floatformat:2 }}">
+                            <button class="pagar-ya" id="pagar-ya-btn" data-name="{{ producto.nombre }}" data-price="{{ producto.precio|floatformat:2 }}">
                                 Pagar Ya
                             </button>
                         {% endif %}
@@ -755,10 +755,14 @@
 <div id="notificacion" style="display:none; background-color: yellow; padding: 10px;">
     Aquí se mostrará el mensaje del WebSocket -->
 <!-- </div>-->
+
 <!-- Contenedor para la notificación -->
 <div id="notification" class="notification">
     <p id="notification-message"></p>
 </div>
+
+
+
 <script>
 const anadir_boton = document.querySelector('.anadir-plato-boton');
 const anadir_form = document.getElementById('anadir-plato-form');
@@ -852,13 +856,23 @@ function getCookie(name) {
     return cookieValue;
 }
 
+function clearCart() {
+    // Vacía el array del carrito
+    cart.length = 0;
+
+    // Actualiza la interfaz del carrito en el DOM
+    cartItemsContainer.innerHTML = ''; // Limpia la lista del carrito
+    totalPriceElement.textContent = "0.00"; // Reinicia el precio total
+}
+
 const csrftoken = getCookie('csrftoken');
+
 
 document.getElementById('checkout-btn').addEventListener('click', (event) => {
     event.preventDefault();
 
     const checkoutBtn = document.getElementById('checkout-btn');
-    if (checkoutBtn.disabled) return;  // Evita múltiples envíos
+    if (checkoutBtn.disabled) return; // Evita múltiples envíos
     checkoutBtn.disabled = true;
 
     if (cart.length === 0) {
@@ -869,34 +883,7 @@ document.getElementById('checkout-btn').addEventListener('click', (event) => {
 
     const notaEspecial = document.getElementById('nota_especial').value;
 
-    //String factura--------------------------------------------------------------------
-    const total = parseFloat(totalPriceElement.textContent).toFixed(2);
-    const nombreUsuario = "{{ user.first_name }} {{ user.last_name }}";   //|| "Cliente";  // "Cliente" como predeterminado si está vacío
-
-    // Crear el string de la factura
-    
-    let facturaString = `¡GRACIAS POR CONFIAR EN MCNOLO!\nEstimado ${nombreUsuario} \nLe adjuntamos la factura de su compra\n\n`;
-    facturaString += "Productos:\n";
-
-    cart.forEach(item => {
-        facturaString += `- ${item.name}: ${item.price.toFixed(2)}€\n`;
-    });
-
-    facturaString += `\nTotal: ${total}€\n`;
-    if (notaEspecial) {
-        facturaString += `\nNota Especial: ${notaEspecial}\n`;
-    }
-    facturaString += "\nGracias por su compra!";
-
-    // Mostrar el string de la factura en un pop-up para revisión
-    alert(facturaString);
-
-    // Habilitar de nuevo el botón después de revisar
-    checkoutBtn.disabled = false
-
-    //----------------
-
-    fetch("{% url 'finalizar_compra' %}", {
+    fetch("{% url 'crear_sesion_pago' %}", { // Asegúrate de que esta URL es correcta
         method: "POST",
         headers: {
             "X-CSRFToken": csrftoken,
@@ -908,13 +895,11 @@ document.getElementById('checkout-btn').addEventListener('click', (event) => {
             nota_especial: notaEspecial
         })
     })
-    
     .then(response => response.json())
     .then(data => {
-        if (data.mensaje) {
-            alert(data.mensaje);
-            cart.length = 0;
-            updateCart();
+        if (data.url) {
+            // Redirige a la pasarela de pago de Stripe
+            window.location.href = data.url;
         } else if (data.error) {
             alert(data.error);
         }
@@ -926,40 +911,55 @@ document.getElementById('checkout-btn').addEventListener('click', (event) => {
         checkoutBtn.disabled = false;
     });
 });
-function setupPayment() {
-        document.querySelectorAll('.pagar-ya').forEach(button => {
-            button.addEventListener('click', function() {
-                const nombre = this.getAttribute('data-name');
-                const precio = parseFloat(this.getAttribute('data-price'));
-                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-                fetch('{% url "finalizar_compra" %}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken
-                    },
-                    body: JSON.stringify({
-                        cart: [{ name: nombre, price: precio, cantidad: 1 }],
-                        total: precio.toFixed(2),
-                        nota_especial: ''
-                    })
+
+
+
+
+
+function setupPayment() {
+    document.querySelectorAll('.pagar-ya').forEach(button => {
+        button.addEventListener('click', function() {
+            const name = this.getAttribute('data-name');
+            const price = parseFloat(this.getAttribute('data-price'));
+            const csrfToken = getCookie('csrftoken');
+
+            // Crear un carrito con un solo producto
+            const singleItemCart = [
+                { name: name, price: price, cantidad: 1 }
+            ];
+
+            fetch("{% url 'crear_sesion_pago' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({
+                    cart: singleItemCart, // Producto seleccionado
+                    total: price.toFixed(2), // Precio del producto
+                    nota_especial: '' // Sin notas especiales
                 })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        alert(data.error);
-                    } else {
-                        alert('Compra realizada con éxito. Total: ' + data.total + '€. Tiempo estimado: ' + data.tiempo_estimado + ' minutos.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Ocurrió un error al procesar la compra.');
-                });
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.url) {
+                    // Redirigir a la pasarela de pago de Stripe
+                    window.location.href = data.url;
+                } else if (data.error) {
+                    alert(data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Ocurrió un error al procesar la compra.');
             });
         });
-    }
+    });
+}
+
+
+
 
     setupPayment();
 
@@ -1058,41 +1058,49 @@ function restaurarPedido(pedidoId) {
 
 
 
+document.addEventListener('DOMContentLoaded', () => {
+    const pedidoId = "{{ pedido.id }}";  // Para usuarios autenticados
+    const invitadoId = "{{ request.session.invitado_id }}";  // Para invitados
 
-
-   // Conexión WebSocket
-   const pedidoId = "{{ pedido.id }}";  // Inyectar el ID del pedido desde Django
-
+    let wsUrl;
     if (pedidoId) {
-        const ws = new WebSocket('ws://' + window.location.host + '/ws/pedido/' + pedidoId + '/');
+        wsUrl = `ws://${window.location.host}/ws/pedido/${pedidoId}/`;
+    } else if (invitadoId) {
+        wsUrl = `ws://${window.location.host}/ws/invitado/${invitadoId}/`;
+    }
+
+    if (wsUrl) {
+        const ws = new WebSocket(wsUrl);
 
         ws.onmessage = function(event) {
             const data = JSON.parse(event.data);
-            console.log("Mensaje recibido:", data);  // Asegúrate de que ves esto en la consola
 
-        // Mostrar el mensaje en la notificación
-        const notification = document.getElementById('notification');
-        const messageElement = document.getElementById('notification-message');
-        messageElement.textContent = data.message;  // El mensaje recibido por WebSocket
+            // Mostrar la notificación
+            const notification = document.getElementById('notification');
+            const messageElement = document.getElementById('notification-message');
+            messageElement.textContent = data.message;
+            notification.classList.add('show-notification');
 
-        // Mostrar la notificación y aplicar la clase de animación
-        notification.classList.add('show-notification');
-
-        // Ocultar la notificación después de unos segundos
-        setTimeout(() => {
-            notification.classList.remove('show-notification');
-        }, 10000);  // Ocultar después de 5 segundos
+            // Ocultar después de 10 segundos
+            setTimeout(() => {
+                notification.classList.remove('show-notification');
+            }, 10000);
         };
 
-
         ws.onerror = function(event) {
-            console.error("WebSocket error observed:", event);
+            console.error("WebSocket error:", event);
         };
 
         ws.onclose = function(event) {
             console.log('WebSocket cerrado.');
         };
     }
+});
+
+
+
+
+
     // Obtener elementos de la propina
 const tipAmountInput = document.getElementById('tip-amount');
 const applyTipButton = document.getElementById('apply-tip');
@@ -1120,7 +1128,24 @@ applyTipButton.addEventListener('click', () => {
     }
 });
 
-   
+    const userId = "{{ user.id|default:'' }}";  // Si no está autenticado, será vacío
+    const invitadoId = "{{ invitado_id|default:'' }}";
+
+    // URL para el WebSocket
+    const wsUrl = userId ? `/ws/pedido/${userId}/` : `/ws/invitado/${invitadoId}/`;
+    const socket = new WebSocket(`ws://${window.location.host}${wsUrl}`);
+
+    // Recibir mensajes desde el servidor
+    socket.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        alert(data.message);  // Mostrar la notificación
+    };
+
+    socket.onclose = function() {
+        console.error("WebSocket cerrado inesperadamente");
+    };
+</script>
+
 </script>
 
 </body>

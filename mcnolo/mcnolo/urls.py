@@ -42,7 +42,11 @@ urlpatterns = [
     path('change_username/', views.change_username, name='change_username'),
     path('change_image/', views.change_image, name='change_image'),
     # path('', include('app.urls')),
-
+    path('crear-sesion-pago/', views.crear_sesion_pago, name='crear_sesion_pago'),
+    path('success/', views.payment_success, name='payment_success'),
+    path('cancel/', views.payment_cancel, name='payment_cancel'),
+    path('forgot-password/', views.forgot_password, name='forgot_password'),
+    path('cambio-password/', views.cambio_password, name='cambio_password'),
 ]
 
 if settings.DEBUG:
