@@ -118,7 +118,14 @@ def enviar_correo(mail, user, oferta):
     send_mail(
         'Oferta de bienvenida',
         f'¡Hola {user.username}! Te hemos dado una oferta del 10%. Usa el código: {oferta}',
-        'no-reply@tuapp.com',
+        'no-reply@mcnolo.com',
+        [mail],
+        fail_silently=False,
+    )
+    send_mail(
+        'Bienvenido',
+        f'¡Hola {user.username}! Bienvenido a nuestra plataforma \n Muchas gracias por registrarte',
+        'no-reply@mcnolo.com',
         [mail],
         fail_silently=False,
     )
