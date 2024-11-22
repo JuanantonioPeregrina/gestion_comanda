@@ -459,7 +459,13 @@ def crear_sesion_pago(request):
                 success_url=f'http://127.0.0.1:8000/success/?pedido_id={pedido.id}',
                 cancel_url='http://127.0.0.1:8000/cancel/',
             )
-
+            send_mail(
+                'Pedido Confirmado',
+                f'¡Hola! Tu pedido #{pedido.id} ha sido confirmado. Aquí tienes tu factura:',   
+                'no-reply@mcnolo.com',
+                [user.email],
+                fail_silently=False,
+            )
             return JsonResponse({'url': session.url})
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
