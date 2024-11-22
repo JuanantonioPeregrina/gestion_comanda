@@ -584,26 +584,35 @@
         {% else %}
             <a href="{% url 'inicio_sesion' %}" class="btn login">Iniciar sesión</a>
             <a href="{% url 'registrarse' %}"  class= "btn login"> Registrarse</a>
+
+            <button onclick="togglePedidos()" class = "btn login">Tus pedidos:</button>
+            <div id="contenedor-pedidos" style="display: none;">
+                {% if pedidos %}
+                    <ul id="lista-pedidos">
+                        {% for pedido in pedidos %}
+                            <li>
+                                Pedido {{ pedido.id }} - Total: {{ pedido.total }}€
+                                <span id="pedido-estado-{{ pedido.id }}" style="display:none;">{{ pedido.get_estado_display }}</span>
+                                <!-- Aquí pasamos el ID del pedido para que se repita correctamente -->
+                                <button class="volver-a-pedir" onclick="restaurarPedido('{{ pedido.id }}')">Volver a pedir</button>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    <div id="detalle-pedido" style="display:none; margin-top: 10px;">
+                        <h5>Estado del pedido:</h5>
+                        <p id="estado-pedido"></p>
+                    </div>
+                {% else %}
+                    <p>No tienes pedidos.</p>
+                {% endif %}
+            </div>
             
-            <h4>Tus pedidos:</h4>
-            {% if pedidos %}
-                <ul id="lista-pedidos">
-                    {% for pedido in pedidos %}
-                        <li>
-                            Pedido {{ pedido.id }} - Total: {{ pedido.total }}€
-                            <span id="pedido-estado-{{ pedido.id }}" style="display:none;">{{ pedido.get_estado_display }}</span>
-                            <!-- Aquí pasamos el ID del pedido para que se repita correctamente -->
-                            <button class="volver-a-pedir" onclick="restaurarPedido('{{ pedido.id }}')">Volver a pedir</button>
-                        </li>
-                    {% endfor %}
-                </ul>
-                <div id="detalle-pedido" style="display:none; margin-top: 10px;">
-                    <h5>Estado del pedido:</h5>
-                    <p id="estado-pedido"></p>
-                </div>
-            {% else %}
-                <p>No tienes pedidos.</p>
-            {% endif %}
+            <script>
+                function togglePedidos() {
+                    const contenedor = document.getElementById('contenedor-pedidos');
+                    contenedor.style.display = contenedor.style.display === 'none' ? 'block' : 'none';
+                }                
+            </script>
 
 
 
