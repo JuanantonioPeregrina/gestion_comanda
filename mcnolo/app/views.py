@@ -51,6 +51,8 @@ def inicio_sesion(request):
 # Página mostrada cuando el usuario ha iniciado sesión
 #@login_required  # Esto asegura que solo los usuarios autenticados puedan acceder
 
+
+
 def pagina_principal(request):
     # Mostrar solo productos activos para todos los usuarios
     productos = Producto.objects.filter(activo=True)
@@ -75,9 +77,18 @@ def pagina_principal(request):
 
     # Si el usuario es invitado (no autenticado)
     elif es_invitado:
+        #------------------------------------------
+        invitado_id = generar_invitado_id(request)
+        pedidos = Pedido.objects.filter(invitado_id=invitado_id)  # Definir como una lista vacía para invitados
+        print(f"Pedidos para invitado ({invitado_id}): {pedidos}")
+        pedido = pedidos.last() if pedidos else None  # No hay último pedido para invitados
+        #-----------------------------------
         return render(request, 'app/PaginaPrincipal.html', {
             'productos': productos,
-            'invitado': True  # Indicar que es invitado
+            'pedidos': pedidos,
+            'pedido': pedido,
+            'invitado': True,
+            'invitado_id': invitado_id,  # Pasar el ID del invitado al contexto
         })
     
     # Si el usuario no está autenticado ni es invitado, redirigir al inicio de sesión
@@ -228,11 +239,12 @@ def finalizar_compra(request):
             invitado_id = None  # No aplica para usuarios autenticados
         else:
             # Generar un `invitado_id` único si no existe
-            if 'invitado_id' not in request.session:
-                request.session['invitado_id'] = str(uuid.uuid4())
+            #if 'invitado_id' not in request.session:
+                #request.session['invitado_id'] = str(uuid.uuid4())
+            #invitado_id = request.session['invitado_id']
             invitado_id = request.session['invitado_id']
-            user = get_invitado_user()  # Usuario genérico "invitado_default"
-
+            #user = get_invitado_user()  # Usuario genérico "invitado_default"
+            user = None
         # Crear el pedido
         pedido = Pedido.objects.create(
             usuario=user,  # Usuario autenticado o "invitado_default"
@@ -240,7 +252,8 @@ def finalizar_compra(request):
             total=total,
             nota_especial=nota_especial,
         )
-
+        
+        print(f"Pedido creado: {pedido}, invitado_id={pedido.invitado_id}")
         # Guardar productos del pedido
         for item in cart:
             producto = Producto.objects.get(nombre=item['name'])
@@ -288,13 +301,10 @@ def finalizar_compra(request):
 
     return JsonResponse({'error': 'Método no permitido.'}, status=405)
 
-
-
-
-
 def generar_invitado_id(request):
     if 'invitado_id' not in request.session:
         request.session['invitado_id'] = str(uuid.uuid4())
+        request.session['es_invitado'] = True  # Marcamos al usuario como invitado
     print("Generado invitado_id:", request.session['invitado_id'])  # Confirmar ID generado
     return request.session['invitado_id']
 

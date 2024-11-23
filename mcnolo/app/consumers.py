@@ -7,7 +7,7 @@ class PedidoConsumer(AsyncWebsocketConsumer):
         self.invitado_id = self.scope['url_route']['kwargs'].get('invitado_id')
 
         if self.invitado_id:
-            self.group_name = 'invitados'  # Grupo genérico para invitados
+            self.group_name = f'invitado_{self.invitado_id}'  # Grupo genérico para invitados
         else:
             self.pedido_id = self.scope['url_route']['kwargs'].get('pedido_id')
             self.group_name = f'pedido_{self.pedido_id}'

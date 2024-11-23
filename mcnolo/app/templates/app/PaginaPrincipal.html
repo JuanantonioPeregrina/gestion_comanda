@@ -582,6 +582,7 @@
                 <button type="submit" class="btn cerrar-sesion">Cerrar sesión</button>
             </form>
         {% else %}
+            <a> Eres el invitado: {{invitado_id}}</a>
             <a href="{% url 'inicio_sesion' %}" class="btn login">Iniciar sesión</a>
             <a href="{% url 'registrarse' %}"  class= "btn login"> Registrarse</a>
 
