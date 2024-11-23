@@ -4,6 +4,7 @@ La comanda que le manda un cliente a cocina directamente, desde una app o págin
 
 ## despliegue inicial de desarrollador
 pip install django
+pip install stripe
 pip install channels_redis
 .\env\Scripts\activate
 cd .\gestion_comanda\ 
