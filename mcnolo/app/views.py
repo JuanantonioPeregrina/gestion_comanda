@@ -5,7 +5,7 @@ from types import SimpleNamespace  # Para crear un objeto dinámico
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
-from .models import HistorialProducto, Pedido, Producto, Carrito, CarritoProducto, ProductoPedido, Oferta
+from .models import HistorialProducto, Pedido, Producto, Carrito, CarritoProducto, ProductoPedido, Oferta, Categoria
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from channels.layers import get_channel_layer
@@ -17,6 +17,7 @@ from django.contrib.auth.models import AnonymousUser
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.template.loader import render_to_string
+
 
 from .models import get_invitado_user
 
@@ -57,10 +58,14 @@ def pagina_principal(request):
     # Mostrar solo productos activos para todos los usuarios
     productos = Producto.objects.filter(activo=True)
 
-    # Clasificar productos por categoría
+    # Obtener las categorías 'menu' y 'carta' primero
+    categoria_menu = Categoria.objects.get(nombre='menu')
+    categoria_carta = Categoria.objects.get(nombre='carta')
+
+    # Filtrar los productos por la categoría obtenida
     categorias = {
-        'menu': productos.filter(categoria='menu'),
-        'carta': productos.filter(categoria='carta'),
+        'menu': productos.filter(categoria=categoria_menu),
+        'carta': productos.filter(categoria=categoria_carta),
     }
 
     # Clasificar por subcategorías dentro de 'menu' y 'carta'
@@ -88,6 +93,7 @@ def pagina_principal(request):
         pedidos = Pedido.objects.filter(usuario=request.user)
         pedido = pedidos.last() if pedidos else None
         return render(request, 'app/PaginaPrincipal.html', {
+            'productos': productos,
             'categorias': categorias,
             'subcategorias': subcategorias,
             'pedidos': pedidos,
@@ -100,6 +106,7 @@ def pagina_principal(request):
         pedidos = Pedido.objects.filter(invitado_id=invitado_id)
         pedido = pedidos.last() if pedidos else None
         return render(request, 'app/PaginaPrincipal.html', {
+            'productos': productos,
             'categorias': categorias,
             'subcategorias': subcategorias,
             'pedidos': pedidos,
@@ -109,6 +116,7 @@ def pagina_principal(request):
         })
 
     return redirect('inicio_sesion')
+
 
 
 def registrarse(request):
