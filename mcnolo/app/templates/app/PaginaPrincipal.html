@@ -554,185 +554,201 @@
 </head>
 <body>
 
-    <!-- Video como fondo -->
-    <video autoplay muted loop class="video-background">
-        <source src="{{ MEDIA_URL }}/media/videos/principal.mp4" type="video/mp4">
-        Tu navegador no soporta videos.
-    </video>
+<!-- Video como fondo -->
+<video autoplay muted loop class="video-background">
+    <source src="{{ MEDIA_URL }}/media/videos/principal.mp4" type="video/mp4">
+    Tu navegador no soporta videos.
+</video>
 
-    <div class="overlay"></div>
+<div class="overlay"></div>
 
-    <div class="menu">
-        <h1>Bienvenido a McNolo</h1>
-        <p>¡Explora nuestro menú y disfruta de nuestros productos!</p>
-    </div>
+<div class="menu">
+    <h1>Bienvenido a McNolo</h1>
+    <p>¡Explora nuestro menú y disfruta de nuestros productos!</p>
+</div>
 
-    <div class="user-profile" >
-       {% if user.is_authenticated %}
-            <div class="user-info">
-                {% if user.profile.foto %}
-                    <img src="{{ user.profile.foto.url }}" alt="Foto de perfil" class="profile-pic" onclick="toggleInfoUsuario()">
-                {% else %}
-                    <img src="{{ MEDIA_URL }}perfil_fotos/avatar.webp" alt="Foto de perfil" class="profile-pic" onclick="toggleInfoUsuario()">
-                {% endif %}
-                <p>{{ user.first_name }} {{ user.last_name }}</p> <!-- o user.username si no tienes nombres -->
-            </div>
-            <form action="{% url 'logout' %}" method="POST">
-                {% csrf_token %}
-                <button type="submit" class="btn cerrar-sesion">Cerrar sesión</button>
-            </form>
-        {% else %}
-            <a> Eres el invitado: {{invitado_id}}</a>
-            <a href="{% url 'inicio_sesion' %}" class="btn login">Iniciar sesión</a>
-            <a href="{% url 'registrarse' %}"  class= "btn login"> Registrarse</a>
-
-            <button onclick="togglePedidos()" class = "btn login">Tus pedidos:</button>
-            <div id="contenedor-pedidos" style="display: none;">
-                {% if pedidos %}
-                    <ul id="lista-pedidos">
-                        {% for pedido in pedidos %}
-                            <li>
-                                Pedido {{ pedido.id }} - Total: {{ pedido.total }}€
-                                <span id="pedido-estado-{{ pedido.id }}" style="display:none;">{{ pedido.get_estado_display }}</span>
-                                <!-- Aquí pasamos el ID del pedido para que se repita correctamente -->
-                                <button class="volver-a-pedir" onclick="restaurarPedido('{{ pedido.id }}')">Volver a pedir</button>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                    <div id="detalle-pedido" style="display:none; margin-top: 10px;">
-                        <h5>Estado del pedido:</h5>
-                        <p id="estado-pedido"></p>
-                    </div>
-                {% else %}
-                    <p>No tienes pedidos.</p>
-                {% endif %}
-            </div>
-            
-            <script>
-                function togglePedidos() {
-                    const contenedor = document.getElementById('contenedor-pedidos');
-                    contenedor.style.display = contenedor.style.display === 'none' ? 'block' : 'none';
-                }                
-            </script>
-
-
-
-
-        {% endif %}
-    </div>
-    
-     <!-- Área para mostrar el nombre de usuario y pedidos -->
-     <div id="info-usuario" style="display:none; position:absolute; top:80px; left:20px; background-color: white; padding: 10px; border-radius: 5px; box-shadow: 0 0 5px rgba(0,0,0,0.2);">
-        <p id="usuario-texto"></p>
-    
-        <a href="{% url 'change_username' %}" class="btn btn-secondary" style="margin-bottom: 10px;">Cambiar nombre de usuario</a>
-        <a href="{% url 'change_image' %}" class="btn btn-secondary">Cambiar imagen</a>
-        
-        <h4>Tus pedidos:</h4>
-        {% if pedidos %}
-            <ul id="lista-pedidos">
-                {% for pedido in pedidos %}
-                    <li>
-                        Pedido {{ pedido.id }} - Total: {{ pedido.total }}€
-                        <span id="pedido-estado-{{ pedido.id }}" style="display:none;">{{ pedido.get_estado_display }}</span>
-                        <!-- Aquí pasamos el ID del pedido para que se repita correctamente -->
-                        <button class="volver-a-pedir" onclick="restaurarPedido('{{ pedido.id }}')">Volver a pedir</button>
-                    </li>
-                {% endfor %}
-            </ul>
-            <div id="detalle-pedido" style="display:none; margin-top: 10px;">
-                <h5>Estado del pedido:</h5>
-                <p id="estado-pedido"></p>
-            </div>
-        {% else %}
-            <p>No tienes pedidos.</p>
-        {% endif %}
-        
-        <button onclick="toggleInfoUsuario()" class="cerrar-info-usuario" style="background-color:#dc3545; color:white; border:none; padding:5px; cursor:pointer;">Cerrar</button>
-    </div>
-    
-    <section class="products">
-        <h2>Productos</h2>
-        <div class="product-list">
-            {% for producto in productos %}
-                <div class="product">
-                    {% if producto.imagen %}
-                        <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}">
-                    {% else %}
-                        <img src="/media/elementor-placeholder-image.jpg" alt="Imagen no disponible">
-                    {% endif %}
-                    <h3>{{ producto.nombre }}</h3>
-                    <p>{{ producto.descripcion }}</p>
-                    <p><strong>Tiempo de preparación: {{ producto.tiempo_preparacion }} minutos</strong></p>
-                    <p><strong>{{ producto.precio|floatformat:2 }}€</strong></p>
-    
-                    {% if request.user.is_staff %}
-                        {% if producto.activo %}
-                            <!-- Si el producto está activo, mostrar botón de "Ocultar" -->
-                            <form action="{% url 'cambiar_visibilidad_producto' producto.id %}" method="POST" style="margin-top: 10px;">
-                                {% csrf_token %}
-                                <button type="submit" class="btn eliminar">Ocultar</button>
-                            </form>
-                        {% else %}
-                            <!-- Si el producto está oculto, mostrar botón de "Restaurar" -->
-                            <form action="{% url 'cambiar_visibilidad_producto' producto.id %}" method="POST" style="margin-top: 10px;">
-                                {% csrf_token %}
-                                <button type="submit" class="btn restaurar">Restaurar</button>
-                            </form>
-                        {% endif %}
-                    {% else %}
-                        <!-- Mostrar botones solo para productos activos -->
-                        {% if producto.activo %}
-                            <!-- Botón Añadir al carrito -->
-                            <button class="add-to-cart" data-name="{{ producto.nombre }}" data-price="{{ producto.precio|floatformat:2 }}">
-                                Añadir al carrito
-                            </button>
-    
-                            <!-- Botón Pagar Ya -->
-                            <button class="pagar-ya" id="pagar-ya-btn" data-name="{{ producto.nombre }}" data-price="{{ producto.precio|floatformat:2 }}">
-                                Pagar Ya
-                            </button>
-                        {% endif %}
-                    {% endif %}
-                </div>
-            {% empty %}
-                <p>No hay productos disponibles en este momento.</p>
-            {% endfor %}
+<div class="user-profile">
+   {% if user.is_authenticated %}
+        <div class="user-info">
+            {% if user.profile.foto %}
+                <img src="{{ user.profile.foto.url }}" alt="Foto de perfil" class="profile-pic" onclick="toggleInfoUsuario()">
+            {% else %}
+                <img src="{{ MEDIA_URL }}perfil_fotos/avatar.webp" alt="Foto de perfil" class="profile-pic" onclick="toggleInfoUsuario()">
+            {% endif %}
+            <p>{{ user.first_name }} {{ user.last_name }}</p> <!-- o user.username si no tienes nombres -->
         </div>
-    </section>
-    
-    
-    <!-- Botón para abrir el carrito -->
-    <button class="cart-toggle">Ver Carrito</button>
-
-    <!-- Botón para añadir platos -->
-    <button class="anadir-plato-boton">Agregar Plato</button>
-     <!-- Formulario para agregar platos -->
-     <div class="anadir-plato-form" id="anadir-plato-form">
-        <h2>Agregar Plato</h2>
-        <form action="{% url 'anadir_plato' %}" method="POST" enctype="multipart/form-data">
+        <form action="{% url 'logout' %}" method="POST">
             {% csrf_token %}
-            <label for="nombre_plato">Nombre:</label>
-            <input type="text" id="nombre_plato" name="nombre_plato"><br><br>
-
-            <label for="descripcion">Descripción:</label>
-            <textarea id="descripcion" name="descripcion"></textarea><br><br>
-
-            <label for="precio">Precio:</label>
-            <input type="number" id="precio" step="0.01" name="precio"><br><br>
-
-            <label for="disponible">Disponible:</label>
-            <input type="checkbox" id="disponible" name="disponible"><br><br>
-
-            <label for="tiempo_preparación">Tiempo Preparación (en minutos):</label>
-            <input type="number" id="tiempo_preparacion" name="tiempo_preparacion"><br><br>
-
-            <label for="imagen">Imagen:</label>
-            <input type="file" id="imagen" name="imagen"><br><br>
-
-            <button type="submit" class="btn">Guardar</button>
+            <button type="submit" class="btn cerrar-sesion">Cerrar sesión</button>
         </form>
+    {% else %}
+        <a> Eres el invitado: {{invitado_id}}</a>
+        <a href="{% url 'inicio_sesion' %}" class="btn login">Iniciar sesión</a>
+        <a href="{% url 'registrarse' %}"  class= "btn login"> Registrarse</a>
+
+        <button onclick="togglePedidos()" class = "btn login">Tus pedidos:</button>
+        <div id="contenedor-pedidos" style="display: none;">
+            {% if pedidos %}
+                <ul id="lista-pedidos">
+                    {% for pedido in pedidos %}
+                        <li>
+                            Pedido {{ pedido.id }} - Total: {{ pedido.total }}€
+                            <span id="pedido-estado-{{ pedido.id }}" style="display:none;">{{ pedido.get_estado_display }}</span>
+                            <button class="volver-a-pedir" onclick="restaurarPedido('{{ pedido.id }}')">Volver a pedir</button>
+                        </li>
+                    {% endfor %}
+                </ul>
+                <div id="detalle-pedido" style="display:none; margin-top: 10px;">
+                    <h5>Estado del pedido:</h5>
+                    <p id="estado-pedido"></p>
+                </div>
+            {% else %}
+                <p>No tienes pedidos.</p>
+            {% endif %}
+        </div>
+        
+        <script>
+            function togglePedidos() {
+                const contenedor = document.getElementById('contenedor-pedidos');
+                contenedor.style.display = contenedor.style.display === 'none' ? 'block' : 'none';
+            }
+        </script>
+    {% endif %}
+</div>
+
+<!-- Menú y Carta -->
+<main>
+    <h2>Menú y Carta</h2>
+
+    <!-- Aquí comienza el bloque de las categorías y platos -->
+    {% for categoria in categorias %}
+        <div class="categoria">
+            <h3>{{ categoria.nombre }}</h3>
+
+            <div class="platos">
+                <ul>
+                    {% for plato in categoria.platos.all %}
+                        <li class="plato">
+                            <div class="plato-info">
+                                <strong>{{ plato.nombre }}</strong><br>
+                                <p>{{ plato.descripcion }}</p>
+                                <p><span class="precio">{{ plato.precio }} €</span></p>
+                            </div>
+                            <button class="add-to-cart">Añadir al carrito</button>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    {% endfor %}
+</main>
+
+<!-- Área para mostrar el nombre de usuario y pedidos -->
+<div id="info-usuario" style="display:none; position:absolute; top:80px; left:20px; background-color: white; padding: 10px; border-radius: 5px; box-shadow: 0 0 5px rgba(0,0,0,0.2);">
+    <p id="usuario-texto"></p>
+
+    <a href="{% url 'change_username' %}" class="btn btn-secondary" style="margin-bottom: 10px;">Cambiar nombre de usuario</a>
+    <a href="{% url 'change_image' %}" class="btn btn-secondary">Cambiar imagen</a>
+    
+    <h4>Tus pedidos:</h4>
+    {% if pedidos %}
+        <ul id="lista-pedidos">
+            {% for pedido in pedidos %}
+                <li>
+                    Pedido {{ pedido.id }} - Total: {{ pedido.total }}€
+                    <span id="pedido-estado-{{ pedido.id }}" style="display:none;">{{ pedido.get_estado_display }}</span>
+                    <button class="volver-a-pedir" onclick="restaurarPedido('{{ pedido.id }}')">Volver a pedir</button>
+                </li>
+            {% endfor %}
+        </ul>
+        <div id="detalle-pedido" style="display:none; margin-top: 10px;">
+            <h5>Estado del pedido:</h5>
+            <p id="estado-pedido"></p>
+        </div>
+    {% else %}
+        <p>No tienes pedidos.</p>
+    {% endif %}
+    
+    <button onclick="toggleInfoUsuario()" class="cerrar-info-usuario" style="background-color:#dc3545; color:white; border:none; padding:5px; cursor:pointer;">Cerrar</button>
+</div>
+
+<section class="products">
+    <h2>Productos</h2>
+    <div class="product-list">
+        {% for producto in productos %}
+            <div class="product">
+                {% if producto.imagen %}
+                    <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}">
+                {% else %}
+                    <img src="/media/elementor-placeholder-image.jpg" alt="Imagen no disponible">
+                {% endif %}
+                <h3>{{ producto.nombre }}</h3>
+                <p>{{ producto.descripcion }}</p>
+                <p><strong>Tiempo de preparación: {{ producto.tiempo_preparacion }} minutos</strong></p>
+                <p><strong>{{ producto.precio|floatformat:2 }}€</strong></p>
+
+                {% if request.user.is_staff %}
+                    {% if producto.activo %}
+                        <form action="{% url 'cambiar_visibilidad_producto' producto.id %}" method="POST" style="margin-top: 10px;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn eliminar">Ocultar</button>
+                        </form>
+                    {% else %}
+                        <form action="{% url 'cambiar_visibilidad_producto' producto.id %}" method="POST" style="margin-top: 10px;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn restaurar">Restaurar</button>
+                        </form>
+                    {% endif %}
+                {% else %}
+                    {% if producto.activo %}
+                        <button class="add-to-cart" data-name="{{ producto.nombre }}" data-price="{{ producto.precio|floatformat:2 }}">
+                            Añadir al carrito
+                        </button>
+
+                        <button class="pagar-ya" id="pagar-ya-btn" data-name="{{ producto.nombre }}" data-price="{{ producto.precio|floatformat:2 }}">
+                            Pagar Ya
+                        </button>
+                    {% endif %}
+                {% endif %}
+            </div>
+        {% empty %}
+            <p>No hay productos disponibles en este momento.</p>
+        {% endfor %}
     </div>
+</section>
+
+<!-- Botón para abrir el carrito -->
+<button class="cart-toggle">Ver Carrito</button>
+
+<!-- Botón para añadir platos -->
+<button class="anadir-plato-boton">Agregar Plato</button>
+
+<!-- Formulario para agregar platos -->
+<div class="anadir-plato-form" id="anadir-plato-form">
+    <h2>Agregar Plato</h2>
+    <form action="{% url 'anadir_plato' %}" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="nombre_plato">Nombre:</label>
+        <input type="text" id="nombre_plato" name="nombre_plato"><br><br>
+
+        <label for="descripcion">Descripción:</label>
+        <textarea id="descripcion" name="descripcion"></textarea><br><br>
+
+        <label for="precio">Precio:</label>
+        <input type="number" id="precio" step="0.01" name="precio"><br><br>
+
+        <label for="disponible">Disponible:</label>
+        <input type="checkbox" id="disponible" name="disponible"><br><br>
+
+        <label for="tiempo_preparación">Tiempo Preparación (en minutos):</label>
+        <input type="number" id="tiempo_preparacion" name="tiempo_preparacion"><br><br>
+
+        <label for="imagen">Imagen:</label>
+        <input type="file" id="imagen" name="imagen"><br><br>
+
+        <button type="submit" class="btn">Guardar</button>
+    </form>
+</div>
 
    <!-- Sidebar del carrito -->
 <div id="cart-sidebar" class="cart-sidebar">

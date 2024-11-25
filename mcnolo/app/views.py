@@ -57,43 +57,58 @@ def pagina_principal(request):
     # Mostrar solo productos activos para todos los usuarios
     productos = Producto.objects.filter(activo=True)
 
-    # Comprobar si el usuario es autenticado o si es invitado
+    # Clasificar productos por categoría
+    categorias = {
+        'menu': productos.filter(categoria='menu'),
+        'carta': productos.filter(categoria='carta'),
+    }
+
+    # Clasificar por subcategorías dentro de 'menu' y 'carta'
+    subcategorias = {
+        'menu': {
+            'entrantes': categorias['menu'].filter(subcategoria='entrantes'),
+            'primero': categorias['menu'].filter(subcategoria='primero'),
+            'segundo': categorias['menu'].filter(subcategoria='segundo'),
+            'postre': categorias['menu'].filter(subcategoria='postre'),
+        },
+        'carta': {
+            'entrantes': categorias['carta'].filter(subcategoria='entrantes'),
+            'primero': categorias['carta'].filter(subcategoria='primero'),
+            'segundo': categorias['carta'].filter(subcategoria='segundo'),
+            'postre': categorias['carta'].filter(subcategoria='postre'),
+        },
+    }
+
+    # Comprobar si el usuario es autenticado o invitado
     es_invitado = request.session.get('es_invitado', False)
 
     if request.user.is_authenticated:
-        # Si el usuario es autenticado
         if request.user.is_staff:
             productos = Producto.objects.all()  # Mostrar todos los productos si es staff
-
-        # Obtener los pedidos del usuario autenticado
-        pedidos = Pedido.objects.filter(usuario=request.user) 
-        pedido = pedidos.last() if pedidos else None  # Último pedido para la notificación
+        pedidos = Pedido.objects.filter(usuario=request.user)
+        pedido = pedidos.last() if pedidos else None
         return render(request, 'app/PaginaPrincipal.html', {
-            'productos': productos,
-            'pedidos': pedidos,  # Lista de pedidos para historial
-            'pedido': pedido,  # Último pedido
-            'invitado': False  # Indicar que no es invitado
+            'categorias': categorias,
+            'subcategorias': subcategorias,
+            'pedidos': pedidos,
+            'pedido': pedido,
+            'invitado': False,
         })
 
-    # Si el usuario es invitado (no autenticado)
     elif es_invitado:
-        #------------------------------------------
         invitado_id = generar_invitado_id(request)
-        pedidos = Pedido.objects.filter(invitado_id=invitado_id)  # Definir como una lista vacía para invitados
-        print(f"Pedidos para invitado ({invitado_id}): {pedidos}")
-        pedido = pedidos.last() if pedidos else None  # No hay último pedido para invitados
-        #-----------------------------------
+        pedidos = Pedido.objects.filter(invitado_id=invitado_id)
+        pedido = pedidos.last() if pedidos else None
         return render(request, 'app/PaginaPrincipal.html', {
-            'productos': productos,
+            'categorias': categorias,
+            'subcategorias': subcategorias,
             'pedidos': pedidos,
             'pedido': pedido,
             'invitado': True,
-            'invitado_id': invitado_id,  # Pasar el ID del invitado al contexto
+            'invitado_id': invitado_id,
         })
-    
-    # Si el usuario no está autenticado ni es invitado, redirigir al inicio de sesión
-    return redirect('inicio_sesion')
 
+    return redirect('inicio_sesion')
 
 
 def registrarse(request):
