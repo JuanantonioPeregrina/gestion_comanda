@@ -1,0 +1,28 @@
+<h2>Carta</h2>
+<h3>Entrantes</h3>
+<ul>
+    {% for plato in entrantes %}
+        <li>{{ plato.nombre }} - {{ plato.precio }}€</li>
+    {% endfor %}
+</ul>
+
+<h3>Primeros</h3>
+<ul>
+    {% for plato in primeros %}
+        <li>{{ plato.nombre }} - {{ plato.precio }}€</li>
+    {% endfor %}
+</ul>
+
+<h3>Segundos</h3>
+<ul>
+    {% for plato in segundos %}
+        <li>{{ plato.nombre }} - {{ plato.precio }}€</li>
+    {% endfor %}
+</ul>
+
+<h3>Postres</h3>
+<ul>
+    {% for plato in postres %}
+        <li>{{ plato.nombre }} - {{ plato.precio }}€</li>
+    {% endfor %}
+</ul>

@@ -119,8 +119,9 @@ El cliente podrá añadir notas especiales o comentarios adicionales para la coc
 47. Pedidos de bebidas por separado
 El cliente podrá hacer pedidos de bebidas independientemente de los platos principales, incluso durante la preparación de un pedido ya existente. Se validará haciendo un pedido de bebidas separado.
 
-48. Acceso a la aplicación mediante QR
-•  Al escanear el código QR, el usuario es redirigido automáticamente a la aplicación web. Verificar que el QR redirige correctamente a la URL de la aplicación.
+48. **Acceso a la aplicación mediante QR**
+     Dominio gratuito mcnolo y se pueda acceder desde un servidor global.
+     Para verificarlo, al arrancar el server debe funcionar con el DNS en la url de la petición.
 
 49. **Acceso a la aplicación mediante QR** 
     Al escanear el código QR, el usuario es redirigido automáticamente a la aplicación web. 
@@ -233,3 +234,15 @@ El cliente podrá hacer pedidos de bebidas independientemente de los platos prin
     La pantalla de login debe mostrar un formulario donde el usuario pueda recuperar su nombre de usuario y contraseña. 
     Comprobar que el formulario recoge correctamente los datos y valida las credenciales nuevas del usuario,verificando desde email.
 
+ 78. **Confirmar con código desde la cuenta de correo para que finalice el registrarse** 
+    Tan solo debe permitir registrarse si se ha validado por correo la autorización para que se proceda.
+
+
+ 79. **segmentar en admin(cocinero) y cliente** 
+ Al iniciar sesión no se deben permitir acciones desde el cliente como AÑADIR PLATO PARA UN CLIENTE, mientras quee el admin si que tiene esa opción por pantalla.
+
+ 80. **Al recuperar contraseña nueva no pueda ser igual que la olvidada** 
+    La pantalla de login debe mostrar un formulario donde el usuario pueda recuperar su nombre de usuario y contraseña, sin introducir la misma que se utilizó previamente. 
+    Comprobar que el formulario recoge correctamente los datos y valida las credenciales nuevas del usuario, y no permite la anterior.
+ 81. **Formulario de opiniones y sugerencias**
+    Creación de una página de opiniones y sugerencias donde los clientes puedan acceder y comentar su experiencia con Mcnolo mandándonos un formulario.Como resultado, los administradores deben poder ver los resultados que envían al momento.
