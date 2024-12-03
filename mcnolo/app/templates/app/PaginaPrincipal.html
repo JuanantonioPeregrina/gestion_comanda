@@ -577,14 +577,13 @@
             {% endif %}
             <p>{{ user.first_name }} {{ user.last_name }}</p> <!-- o user.username si no tienes nombres -->
         </div>
-<<<<<<< HEAD
     </section>
     
 
 
     <!-- Botón para añadir platos -->
 
-        {% if user.is_authenticated and user.is_superuser %}
+    {% if user.is_authenticated and user.is_superuser %}
         <button class="anadir-plato-boton">Agregar Plato</button>
         <!-- Formulario para agregar platos -->
         <div class="anadir-plato-form" id="anadir-plato-form">
@@ -615,14 +614,11 @@
         </div>
 
         <!-- Botón para acceder a la página de administración -->
-        <a href="{% url 'gestionar_pedidos' %}" class="btn login" style="position: fixed; top: 20px; right: 300px; z-index: 1000;">
+        <a href="{% url 'gestionar_pedidos' %}" style="position: fixed; background-color: green;top: 20px; right: 300px;">
             Administración
         </a>
     {% endif %}
 
-<!-- Botón para abrir el carrito -->
-<button class="cart-toggle">Ver Carrito</button>
-=======
         <form action="{% url 'logout' %}" method="POST">
             {% csrf_token %}
             <button type="submit" class="btn cerrar-sesion">Cerrar sesión</button>
@@ -765,37 +761,6 @@
 
 <!-- Botón para abrir el carrito -->
 <button class="cart-toggle">Ver Carrito</button>
-
-<!-- Botón para añadir platos -->
-<button class="anadir-plato-boton">Agregar Plato</button>
-
-<!-- Formulario para agregar platos -->
-<div class="anadir-plato-form" id="anadir-plato-form">
-    <h2>Agregar Plato</h2>
-    <form action="{% url 'anadir_plato' %}" method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
-        <label for="nombre_plato">Nombre:</label>
-        <input type="text" id="nombre_plato" name="nombre_plato"><br><br>
-
-        <label for="descripcion">Descripción:</label>
-        <textarea id="descripcion" name="descripcion"></textarea><br><br>
-
-        <label for="precio">Precio:</label>
-        <input type="number" id="precio" step="0.01" name="precio"><br><br>
-
-        <label for="disponible">Disponible:</label>
-        <input type="checkbox" id="disponible" name="disponible"><br><br>
-
-        <label for="tiempo_preparación">Tiempo Preparación (en minutos):</label>
-        <input type="number" id="tiempo_preparacion" name="tiempo_preparacion"><br><br>
-
-        <label for="imagen">Imagen:</label>
-        <input type="file" id="imagen" name="imagen"><br><br>
-
-        <button type="submit" class="btn">Guardar</button>
-    </form>
-</div>
->>>>>>> 94457130da1c4e9cdde90379a4b9ceecca60e125
 
    <!-- Sidebar del carrito -->
 <div id="cart-sidebar" class="cart-sidebar">

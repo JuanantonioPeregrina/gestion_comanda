@@ -616,8 +616,6 @@ def enviar_correoVerificacion(mail, user, oferta):
         [mail],
         fail_silently=False,
     )
-<<<<<<< HEAD
-
 @user_passes_test(lambda u: u.is_superuser)
 def gestionar_pedidos(request):
     if request.method == 'POST':
@@ -651,5 +649,3 @@ def gestionar_pedidos(request):
     # Si es GET, renderiza una plantilla para listar pedidos
     pedidos = Pedido.objects.all()
     return render(request, 'app/gestionar_pedidos.html', {'pedidos': pedidos})
-=======
->>>>>>> 94457130da1c4e9cdde90379a4b9ceecca60e125
