@@ -333,9 +333,8 @@ def finalizar_compra(request):
             invitado_id = None  # No aplica para usuarios autenticados
         else:
             # Generar un `invitado_id` único si no existe
-            #if 'invitado_id' not in request.session:
-                #request.session['invitado_id'] = str(uuid.uuid4())
-            #invitado_id = request.session['invitado_id']
+            if 'invitado_id' not in request.session:
+                request.session['invitado_id'] = str(uuid.uuid4())
             invitado_id = request.session['invitado_id']
             #user = get_invitado_user()  # Usuario genérico "invitado_default"
             user = None
@@ -530,6 +529,7 @@ def crear_sesion_pago(request):
 
         # Crear el pedido
         pedido = Pedido.objects.create(
+            invitado_id=request.session.get('invitado_id'),
             usuario=user,
             total=total,
             nota_especial=nota_especial,
