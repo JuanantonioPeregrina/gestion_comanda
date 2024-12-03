@@ -27,6 +27,7 @@ urlpatterns = [
     path('invitado/', views.invitado, name='invitado'),  # Ruta para invitados
     path('inicio-sesion/', views.inicio_sesion, name='inicio_sesion'),
     path('pagina-principal/', views.pagina_principal, name='pagina_principal'),
+    path('activar-cuenta/<int:uid>/<str:token>/', views.activar_cuenta, name='activar_cuenta'),  # Activación de cuenta
     path('registrarse/', views.registrarse, name='registrarse'),
     path('anadir_plato/', views.anadir_plato, name='anadir_plato'),
     path('eliminar-producto/<int:producto_id>/', views.eliminar_producto, name='eliminar_producto'),

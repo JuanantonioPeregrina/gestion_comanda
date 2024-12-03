@@ -18,6 +18,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.contrib.auth.decorators import user_passes_test
+from django.utils.http import urlsafe_base64_decode
+from django.contrib.auth.tokens import default_token_generator
+from django.urls import reverse
 
 
 
@@ -38,14 +41,23 @@ def inicio_sesion(request):
         email = request.POST.get('email')
         password = request.POST.get('password')
         
-        # Autenticar el usuario con el email y contraseña
-        user = authenticate(request, username=email, password=password)
+        # Intentar autenticar al usuario con el email y contraseña
+        user = User.objects.filter(username=email).first()  # Buscar al usuario por email
         
-        if user is not None:
-            login(request, user)
-            return redirect('pagina_principal')
+        if user:  # Si el usuario existe
+            if not user.is_active:  # Comprobar si no ha validado su cuenta
+                messages.error(request, 'No has validado tu cuenta. Revisa tu correo para activarla.')
+                return render(request, 'app/InicioSesion.html')
+            
+            # Autenticar al usuario solo si está activo
+            user_authenticated = authenticate(request, username=email, password=password)
+            if user_authenticated:
+                login(request, user_authenticated)
+                return redirect('pagina_principal')
+            else:
+                messages.error(request, 'Correo o contraseña incorrectos.')
         else:
-            messages.error(request, 'Correo o contraseña incorrectos')
+            messages.error(request, 'Correo o contraseña incorrectos.')
 
     return render(request, 'app/InicioSesion.html')
 
@@ -128,36 +140,78 @@ def registrarse(request):
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
 
-        if password == confirm_password:
-            # Comprobar si el email ya está en uso
-            if User.objects.filter(email=email).exists():
-                messages.error(request, 'El correo electrónico ya está registrado.')
-            else:
-                # Crear el usuario
-                crear_usuario_oferta(email, password)
-                messages.success(request, 'Registro exitoso. Ahora puedes iniciar sesión.')
-                # Asegúrate de que 'inicio_sesion' esté definida en tu urls.py
-                return redirect('inicio_sesion')
-        else:
+        # Comprobar si las contraseñas coinciden
+        if password != confirm_password:
             messages.error(request, 'Las contraseñas no coinciden.')
+            return render(request, 'app/registro.html')
+
+        # Verificar si el email ya está en uso
+        if User.objects.filter(email=email).exists():
+            messages.error(request, 'El correo electrónico ya está registrado.')
+            return render(request, 'app/registro.html')
+
+        # Crear el usuario inactivo
+        user = User.objects.create_user(
+            username=email,  # Usamos el email como username
+            email=email,
+            password=password
+        )
+        user.is_active = False  # Usuario inactivo hasta que confirme
+        user.save()
+
+        # Generar el token de activación
+        token = default_token_generator.make_token(user)
+
+        # Construir la URL de activación
+        activation_link = request.build_absolute_uri(
+            reverse('activar_cuenta', kwargs={'uid': user.pk, 'token': token})
+        )
+
+        # Enviar correos
+        codigo_oferta = f'{user.username}_10'
+        Oferta.objects.create(usuario=user, descuento=10, codigo=codigo_oferta)
+        enviar_correo(
+            mail=user.email,
+            user=user,
+            oferta=codigo_oferta,
+            activation_link=activation_link
+        )
+
+        messages.success(request, 'Te hemos enviado un correo para confirmar tu cuenta.')
+        return redirect('inicio_sesion')
 
     return render(request, 'app/registro.html')
 
-def crear_usuario_oferta(email, password):
+def crear_usuario_oferta(email, password, activation_link = None):
+    if User.objects.filter(username=email).exists():
+        raise ValueError("El usuario ya existe")  # Evitar intentar crear un usuario duplicado
     user = User.objects.create_user(username=email, email=email, password=password)
+    user.is_active = False  # El usuario estará inactivo hasta que confirme
     user.save()
-    Oferta.objects.create(usuario=user, descuento=10, codigo=f'{user.username}_10')
-    enviar_correo(email,user,f'{user.username}_10')
+    # Generar código de oferta
+    codigo_oferta = f'{user.username}_10'
+    Oferta.objects.create(usuario=user, descuento=10, codigo=codigo_oferta)
+    enviar_correo(mail=user,user=user,oferta=codigo_oferta, activation_link=activation_link)
     
 
-def enviar_correo(mail, user, oferta):
-    send_mail(
-        'Oferta de bienvenida',
-        f'¡Hola {user.username}! Te hemos dado una oferta del 10%. Usa el código: {oferta}',
-        'no-reply@mcnolo.com',
-        [mail],
-        fail_silently=False,
-    )
+def enviar_correo(mail, user, oferta = None, activation_link = None):
+    if oferta:
+        send_mail(
+            'Oferta de bienvenida',
+            f'¡Hola {user.username}! Te hemos dado una oferta del 10%. Usa el código: {oferta}',
+            'no-reply@mcnolo.com',
+            [mail],
+            fail_silently=False,
+        )
+    if activation_link:
+        send_mail(
+            'Activa tu cuenta',
+            f'Hola {user.username}, activa tu cuenta con el siguiente enlace: {activation_link}',
+            'no-reply@mcnolo.com',
+            [mail],
+            fail_silently=False,
+        )
+
     send_mail(
         'Bienvenido',
         f'¡Hola {user.username}! Bienvenido a nuestra plataforma \n Muchas gracias por registrarte',
@@ -165,6 +219,21 @@ def enviar_correo(mail, user, oferta):
         [mail],
         fail_silently=False,
     )
+
+def activar_cuenta(request, uid, token):
+    try:
+        user = User.objects.get(pk=uid)  # Usa directamente el `uid` como entero
+    except User.DoesNotExist:
+        user = None
+
+    if user and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        messages.success(request, 'Tu cuenta ha sido activada con éxito. Ya puedes iniciar sesión.')
+        return redirect('inicio_sesion')
+    else:
+        messages.error(request, 'El enlace de activación es inválido o ha expirado.')
+        return redirect('registrarse')
 
 def anadir_plato(request):
     if request.method == 'POST':
