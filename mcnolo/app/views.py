@@ -535,14 +535,23 @@ def crear_sesion_pago(request):
             nota_especial=nota_especial,
         )
 
-        # Guardar los productos del pedido
+        # Guardar los productos del pedido y construir la factura
+        factura_string = f"Factura para el pedido #{pedido.id}:\n\n"
         for item in cart:
             producto = Producto.objects.get(nombre=item['name'])
+            cantidad = item.get('cantidad', 1)
             ProductoPedido.objects.create(
                 pedido=pedido,
                 producto=producto,
-                cantidad=item.get('cantidad', 1),
+                cantidad=cantidad,
             )
+            factura_string += f"- {producto.nombre}: {producto.precio}€ x {cantidad} unidades\n"
+
+        # Agregar total y nota especial a la factura
+        factura_string += f"\nTotal: {total}€\n"
+        if nota_especial:
+            factura_string += f"\nNota Especial: {nota_especial}\n"
+        factura_string += "\nGracias por su compra!"
 
         try:
             # Crear sesión de pago en Stripe
@@ -563,13 +572,17 @@ def crear_sesion_pago(request):
                 success_url=f'http://127.0.0.1:8000/success/?pedido_id={pedido.id}',
                 cancel_url='http://127.0.0.1:8000/cancel/',
             )
-            send_mail(
-                'Pedido Confirmado',
-                f'¡Hola! Tu pedido #{pedido.id} ha sido confirmado. Aquí tienes tu factura:',   
-                'no-reply@mcnolo.com',
-                [user.email],
-                fail_silently=False,
-            )
+
+            # Enviar email con la factura
+            if user.email:  # Asegurarse de que el usuario tenga un correo
+                send_mail(
+                    subject=f'Confirmación de tu pedido #{pedido.id}',
+                    message=factura_string,
+                    from_email='no-reply@mcnolo.com',
+                    recipient_list=[user.email],
+                    fail_silently=False,
+                )
+
             return JsonResponse({'url': session.url})
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
