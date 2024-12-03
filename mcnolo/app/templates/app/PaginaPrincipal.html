@@ -18,6 +18,40 @@
             position: relative;
         }
 
+        
+        .filter-form {
+            margin: 20px auto;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .filter-form label {
+            font-weight: bold;
+        }
+
+        .filter-form select, .filter-form button {
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .filter-form button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+
+        .filter-form button:hover {
+            background-color: #0056b3;
+        }
+
         .video-background {
             position: absolute;
             top: 0;
@@ -66,6 +100,7 @@
             background-color: rgba(255, 255, 255, 0.9);
             border-radius: 15px;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            margin: auto;
             max-width: 90%;
             width: 100%;
             box-sizing: border-box;
@@ -716,6 +751,25 @@
 
 <section class="products">
     <h2>Productos</h2>
+    <!-- Formulario de filtrado -->
+    <form class="filter-form" method="get" action="">
+        <label for="filtro">Filtrar por:</label>
+        <select id="filtro" name="filtro">
+            <option value="nombre" {% if filtro == "nombre" %}selected{% endif %}>Nombre</option>
+            <option value="precio" {% if filtro == "precio" %}selected{% endif %}>Precio</option>
+            <option value="tiempo_preparacion" {% if filtro == "tiempo_preparacion" %}selected{% endif %}>Tiempo de preparación</option>
+        </select>
+
+        <label for="orden">Orden:</label>
+        <select id="orden" name="orden">
+            <option value="asc" {% if orden == "asc" %}selected{% endif %}>Ascendente</option>
+            <option value="desc" {% if orden == "desc" %}selected{% endif %}>Descendente</option>
+        </select>
+
+        <button type="submit">Filtrar</button>
+    </form>
+
+
     <div class="product-list">
         {% for producto in productos %}
             <div class="product">

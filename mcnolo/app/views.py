@@ -69,8 +69,20 @@ def inicio_sesion(request):
 
 
 def pagina_principal(request):
+    # Obtener parámetros de filtrado
+    filtro = request.GET.get('filtro', 'nombre')
+    orden = request.GET.get('orden', 'asc')
+    # Construir el orden
+    #ordenamiento = filtro if orden == 'asc' else f'-{filtro}'
     # Mostrar solo productos activos para todos los usuarios
     productos = Producto.objects.filter(activo=True)
+    if filtro and orden:
+        if filtro == 'nombre':
+            productos = productos.order_by('nombre') if orden == 'asc' else productos.order_by('-nombre')
+        elif filtro == 'precio':
+            productos = productos.order_by('precio') if orden == 'asc' else productos.order_by('-precio')
+        elif filtro == 'tiempo_preparacion':
+            productos = productos.order_by('tiempo_preparacion') if orden == 'asc' else productos.order_by('-tiempo_preparacion')
 
     # Obtener las categorías 'menu' y 'carta' primero
     categoria_menu = Categoria.objects.get(nombre='menu')
@@ -101,35 +113,30 @@ def pagina_principal(request):
     # Comprobar si el usuario es autenticado o invitado
     es_invitado = request.session.get('es_invitado', False)
 
+    context = {
+        'productos': productos,
+        'categorias': categorias,
+        'subcategorias': subcategorias,
+    }
+
     if request.user.is_authenticated:
         if request.user.is_staff:
-            productos = Producto.objects.all()  # Mostrar todos los productos si es staff
+            context['productos'] = Producto.objects.all()  # Mostrar todos los productos si es staff
         pedidos = Pedido.objects.filter(usuario=request.user)
-        pedido = pedidos.last() if pedidos else None
-        return render(request, 'app/PaginaPrincipal.html', {
-            'productos': productos,
-            'categorias': categorias,
-            'subcategorias': subcategorias,
-            'pedidos': pedidos,
-            'pedido': pedido,
-            'invitado': False,
-        })
+        context['pedidos'] = pedidos
+        context['pedido'] = pedidos.last() if pedidos else None
+        context['invitado'] = False
+        
 
     elif es_invitado:
         invitado_id = generar_invitado_id(request)
         pedidos = Pedido.objects.filter(invitado_id=invitado_id)
-        pedido = pedidos.last() if pedidos else None
-        return render(request, 'app/PaginaPrincipal.html', {
-            'productos': productos,
-            'categorias': categorias,
-            'subcategorias': subcategorias,
-            'pedidos': pedidos,
-            'pedido': pedido,
-            'invitado': True,
-            'invitado_id': invitado_id,
-        })
+        context['pedidos'] = pedidos
+        context['pedido'] = pedidos.last() if pedidos else None
+        context['invitado'] = True
+        context['invitado_id'] = invitado_id
 
-    return redirect('inicio_sesion')
+    return render(request, 'app/PaginaPrincipal.html', context)
 
 
 
