@@ -98,16 +98,46 @@ gestion_comanda/
 │   ├── app/               # Aplicación principal
 │   │   ├── migrations/    # Migraciones de base de datos
 │   │   ├── templates/     # Archivos HTML para vistas
+│   │   │   ├── cambio_password.html
+│   │   │   ├── cancel.html
+│   │   │   ├── carta.html
+│   │   │   ├── change_image.html
+│   │   │   ├── change_username.html
+│   │   │   ├── factura.html
+│   │   │   ├── forgot_password.html
+│   │   │   ├── gestionar_pedidos.html
+│   │   │   ├── index.html
+│   │   │   ├── InicioSesion.html
+│   │   │   ├── invitado.html
+│   │   │   ├── menu.html
+│   │   │   ├── PaginaPrincipal.html
+│   │   │   ├── procesar_pago.html
+│   │   │   ├── registro.html
+│   │   │   ├── success.html
 │   │   ├── static/        # Archivos estáticos (CSS, JS, imágenes)
 │   │   ├── models.py      # Modelos de datos
 │   │   ├── views.py       # Lógica de vistas
+│   │   ├── forms.py       # Formularios
+│   │   ├── consumers.py   # WebSockets con Django Channels
+│   │   ├── signals.py     # Señales de Django
+│   │   ├── tests.py       # Pruebas unitarias
 │   │   ├── urls.py        # Enrutamiento
-│   │   └── tests.py       # Pruebas unitarias
-│   ├── media/             # Almacenamiento de archivos cargados
+│   │   └── admin.py       # Administración de Django
+│   ├── media/             # Archivos subidos por los usuarios
+│   │   ├── perfil_fotos/  # Fotos de perfil de los usuarios
+│   │   ├── productos/     # Fotos de productos
+│   │   └── videos/        # Videos relacionados
 │   ├── asgi.py            # Configuración para WebSockets
 │   ├── settings.py        # Configuración global del proyecto
+│   ├── middleware.py      # Middleware personalizado
+│   ├── urls.py            # Enrutamiento del proyecto
 │   └── wsgi.py            # Configuración para despliegue en servidor
-└── env/                   # Entorno virtual
+│
+├── db.sqlite3             # Base de datos SQLite
+├── login.php              # Archivo PHP (opcional)
+├── README.md              # Archivo de documentación del proyecto
+├── .gitignore             # Archivos y carpetas ignorados por Git
+└── Especificación_Requisitos_Software.md # Documentación de requisitos
 ```
 
 ---
