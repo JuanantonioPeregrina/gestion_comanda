@@ -1,4 +1,4 @@
-#🍔MCNOLO - Gestor de Comandas para Restaurantes 🍽️
+# 🍔MCNOLO - Gestor de Comandas para Restaurantes 🍽️
 
 MCNOLO es una solución eficiente para gestionar las comandas en restaurantes, permitiendo a los clientes enviar pedidos directamente a la cocina desde una aplicación web. Su objetivo es optimizar el flujo de trabajo, reducir errores humanos y ofrecer una experiencia más rápida y fluida tanto para el cliente como para el personal del restaurante.
 
