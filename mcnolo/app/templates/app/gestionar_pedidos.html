@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestionar Pedidos</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        button {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+        .aceptar { background-color: #28a745; }
+        .rechazar { background-color: #dc3545; }
+        .proceso { background-color: #007bff; }
+        .finalizar { background-color: #ffc107; color: black; }
+        .recoger { background-color: #17a2b8; }
+        .enviado { background-color: #4B0082; }
+    </style>
+</head>
+<body>
+    <h1>Administración Cocinero</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Usuario</th>
+                <th>Total</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pedido in pedidos %}
+                <tr>
+                    <td>{{ pedido.id }}</td>
+                    <td>{% if pedido.usuario %}
+                            {{ pedido.usuario.username }}
+                        {% else %}
+                        Invitado
+                    {% endif %}</td>
+                    <td>{{ pedido.total }}€</td>
+                    <td>{{ pedido.get_estado_display }}</td>
+                    <td>
+                        <button class="aceptar" onclick="ejecutarAccion('{{ pedido.id }}', 'aceptar')">Aceptar</button>
+                        <button class="rechazar" onclick="ejecutarAccion('{{ pedido.id }}', 'rechazar')">Rechazar</button>
+                        <button class="proceso" onclick="ejecutarAccion('{{ pedido.id }}', 'poner_en_proceso')">En Proceso</button>
+                        <button class="finalizar" onclick="ejecutarAccion('{{ pedido.id }}', 'finalizar')">Finalizar</button>
+                        <button class="recoger" onclick="ejecutarAccion('{{ pedido.id }}', 'preparar_recogida')">Preparar recogida</button>
+                        <button class="enviado" onclick="ejecutarAccion('{{ pedido.id }}', 'enviado')">enviado</button>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+        function ejecutarAccion(pedidoId, accion) {
+            fetch("{% url 'gestionar_pedidos' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+                body: new URLSearchParams({ pedido_id: pedidoId, accion: accion })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.mensaje) {
+                    alert(data.mensaje);
+                    location.reload(); // Recargar la página para actualizar el estado
+                } else if (data.error) {
+                    alert("Error: " + data.error);
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        }
+    </script>
+</body>
+</html>

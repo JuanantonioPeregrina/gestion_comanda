@@ -17,6 +17,8 @@ from django.contrib.auth.models import AnonymousUser
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.template.loader import render_to_string
+from django.contrib.auth.decorators import user_passes_test
+
 
 from .models import get_invitado_user
 
@@ -581,3 +583,37 @@ def enviar_correoVerificacion(mail, user, oferta):
         [mail],
         fail_silently=False,
     )
+
+@user_passes_test(lambda u: u.is_superuser)
+def gestionar_pedidos(request):
+    if request.method == 'POST':
+        accion = request.POST.get('accion')
+        pedido_id = request.POST.get('pedido_id')
+
+        pedido = get_object_or_404(Pedido, id=pedido_id)
+
+        try:
+            # Lógica para ejecutar las acciones
+            if accion == 'aceptar':
+                pedido.estado = 'aceptado'
+            elif accion == 'rechazar':
+                pedido.estado = 'rechazado'
+            elif accion == 'poner_en_proceso':
+                pedido.estado = 'en_proceso'
+            elif accion == 'finalizar':
+                pedido.estado = 'finalizado'
+            elif accion == 'enviado':
+                pedido.estado = 'enviado'
+            elif accion == 'preparar_recogida':
+                pedido.estado = 'recoger'
+            else:
+                return JsonResponse({'error': 'Acción no válida'}, status=400)
+
+            pedido.save()
+            return JsonResponse({'mensaje': f'Pedido {pedido_id} actualizado a {pedido.estado}.'})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    # Si es GET, renderiza una plantilla para listar pedidos
+    pedidos = Pedido.objects.all()
+    return render(request, 'app/gestionar_pedidos.html', {'pedidos': pedidos})

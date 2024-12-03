@@ -88,7 +88,7 @@
             border: none;
             padding: 10px 20px;
             cursor: pointer;
-            z-index: 1000;
+            z-index: 999;
         }
 
         .anadir-plato-form {
@@ -177,7 +177,7 @@
             border: none;
             padding: 10px 20px;
             cursor: pointer;
-            z-index: 1000;
+            z-index: 2000;
         }
 
         .cart-sidebar {
@@ -700,38 +700,48 @@
         </div>
     </section>
     
-    
-    <!-- Botón para abrir el carrito -->
-    <button class="cart-toggle">Ver Carrito</button>
+
 
     <!-- Botón para añadir platos -->
-    <button class="anadir-plato-boton">Agregar Plato</button>
-     <!-- Formulario para agregar platos -->
-     <div class="anadir-plato-form" id="anadir-plato-form">
-        <h2>Agregar Plato</h2>
-        <form action="{% url 'anadir_plato' %}" method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-            <label for="nombre_plato">Nombre:</label>
-            <input type="text" id="nombre_plato" name="nombre_plato"><br><br>
 
-            <label for="descripcion">Descripción:</label>
-            <textarea id="descripcion" name="descripcion"></textarea><br><br>
+        {% if user.is_authenticated and user.is_superuser %}
+        <button class="anadir-plato-boton">Agregar Plato</button>
+        <!-- Formulario para agregar platos -->
+        <div class="anadir-plato-form" id="anadir-plato-form">
+            <h2>Agregar Plato</h2>
+            <form action="{% url 'anadir_plato' %}" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <label for="nombre_plato">Nombre:</label>
+                <input type="text" id="nombre_plato" name="nombre_plato"><br><br>
 
-            <label for="precio">Precio:</label>
-            <input type="number" id="precio" step="0.01" name="precio"><br><br>
+                <label for="descripcion">Descripción:</label>
+                <textarea id="descripcion" name="descripcion"></textarea><br><br>
 
-            <label for="disponible">Disponible:</label>
-            <input type="checkbox" id="disponible" name="disponible"><br><br>
+                <label for="precio">Precio:</label>
+                <input type="number" id="precio" step="0.01" name="precio"><br><br>
 
-            <label for="tiempo_preparación">Tiempo Preparación (en minutos):</label>
-            <input type="number" id="tiempo_preparacion" name="tiempo_preparacion"><br><br>
+                <label for="disponible">Disponible:</label>
+                <input type="checkbox" id="disponible" name="disponible"><br><br>
 
-            <label for="imagen">Imagen:</label>
-            <input type="file" id="imagen" name="imagen"><br><br>
+                <label for="tiempo_preparación">Tiempo Preparación (en minutos):</label>
+                <input type="number" id="tiempo_preparacion" name="tiempo_preparacion"><br><br>
 
-            <button type="submit" class="btn">Guardar</button>
-        </form>
-    </div>
+                <label for="imagen">Imagen:</label>
+                <input type="file" id="imagen" name="imagen"><br><br>
+
+                <button type="submit" class="btn">Guardar</button>
+            </form>
+            
+        </div>
+
+        <!-- Botón para acceder a la página de administración -->
+        <a href="{% url 'gestionar_pedidos' %}" class="btn login" style="position: fixed; top: 20px; right: 300px; z-index: 1000;">
+            Administración
+        </a>
+    {% endif %}
+
+<!-- Botón para abrir el carrito -->
+<button class="cart-toggle">Ver Carrito</button>
 
    <!-- Sidebar del carrito -->
 <div id="cart-sidebar" class="cart-sidebar">
@@ -782,10 +792,11 @@ const cartSidebar = document.getElementById('cart-sidebar');
 const cartToggleBtn = document.querySelector('.cart-toggle');
 const closeCartBtn = document.querySelector('.close-cart');
 
-anadir_boton.addEventListener('click', () => {
-    anadir_form.style.display = anadir_form.style.display === 'block' ? 'none' : 'block';
-});
-
+if (anadir_boton) {
+    anadir_boton.addEventListener('click', () => {
+        anadir_form.style.display = anadir_form.style.display === 'block' ? 'none' : 'block';
+    });
+}
 cartToggleBtn.addEventListener('click', () => {
     cartSidebar.classList.add('open');
 });
