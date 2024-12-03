@@ -5,6 +5,12 @@ from asgiref.sync import async_to_sync
 from mcnolo.settings import MEDIA_URL  # Usamos el modelo de usuario de Django
 
 # Create your models here.
+class Categoria(models.Model):
+    nombre = models.CharField(max_length=100)
+    
+    def __str__(self):
+        return self.nombre
+
 class Producto(models.Model):
     nombre = models.CharField(max_length=100)
     #descripcion = models.TextField(blank=True, null=True)
@@ -14,10 +20,35 @@ class Producto(models.Model):
     imagen = models.ImageField(upload_to='productos/', blank=True, null=True,)  # Campo para la imagen
     activo = models.BooleanField(default=True)  # Campo para marcar si está activo o no
     tiempo_preparacion = models.IntegerField()  # Tiempo en minutos
+    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE, default=1)
+    subcategoria = models.CharField(max_length=100, default='sin_subcategoria')
+    
+    def __str__(self):
+        return self.nombre
+class Plato(models.Model):
+    nombre = models.CharField(max_length=200)
+    descripcion = models.TextField()
+    precio = models.DecimalField(max_digits=6, decimal_places=2)
+    categoria = models.ForeignKey(Categoria, related_name='platos', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.nombre
+        
+class Alergenos(models.Model):
+    nombre = models.CharField(max_length=100)
+    imagen = models.ImageField(upload_to='alergenos/', null=True, blank=True)
+
     def __str__(self):
         return self.nombre
 
+class Ingrediente(models.Model):
+    nombre = models.CharField(max_length=100)
+    alergenos = models.ManyToManyField(Alergenos, related_name='ingredientes', blank=True)
+    imagen = models.ImageField(upload_to='ingredientes/', null=True, blank=True)
 
+    def __str__(self):
+        return self.nombre
+        
 def get_invitado_user():
     # Crear o reutilizar un usuario genérico para invitados
     invitado_user, created = User.objects.get_or_create(

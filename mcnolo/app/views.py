@@ -5,7 +5,7 @@ from types import SimpleNamespace  # Para crear un objeto dinámico
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
-from .models import HistorialProducto, Pedido, Producto, Carrito, CarritoProducto, ProductoPedido, Oferta
+from .models import HistorialProducto, Pedido, Producto, Carrito, CarritoProducto, ProductoPedido, Oferta, Categoria
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from channels.layers import get_channel_layer
@@ -18,6 +18,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.contrib.auth.decorators import user_passes_test
+
 
 
 from .models import get_invitado_user
@@ -53,36 +54,69 @@ def inicio_sesion(request):
 # Página mostrada cuando el usuario ha iniciado sesión
 #@login_required  # Esto asegura que solo los usuarios autenticados puedan acceder
 
+
+
 def pagina_principal(request):
     # Mostrar solo productos activos para todos los usuarios
     productos = Producto.objects.filter(activo=True)
 
-    # Comprobar si el usuario es autenticado o si es invitado
+    # Obtener las categorías 'menu' y 'carta' primero
+    categoria_menu = Categoria.objects.get(nombre='menu')
+    categoria_carta = Categoria.objects.get(nombre='carta')
+
+    # Filtrar los productos por la categoría obtenida
+    categorias = {
+        'menu': productos.filter(categoria=categoria_menu),
+        'carta': productos.filter(categoria=categoria_carta),
+    }
+
+    # Clasificar por subcategorías dentro de 'menu' y 'carta'
+    subcategorias = {
+        'menu': {
+            'entrantes': categorias['menu'].filter(subcategoria='entrantes'),
+            'primero': categorias['menu'].filter(subcategoria='primero'),
+            'segundo': categorias['menu'].filter(subcategoria='segundo'),
+            'postre': categorias['menu'].filter(subcategoria='postre'),
+        },
+        'carta': {
+            'entrantes': categorias['carta'].filter(subcategoria='entrantes'),
+            'primero': categorias['carta'].filter(subcategoria='primero'),
+            'segundo': categorias['carta'].filter(subcategoria='segundo'),
+            'postre': categorias['carta'].filter(subcategoria='postre'),
+        },
+    }
+
+    # Comprobar si el usuario es autenticado o invitado
     es_invitado = request.session.get('es_invitado', False)
 
     if request.user.is_authenticated:
-        # Si el usuario es autenticado
         if request.user.is_staff:
             productos = Producto.objects.all()  # Mostrar todos los productos si es staff
-
-        # Obtener los pedidos del usuario autenticado
-        pedidos = Pedido.objects.filter(usuario=request.user) 
-        pedido = pedidos.last() if pedidos else None  # Último pedido para la notificación
+        pedidos = Pedido.objects.filter(usuario=request.user)
+        pedido = pedidos.last() if pedidos else None
         return render(request, 'app/PaginaPrincipal.html', {
             'productos': productos,
-            'pedidos': pedidos,  # Lista de pedidos para historial
-            'pedido': pedido,  # Último pedido
-            'invitado': False  # Indicar que no es invitado
+            'categorias': categorias,
+            'subcategorias': subcategorias,
+            'pedidos': pedidos,
+            'pedido': pedido,
+            'invitado': False,
         })
 
-    # Si el usuario es invitado (no autenticado)
     elif es_invitado:
+        invitado_id = generar_invitado_id(request)
+        pedidos = Pedido.objects.filter(invitado_id=invitado_id)
+        pedido = pedidos.last() if pedidos else None
         return render(request, 'app/PaginaPrincipal.html', {
             'productos': productos,
-            'invitado': True  # Indicar que es invitado
+            'categorias': categorias,
+            'subcategorias': subcategorias,
+            'pedidos': pedidos,
+            'pedido': pedido,
+            'invitado': True,
+            'invitado_id': invitado_id,
         })
-    
-    # Si el usuario no está autenticado ni es invitado, redirigir al inicio de sesión
+
     return redirect('inicio_sesion')
 
 
@@ -230,11 +264,12 @@ def finalizar_compra(request):
             invitado_id = None  # No aplica para usuarios autenticados
         else:
             # Generar un `invitado_id` único si no existe
-            if 'invitado_id' not in request.session:
-                request.session['invitado_id'] = str(uuid.uuid4())
+            #if 'invitado_id' not in request.session:
+                #request.session['invitado_id'] = str(uuid.uuid4())
+            #invitado_id = request.session['invitado_id']
             invitado_id = request.session['invitado_id']
-            user = get_invitado_user()  # Usuario genérico "invitado_default"
-
+            #user = get_invitado_user()  # Usuario genérico "invitado_default"
+            user = None
         # Crear el pedido
         pedido = Pedido.objects.create(
             usuario=user,  # Usuario autenticado o "invitado_default"
@@ -242,7 +277,8 @@ def finalizar_compra(request):
             total=total,
             nota_especial=nota_especial,
         )
-
+        
+        print(f"Pedido creado: {pedido}, invitado_id={pedido.invitado_id}")
         # Guardar productos del pedido
         for item in cart:
             producto = Producto.objects.get(nombre=item['name'])
@@ -290,13 +326,10 @@ def finalizar_compra(request):
 
     return JsonResponse({'error': 'Método no permitido.'}, status=405)
 
-
-
-
-
 def generar_invitado_id(request):
     if 'invitado_id' not in request.session:
         request.session['invitado_id'] = str(uuid.uuid4())
+        request.session['es_invitado'] = True  # Marcamos al usuario como invitado
     print("Generado invitado_id:", request.session['invitado_id'])  # Confirmar ID generado
     return request.session['invitado_id']
 
@@ -583,6 +616,7 @@ def enviar_correoVerificacion(mail, user, oferta):
         [mail],
         fail_silently=False,
     )
+<<<<<<< HEAD
 
 @user_passes_test(lambda u: u.is_superuser)
 def gestionar_pedidos(request):
@@ -617,3 +651,5 @@ def gestionar_pedidos(request):
     # Si es GET, renderiza una plantilla para listar pedidos
     pedidos = Pedido.objects.all()
     return render(request, 'app/gestionar_pedidos.html', {'pedidos': pedidos})
+=======
+>>>>>>> 94457130da1c4e9cdde90379a4b9ceecca60e125
