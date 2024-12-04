@@ -416,7 +416,16 @@ def obtener_estado_pedido(request, pedido_id):
 
 def obtener_pedido(request, pedido_id):
     try:
-        pedido = Pedido.objects.get(id=pedido_id, usuario=request.user)
+        # Identificar al usuario autenticado o invitado
+        if request.user.is_authenticated:
+            pedido = get_object_or_404(Pedido, id=pedido_id, usuario=request.user)
+        else:
+            invitado_id = request.session.get('invitado_id')
+            if not invitado_id:
+                return JsonResponse({'error': 'Usuario invitado no identificado.'}, status=403)
+            pedido = get_object_or_404(Pedido, id=pedido_id, invitado_id=invitado_id)
+
+        # Obtener los productos del pedido
         productos_pedido = ProductoPedido.objects.filter(pedido=pedido)
 
         productos = [
@@ -435,6 +444,9 @@ def obtener_pedido(request, pedido_id):
     
     except Pedido.DoesNotExist:
         return JsonResponse({'error': 'Pedido no encontrado.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
     
 def comprobar_oferta(request):
     data = json.loads(request.body)
