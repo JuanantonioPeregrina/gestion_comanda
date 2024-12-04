@@ -334,31 +334,6 @@ def finalizar_compra(request):
         if not cart:
             return JsonResponse({'error': 'El carrito está vacío.'}, status=400)
 
-        # Determinar el usuario o el invitado
-        if request.user.is_authenticated:
-            user = request.user  # Usuario autenticado
-            invitado_id = None  # No aplica para usuarios autenticados
-        else:
-            # Generar un `invitado_id` único si no existe
-            if 'invitado_id' not in request.session:
-                request.session['invitado_id'] = str(uuid.uuid4())
-            invitado_id = request.session['invitado_id']
-            #user = get_invitado_user()  # Usuario genérico "invitado_default"
-            user = None
-        # Crear el pedido
-        pedido = Pedido.objects.create(
-            usuario=user,  # Usuario autenticado o "invitado_default"
-            invitado_id=invitado_id,  # Solo se asigna para invitados
-            total=total,
-            nota_especial=nota_especial,
-        )
-        
-        print(f"Pedido creado: {pedido}, invitado_id={pedido.invitado_id}")
-        # Guardar productos del pedido
-        for item in cart:
-            producto = Producto.objects.get(nombre=item['name'])
-            ProductoPedido.objects.create(pedido=pedido, producto=producto, cantidad=1)
-
         # Crear sesión de pago en Stripe
         try:
             session = stripe.checkout.Session.create(
@@ -370,29 +345,13 @@ def finalizar_compra(request):
                             'product_data': {'name': item['name']},
                             'unit_amount': int(float(item['price']) * 100),
                         },
-                        'quantity': 1,  # Asume que siempre es 1 por simplicidad
+                        'quantity': item.get('cantidad', 1),
                     }
                     for item in cart
                 ],
                 mode='payment',
-                success_url=f'http://127.0.0.1:8000/success/?pedido_id={pedido.id}',
+                success_url=f'http://127.0.0.1:8000/success/?cart={json.dumps(cart)}&total={total}&nota_especial={nota_especial}',
                 cancel_url='http://127.0.0.1:8000/cancel/',
-            )
-
-            # Vincular el WebSocket para el pedido
-            channel_layer = get_channel_layer()
-            if invitado_id:  # Si es un invitado
-                group_name = f'invitado_{invitado_id}'
-            else:  # Si es un usuario autenticado
-                group_name = f'pedido_{pedido.id}'
-
-            # Enviar notificación al grupo WebSocket (solo si se genera el pedido correctamente)
-            async_to_sync(channel_layer.group_add)(
-                group_name,
-                {
-                    'type': 'pedido_creado',
-                    'message': f'Tu pedido #{pedido.id} se está procesando.',
-                }
             )
 
             return JsonResponse({'url': session.url})  # Devuelve la URL de Stripe
@@ -543,18 +502,67 @@ def crear_sesion_pago(request):
         if not cart:
             return JsonResponse({'error': 'El carrito está vacío.'}, status=400)
 
-        # Asigna el usuario o el usuario genérico para invitados
-        user = request.user if request.user.is_authenticated else get_invitado_user()
+        # Crear sesión de pago en Stripe
+        try:
+            session = stripe.checkout.Session.create(
+                payment_method_types=['card'],
+                line_items=[
+                    {
+                        'price_data': {
+                            'currency': 'eur',
+                            'product_data': {'name': item['name']},
+                            'unit_amount': int(float(item['price']) * 100),
+                        },
+                        'quantity': item.get('cantidad', 1),
+                    }
+                    for item in cart
+                ],
+                mode='payment',
+                success_url=f'http://127.0.0.1:8000/success/?cart={json.dumps(cart)}&total={total}&nota_especial={nota_especial}',
+                cancel_url='http://127.0.0.1:8000/cancel/',
+            )
 
-        # Crear el pedido
+            return JsonResponse({'url': session.url})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    return JsonResponse({'error': 'Método no permitido.'}, status=405)
+
+
+
+
+from django.template.loader import render_to_string
+
+def payment_success(request):
+    # Obtener detalles del carrito y otros datos desde la URL
+    cart = json.loads(request.GET.get('cart', '[]'))
+    total = request.GET.get('total', 0)
+    nota_especial = request.GET.get('nota_especial', '')
+
+    if not cart:
+        messages.error(request, 'No se proporcionó un carrito válido.')
+        return redirect('pagina_principal')
+
+    # Determinar el usuario o invitado
+    if request.user.is_authenticated:
+        user = request.user
+        invitado_id = None
+    else:
+        if 'invitado_id' not in request.session:
+            request.session['invitado_id'] = str(uuid.uuid4())
+        invitado_id = request.session['invitado_id']
+        user = None
+
+    try:
+        # Crear el pedido solo después de que el pago sea exitoso
         pedido = Pedido.objects.create(
-            invitado_id=request.session.get('invitado_id'),
             usuario=user,
+            invitado_id=invitado_id,
             total=total,
             nota_especial=nota_especial,
         )
 
-        # Guardar los productos del pedido y construir la factura
+        # Guardar los productos del pedido
         factura_string = f"Factura para el pedido #{pedido.id}:\n\n"
         for item in cart:
             producto = Producto.objects.get(nombre=item['name'])
@@ -572,75 +580,30 @@ def crear_sesion_pago(request):
             factura_string += f"\nNota Especial: {nota_especial}\n"
         factura_string += "\nGracias por su compra!"
 
-        try:
-            # Crear sesión de pago en Stripe
-            session = stripe.checkout.Session.create(
-                payment_method_types=['card'],
-                line_items=[
-                    {
-                        'price_data': {
-                            'currency': 'eur',
-                            'product_data': {'name': item['name']},
-                            'unit_amount': int(float(item['price']) * 100),
-                        },
-                        'quantity': item.get('cantidad', 1),
-                    }
-                    for item in cart
-                ],
-                mode='payment',
-                success_url=f'http://127.0.0.1:8000/success/?pedido_id={pedido.id}',
-                cancel_url='http://127.0.0.1:8000/cancel/',
+        # Enviar email con la factura
+        if user and user.email:
+            send_mail(
+                subject=f'Confirmación de tu pedido #{pedido.id}',
+                message=factura_string,
+                from_email='no-reply@mcnolo.com',
+                recipient_list=[user.email],
+                fail_silently=False,
             )
 
-            # Enviar email con la factura
-            if user.email:  # Asegurarse de que el usuario tenga un correo
-                send_mail(
-                    subject=f'Confirmación de tu pedido #{pedido.id}',
-                    message=factura_string,
-                    from_email='no-reply@mcnolo.com',
-                    recipient_list=[user.email],
-                    fail_silently=False,
-                )
+        # Renderizar la factura como HTML
+        factura_html = render_to_string('app/factura.html', {
+            'pedido': pedido,
+            'productos': ProductoPedido.objects.filter(pedido=pedido),
+        })
 
-            return JsonResponse({'url': session.url})
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
-
-    return JsonResponse({'error': 'Método no permitido.'}, status=405)
-
-
-
-
-from django.template.loader import render_to_string
-
-def payment_success(request):
-    # Obtener el pedido utilizando el parámetro `pedido_id`
-    pedido_id = request.GET.get('pedido_id')
-    if not pedido_id:
-        messages.error(request, 'No se proporcionó un pedido válido.')
+        return render(request, 'app/success.html', {
+            'pedido': pedido,
+            'productos': ProductoPedido.objects.filter(pedido=pedido),
+            'factura_html': factura_html,
+        })
+    except Exception as e:
+        messages.error(request, f'Hubo un error al registrar el pedido: {str(e)}')
         return redirect('pagina_principal')
-
-    try:
-        pedido = Pedido.objects.get(id=pedido_id)
-    except Pedido.DoesNotExist:
-        messages.error(request, 'El pedido no existe.')
-        return redirect('pagina_principal')
-
-    # Obtener los productos del pedido
-    productos = ProductoPedido.objects.filter(pedido=pedido)
-
-    # Renderizar la factura como HTML
-    factura_html = render_to_string('app/factura.html', {
-        'pedido': pedido,
-        'productos': productos,
-    })
-
-    # Redirigir a la página de éxito con la factura
-    return render(request, 'app/success.html', {
-        'pedido': pedido,
-        'productos': productos,
-        'factura_html': factura_html,
-    })
 
 
 def payment_cancel(request):
