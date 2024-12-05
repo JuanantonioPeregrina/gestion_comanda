@@ -635,7 +635,17 @@
     Tu navegador no soporta videos.
 </video>
 
-<div class="overlay"></div>
+<div class="overlay">
+    <!-- Botón para mostrar el área de sugerencias -->
+<button class="toggle-suggestion" onclick="toggleSuggestionForm()">Sugerir algo</button>
+
+<!-- Área de sugerencias -->
+<div class="suggestion-container" id="suggestion-container">
+    <h3>Escribe tu sugerencia</h3>
+    <textarea id="suggestion-text" placeholder="Escribe aquí tu sugerencia..." required></textarea>
+    <button onclick="sendSuggestion()">Enviar sugerencia</button>
+</div>
+</div>
 
 <div class="menu">
     <h1>Bienvenido a McNolo</h1>
@@ -893,15 +903,7 @@
     <p id="notification-message"></p>
 </div>
 
-<!-- Botón para mostrar el área de sugerencias -->
-<button class="toggle-suggestion" onclick="toggleSuggestionForm()">Sugerir algo</button>
 
-<!-- Área de sugerencias -->
-<div class="suggestion-container" id="suggestion-container">
-    <h3>Escribe tu sugerencia</h3>
-    <textarea id="suggestion-text" placeholder="Escribe aquí tu sugerencia..." required></textarea>
-    <button onclick="sendSuggestion()">Enviar sugerencia</button>
-</div>
 
 
 
@@ -1288,9 +1290,32 @@ applyTipButton.addEventListener('click', () => {
     socket.onclose = function() {
         console.error("WebSocket cerrado inesperadamente");
     };
+
+    // Función para mostrar u ocultar el formulario de sugerencias
+    function toggleSuggestionForm() {
+        var suggestionContainer = document.getElementById('suggestion-container');
+        if (suggestionContainer.style.display === 'none' || suggestionContainer.style.display === '') {
+            suggestionContainer.style.display = 'block';  // Muestra el formulario
+        } else {
+            suggestionContainer.style.display = 'none';   // Oculta el formulario
+        }
+    }
+
+    // Función para enviar la sugerencia
+    function sendSuggestion() {
+        var suggestionText = document.getElementById('suggestion-text').value;
+        if (suggestionText.trim() !== "") {
+            // Aquí puedes agregar la lógica para enviar la sugerencia, por ejemplo, con AJAX
+            alert("¡Gracias por tu sugerencia!");
+            document.getElementById('suggestion-text').value = "";  // Limpia el campo de texto
+            toggleSuggestionForm();  // Cierra el formulario de sugerencias
+        } else {
+            alert("Por favor, escribe una sugerencia.");
+        }
+    }
 </script>
 
-</script>
+
 
 </body>
 </html>
