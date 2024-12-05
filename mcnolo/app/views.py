@@ -1,5 +1,6 @@
 import json
 import random
+import re
 import uuid
 from types import SimpleNamespace  # Para crear un objeto dinámico
 from django.shortcuts import render, redirect, get_object_or_404
@@ -21,6 +22,7 @@ from django.contrib.auth.decorators import user_passes_test
 from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth.tokens import default_token_generator
 from django.urls import reverse
+from django.contrib.auth.hashers import make_password, check_password
 
 
 
@@ -612,6 +614,7 @@ def payment_cancel(request):
 
 temporary_data = {}
 
+# Función que maneja la solicitud de "Olvidé mi contraseña"
 def forgot_password(request):
     if request.method == 'POST':
         email = request.POST.get('email')  # Obtiene el correo del formulario
@@ -633,7 +636,7 @@ def forgot_password(request):
 
     return render(request, 'app/forgot_password.html')
 
-from django.contrib.auth.hashers import make_password
+# Función que maneja el cambio de contraseña
 def cambio_password(request):
     email = temporary_data.get('email')  # Recupera el correo guardado temporalmente
 
@@ -655,11 +658,25 @@ def cambio_password(request):
             messages.error(request, 'Las contraseñas no coinciden')
             return render(request, 'app/cambio_password.html', {'email': email})
 
+        # Verificar que la contraseña sea segura (mínimo 8 caracteres, un carácter especial)
+        if len(new_password) < 8:
+            messages.error(request, 'La contraseña debe tener al menos 8 caracteres.')
+            return render(request, 'app/cambio_password.html', {'email': email})
+
+        if not re.search(r'[!@#$%^&*(),.?":{}|<>]', new_password):
+            messages.error(request, 'La contraseña debe contener al menos un carácter especial.')
+            return render(request, 'app/cambio_password.html', {'email': email})
+
         # Verificar si el username (que en este caso es el email) pertenece a un usuario existente
         try:
             user = User.objects.get(username=email)  # Busca al usuario por el campo `username`
         except User.DoesNotExist:
             messages.error(request, 'No se encontró un usuario con ese correo electrónico')
+            return render(request, 'app/cambio_password.html', {'email': email})
+
+        # Verificar si la nueva contraseña es diferente de la actual
+        if check_password(new_password, user.password):
+            messages.error(request, 'La nueva contraseña no puede ser igual a la anterior.')
             return render(request, 'app/cambio_password.html', {'email': email})
 
         # Cambiar la contraseña del usuario
