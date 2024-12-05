@@ -583,7 +583,47 @@
     background-color: #c82333;
 }
 
-
+/* Estilo para la ventana de sugerencias */
+.suggestion-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    width: 250px;
+    display: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.suggestion-container textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+    margin-bottom: 10px;
+    height: 100px;
+}
+.suggestion-container button {
+    background-color: #28a745;
+    width: 100%;
+}
+.toggle-suggestion {
+    background-color: #17a2b8;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    position: fixed;
+    bottom: 10px;
+    right: 20px;
+}
+.toggle-suggestion:hover {
+    background-color: #138496;
+}
         
     </style>
 </head>
@@ -852,6 +892,17 @@
 <div id="notification" class="notification">
     <p id="notification-message"></p>
 </div>
+
+<!-- Botón para mostrar el área de sugerencias -->
+<button class="toggle-suggestion" onclick="toggleSuggestionForm()">Sugerir algo</button>
+
+<!-- Área de sugerencias -->
+<div class="suggestion-container" id="suggestion-container">
+    <h3>Escribe tu sugerencia</h3>
+    <textarea id="suggestion-text" placeholder="Escribe aquí tu sugerencia..." required></textarea>
+    <button onclick="sendSuggestion()">Enviar sugerencia</button>
+</div>
+
 
 
 
