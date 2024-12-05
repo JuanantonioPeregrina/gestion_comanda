@@ -34,20 +34,44 @@ Gracias a su dedicación y esfuerzo, este proyecto se ha convertido en una herra
 ## 🛠️ Despliegue inicial para desarrolladores
 
 ### Instalación de dependencias
-Asegúrate de tener Python instalado en tu sistema. Luego, instala las dependencias necesarias ejecutando los siguientes comandos:
+Asegúrate de tener Python instalado en tu sistema. 
+
+```bash (MAC)
+brew install python
+
+```powershell
+curl -o python-installer.exe https://www.python.org/ftp/python/3.11.6/python-3.11.6-amd64.exe
+
+
+Una vez descargado, ejecuta el instalador desde la terminal con:
+
+./python-installer.exe
+
+Durante la instalación, marca la opción "Add Python to PATH" para que sea accesible desde cualquier terminal.
+
+Luego, instala las dependencias necesarias ejecutando los siguientes comandos:
 
 ```bash
 pip install django
+pip install pillow
 pip install stripe
 pip install channels_redis
-(quizás falte por determinar alguno más)
-```
+pip install daphne
+pip install gunicorn 
 
-### Activar entorno virtual
+Ahora creamos un entorno virtual para interactuar con vscode(como en nuestro caso):
+
+```bash  (Mac)
+python3 -m venv env
+
+### Activar entorno virtual en vscode o editor de confianza
 Activa tu entorno virtual para gestionar las dependencias:
 
-```bash
+```bash  (Windows)
 .\env\Scripts\activate
+```bash  (Mac)
+source env/bin/activate
+
 ```
 
 ### Migraciones de base de datos
