@@ -636,14 +636,18 @@
 </video>
 
 <div class="overlay">
-    <!-- Botón para mostrar el área de sugerencias -->
+   <!-- Botón para mostrar u ocultar el formulario -->
 <button class="toggle-suggestion" onclick="toggleSuggestionForm()">Sugerir algo</button>
 
 <!-- Área de sugerencias -->
-<div class="suggestion-container" id="suggestion-container">
+<div class="suggestion-container" id="suggestion-container" style="display: none;">
     <h3>Escribe tu sugerencia</h3>
-    <textarea id="suggestion-text" placeholder="Escribe aquí tu sugerencia..." required></textarea>
-    <button onclick="sendSuggestion()">Enviar sugerencia</button>
+    <form method="POST" action="{% url 'enviar_sugerencia' %}">
+        {% csrf_token %}
+        <textarea name="sugerencia" id="suggestion-text" placeholder="Escribe aquí tu sugerencia..." required></textarea>
+        <input type="text" name="usuario" placeholder="Tu usuario" required>
+        <button type="submit">Enviar sugerencia</button>
+    </form>
 </div>
 </div>
 
@@ -1301,18 +1305,7 @@ applyTipButton.addEventListener('click', () => {
         }
     }
 
-    // Función para enviar la sugerencia
-    function sendSuggestion() {
-        var suggestionText = document.getElementById('suggestion-text').value;
-        if (suggestionText.trim() !== "") {
-            // Aquí puedes agregar la lógica para enviar la sugerencia, por ejemplo, con AJAX
-            alert("¡Gracias por tu sugerencia!");
-            document.getElementById('suggestion-text').value = "";  // Limpia el campo de texto
-            toggleSuggestionForm();  // Cierra el formulario de sugerencias
-        } else {
-            alert("Por favor, escribe una sugerencia.");
-        }
-    }
+  
 </script>
 
 

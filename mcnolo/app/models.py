@@ -159,10 +159,10 @@ class Oferta(models.Model):
         return f'{self.usuario.username}_{self.descuento}'
 
 
+
 class Sugerencia(models.Model):
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sugerencias')  # Relación con el usuario
-    texto = models.TextField()  # El texto de la sugerencia
-    fecha = models.DateTimeField(auto_now_add=True)  # Fecha y hora en que se hizo la sugerencia
+    usuario = models.CharField(max_length=150)
+    texto = models.TextField()
 
     def __str__(self):
-        return f"Sugerencia de {self.usuario.username} - {self.fecha}"
+        return f"Sugerencia de {self.usuario}"

@@ -6,12 +6,12 @@ from types import SimpleNamespace  # Para crear un objeto dinámico
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.contrib import messages
-from .models import HistorialProducto, Pedido, Producto, Carrito, CarritoProducto, ProductoPedido, Oferta, Categoria
+from .models import HistorialProducto, Pedido, Producto, Carrito, CarritoProducto, ProductoPedido, Oferta, Categoria, Sugerencia
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.core.mail import send_mail
 from .forms import ChangeUsernameForm
 from django.contrib.auth.models import AnonymousUser
@@ -730,3 +730,17 @@ def gestionar_pedidos(request):
     # Si es GET, renderiza una plantilla para listar pedidos
     pedidos = Pedido.objects.all()
     return render(request, 'app/gestionar_pedidos.html', {'pedidos': pedidos})
+
+def enviar_sugerencia(request):
+    if request.method == 'POST':
+        usuario = request.POST.get('usuario')  # Obtén el nombre del usuario
+        sugerencia = request.POST.get('sugerencia')  # Obtén el texto de la sugerencia
+
+        # Guarda la sugerencia en la base de datos
+        Sugerencia.objects.create(usuario=usuario, texto=sugerencia)
+
+        # Redirige o envía una respuesta
+        return HttpResponse("¡Gracias por tu sugerencia!")
+
+    # Si no es POST, redirige a otra página o muestra un error
+    return HttpResponse("Método no permitido.", status=405)
