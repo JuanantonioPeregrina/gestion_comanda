@@ -1,7 +1,7 @@
 from django.contrib import admin
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
-from .models import Producto, Pedido, ProductoPedido
+from .models import Producto, Pedido, ProductoPedido, Sugerencia
 
 admin.site.register(Producto)
 admin.site.register(ProductoPedido)
@@ -97,3 +97,5 @@ class PedidoAdmin(admin.ModelAdmin):
             pedido.estado = 'enviado'
             pedido.save()
         self.message_user(request, "El pedido ha sido enviado.")
+
+admin.site.register(Sugerencia)
