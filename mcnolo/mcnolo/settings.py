@@ -31,6 +31,7 @@ ALLOWED_HOSTS = ['127.0.0.1', '10.60.116.207','13.60.28.206', 'mcnolo.duckdns.or
 CSRF_TRUSTED_ORIGINS = [
     'https://mcnolo.online',
     'https://www.mcnolo.online',
+    'https://127.0.0.1'
 ]
 
 # Application definition

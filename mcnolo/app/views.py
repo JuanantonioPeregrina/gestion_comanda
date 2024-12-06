@@ -337,6 +337,14 @@ def finalizar_compra(request):
         if not cart:
             return JsonResponse({'error': 'El carrito está vacío.'}, status=400)
 
+        # Detectar el dominio actual para ajustar las URLs de éxito y cancelación
+        current_domain = request.get_host()  # Devuelve '127.0.0.1:8000' o 'mcnolo.online'
+        protocol = 'https' if 'mcnolo.online' in current_domain else 'http'
+
+        # Configurar las URLs dinámicamente según el dominio
+        success_url = f'{protocol}://{current_domain}/success/?cart={json.dumps(cart)}&total={total}&nota_especial={nota_especial}'
+        cancel_url = f'{protocol}://{current_domain}/cancel/'
+
         # Crear sesión de pago en Stripe
         try:
             session = stripe.checkout.Session.create(
@@ -353,8 +361,8 @@ def finalizar_compra(request):
                     for item in cart
                 ],
                 mode='payment',
-                success_url=f'https://mcnolo.online/success/?cart={json.dumps(cart)}&total={total}&nota_especial={nota_especial}',
-                cancel_url='https://mcnolo.online/cancel/',
+                success_url=success_url,
+                cancel_url=cancel_url,
             )
 
             return JsonResponse({'url': session.url})  # Devuelve la URL de Stripe
@@ -362,6 +370,7 @@ def finalizar_compra(request):
             return JsonResponse({'error': str(e)}, status=500)
 
     return JsonResponse({'error': 'Método no permitido.'}, status=405)
+
 
 def generar_invitado_id(request):
     if 'invitado_id' not in request.session:
@@ -505,6 +514,14 @@ def crear_sesion_pago(request):
         if not cart:
             return JsonResponse({'error': 'El carrito está vacío.'}, status=400)
 
+        # Detectar el dominio actual para ajustar las URLs de éxito y cancelación
+        current_domain = request.get_host()  # Devuelve '127.0.0.1:8000' o 'mcnolo.online'
+        protocol = 'https' if 'mcnolo.online' in current_domain else 'http'
+
+        # Configurar las URLs dinámicamente según el dominio
+        success_url = f'{protocol}://{current_domain}/success/?cart={json.dumps(cart)}&total={total}&nota_especial={nota_especial}'
+        cancel_url = f'{protocol}://{current_domain}/cancel/'
+
         # Crear sesión de pago en Stripe
         try:
             session = stripe.checkout.Session.create(
@@ -521,15 +538,16 @@ def crear_sesion_pago(request):
                     for item in cart
                 ],
                 mode='payment',
-                success_url=f'https://mcnolo.online/success/?cart={json.dumps(cart)}&total={total}&nota_especial={nota_especial}',
-                cancel_url='https://mcnolo.online/cancel/',
+                success_url=success_url,
+                cancel_url=cancel_url,
             )
 
-            return JsonResponse({'url': session.url})
+            return JsonResponse({'url': session.url})  # Devuelve la URL de Stripe
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
 
     return JsonResponse({'error': 'Método no permitido.'}, status=405)
+
 
 
 
