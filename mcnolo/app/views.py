@@ -353,8 +353,8 @@ def finalizar_compra(request):
                     for item in cart
                 ],
                 mode='payment',
-                success_url=f'http://127.0.0.1:8000/success/?cart={json.dumps(cart)}&total={total}&nota_especial={nota_especial}',
-                cancel_url='http://127.0.0.1:8000/cancel/',
+                success_url=f'https://mcnolo.online/success/?cart={json.dumps(cart)}&total={total}&nota_especial={nota_especial}',
+                cancel_url='https://mcnolo.online/cancel/',
             )
 
             return JsonResponse({'url': session.url})  # Devuelve la URL de Stripe
@@ -521,8 +521,8 @@ def crear_sesion_pago(request):
                     for item in cart
                 ],
                 mode='payment',
-                success_url=f'http://127.0.0.1:8000/success/?cart={json.dumps(cart)}&total={total}&nota_especial={nota_especial}',
-                cancel_url='http://127.0.0.1:8000/cancel/',
+                success_url=f'https://mcnolo.online/success/?cart={json.dumps(cart)}&total={total}&nota_especial={nota_especial}',
+                cancel_url='https://mcnolo.online/cancel/',
             )
 
             return JsonResponse({'url': session.url})
