@@ -624,6 +624,17 @@
 .toggle-suggestion:hover {
     background-color: #138496;
 }
+.gestionar_pedidos {
+    position: fixed;
+    top: 20px; 
+    right: 300px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    z-index: 999;
+}
         
     </style>
 </head>
@@ -703,7 +714,7 @@
         </div>
 
         <!-- Botón para acceder a la página de administración -->
-        <a href="{% url 'gestionar_pedidos' %}" style="position: fixed; background-color: green;top: 20px; right: 300px;">
+        <a href="{% url 'gestionar_pedidos' %}" class='gestionar_pedidos'>
             Administración
         </a>
     {% endif %}

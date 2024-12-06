@@ -723,6 +723,15 @@ def gestionar_pedidos(request):
                 return JsonResponse({'error': 'Acción no válida'}, status=400)
 
             pedido.save()
+            canal = get_channel_layer()
+            destinatario = f'pedido_{pedido.id}' if pedido.usuario else f'invitado_{pedido.invitado_id}'
+            async_to_sync(canal.group_send)(
+                destinatario,
+                {
+                    'type': 'pedido_actualizado',
+                    'mensaje': f'Pedido {pedido.id} actualizado a {pedido.estado}.'
+                }
+            )
             return JsonResponse({'mensaje': f'Pedido {pedido_id} actualizado a {pedido.estado}.'})
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
