@@ -28,6 +28,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1', '10.60.116.207','13.60.28.206', 'mcnolo.duckdns.org', 'mcnolo.online', '81.88.48.71']
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://mcnolo.online',
+    'https://www.mcnolo.online',
+]
 
 # Application definition
 

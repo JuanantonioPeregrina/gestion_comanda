@@ -172,10 +172,11 @@ def registrarse(request):
         token = default_token_generator.make_token(user)
 
         # Construir la URL de activación
-        activation_link = request.build_absolute_uri(
+        activation_link = f"https://mcnolo.online{reverse('activar_cuenta', kwargs={'uid': user.pk, 'token': token})}" 
+        """ activation_link = request.build_absolute_uri(
             reverse('activar_cuenta', kwargs={'uid': user.pk, 'token': token})
         )
-
+        """
         # Enviar correos
         codigo_oferta = f'{user.username}_10'
         Oferta.objects.create(usuario=user, descuento=10, codigo=codigo_oferta)
