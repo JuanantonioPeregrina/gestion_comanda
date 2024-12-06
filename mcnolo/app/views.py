@@ -754,3 +754,76 @@ def enviar_sugerencia(request):
 
     # Si no es POST, redirige a otra página o muestra un error
     return HttpResponse("Método no permitido.", status=405)
+
+
+@csrf_exempt
+def volver_a_pedir(request, pedido_id):
+    if request.method == 'POST':
+        try:
+            # Obtener el pedido original
+            pedido_original = get_object_or_404(Pedido, id=pedido_id)
+
+            # Crear un nuevo pedido basado en el anterior
+            nuevo_pedido = Pedido.objects.create(
+                usuario=pedido_original.usuario,
+                invitado_id=pedido_original.invitado_id,
+                total=pedido_original.total,
+                estado='en_espera',  # Establecer el estado inicial
+                nota_especial=pedido_original.nota_especial,
+                metodo_pago="Tarjeta de Crédito"  # Puedes personalizarlo si hay varios métodos
+            )
+
+            # Copiar los productos del pedido original
+            productos_pedido_original = ProductoPedido.objects.filter(pedido=pedido_original)
+            for producto_pedido in productos_pedido_original:
+                ProductoPedido.objects.create(
+                    pedido=nuevo_pedido,
+                    producto=producto_pedido.producto,
+                    cantidad=producto_pedido.cantidad,
+                )
+
+            # Generar la factura como string
+            factura_string = f"Factura para el pedido #{nuevo_pedido.id}:\n\n"
+            for producto_pedido in productos_pedido_original:
+                factura_string += f"- {producto_pedido.producto.nombre}: {producto_pedido.producto.precio}€ x {producto_pedido.cantidad} unidades\n"
+            factura_string += f"\nTotal: {nuevo_pedido.total}€\n"
+            if nuevo_pedido.nota_especial:
+                factura_string += f"\nNota Especial: {nuevo_pedido.nota_especial}\n"
+            factura_string += "\nGracias por su compra!"
+
+            # Enviar email con la factura al cliente
+            if nuevo_pedido.usuario and nuevo_pedido.usuario.email:
+                send_mail(
+                    subject=f'Confirmación de tu pedido #{nuevo_pedido.id}',
+                    message=factura_string,
+                    from_email='no-reply@mcnolo.com',
+                    recipient_list=[nuevo_pedido.usuario.email],
+                    fail_silently=False,
+                )
+
+            # Crear sesión de pago en Stripe
+            session = stripe.checkout.Session.create(
+                payment_method_types=['card'],
+                line_items=[
+                    {
+                        'price_data': {
+                            'currency': 'eur',
+                            'product_data': {'name': producto_pedido.producto.nombre},
+                            'unit_amount': int(float(producto_pedido.producto.precio) * 100),
+                        },
+                        'quantity': producto_pedido.cantidad,
+                    }
+                    for producto_pedido in productos_pedido_original
+                ],
+                mode='payment',
+                success_url=f'https://mcnolo.online/success/?pedido_id={nuevo_pedido.id}',
+                cancel_url='https://mcnolo.online/cancel/',
+            )
+
+            # Retornar la URL de Stripe para redirigir al cliente
+            return JsonResponse({'url': session.url})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    return JsonResponse({'error': 'Método no permitido.'}, status=405)
+

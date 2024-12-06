@@ -35,7 +35,8 @@ urlpatterns = [
     path('cambio-password/', views.cambio_password, name='cambio_password'),
     path('gestionar-pedidos/', views.gestionar_pedidos, name='gestionar_pedidos'),
     path('enviar_sugerencia/', views.enviar_sugerencia, name='enviar_sugerencia'),
-]
+    path('volver-a-pedir/<int:pedido_id>/', views.volver_a_pedir, name='volver_a_pedir'),
+    ]
 
     
     

@@ -1170,51 +1170,44 @@ function setupPayment() {
 
 // Función para restaurar productos del pedido anterior en el carrito
 function restaurarPedido(pedidoId) {
-    // Verificar que el pedidoId no esté undefined
-    if (!pedidoId) {
-        console.error('Pedido ID no encontrado');
-        return;
-    }
-
-    // Hacemos una solicitud para obtener los detalles del pedido
     fetch(`/obtener-pedido/${pedidoId}/`)
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            alert(data.error);
-        } else {
-            // Procesar los productos del pedido anterior
-            const productos = data.productos;
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+            } else {
+                const productos = data.productos;
+                const csrfToken = getCookie('csrftoken');
 
-            // Crear un nuevo pedido basado en el pedido anterior
-            fetch('{% url "finalizar_compra" %}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                body: JSON.stringify({
-                    cart: productos.map(producto => ({
-                        name: producto.nombre,
-                        price: producto.precio,
-                        cantidad: producto.cantidad
-                    })),
-                    total: data.total,
-                    nota_especial: ''  // Si necesitas incluir una nota especial, puedes añadirla aquí
+                fetch("{% url 'crear_sesion_pago' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken,
+                    },
+                    body: JSON.stringify({
+                        cart: productos.map(producto => ({
+                            name: producto.nombre,
+                            price: producto.precio,
+                            cantidad: producto.cantidad,
+                        })),
+                        total: data.total,
+                        nota_especial: '',  // Puedes incluir alguna nota si es necesario
+                    }),
                 })
-            })
-            .then(response => response.json())
-            .then(result => {
-                if (result.error) {
-                    alert("Error: " + result.error);
-                } else {
-                    alert('Pedido repetido con éxito. Total: ' + result.total + '€. Tiempo estimado: ' + result.tiempo_estimado + ' minutos.');
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        }
-    })
-    .catch(error => console.error('Error:', error));
+                .then(response => response.json())
+                .then(result => {
+                    if (result.url) {
+                        // Redirigir a Stripe
+                        window.location.href = result.url;
+                    } else if (result.error) {
+                        alert(result.error);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        })
+        .catch(error => console.error('Error:', error));
 }
 
 
