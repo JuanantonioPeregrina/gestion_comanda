@@ -759,8 +759,15 @@ def gestionar_pedidos(request):
 
     # Si es GET, renderiza una plantilla para listar pedidos
     pedidos = Pedido.objects.all()
-    return render(request, 'app/gestionar_pedidos.html', {'pedidos': pedidos})
+    sugerencias = (Sugerencia.objects.all().values('texto', 'usuario'))
+    return render(request, 'app/gestionar_pedidos.html', {'pedidos': pedidos, 'sugerencias' : sugerencias})
 
+def obtener_sugerencias():
+    # Recuperar todas las sugerencias de la base de datos
+    sugerencias = Sugerencia.objects.all().values('id', 'texto', 'usuario')
+    print(sugerencias)
+    # Convertir a una lista y devolver como JSON
+    return JsonResponse(list(sugerencias), safe=False)
 def enviar_sugerencia(request):
     if request.method == 'POST':
         usuario = request.POST.get('usuario')  # Obtén el nombre del usuario

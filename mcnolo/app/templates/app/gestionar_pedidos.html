@@ -8,64 +8,161 @@
         table {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 10px;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); 
         }
-        th, td {
-            padding: 10px;
-            border: 1px solid #ddd;
-        }
+        
         th {
-            background-color: #f4f4f4;
+            background-color: #4CAF50; 
+            color: white;
+            text-align: left;
+            padding: 12px;
+            font-size: 16px;
+            border-bottom: 2px solid #ddd;
         }
+        
+        td {
+            padding: 10px;
+            color: #333; 
+            font-size: 14px;
+            border-bottom: 1px solid #ddd; 
+        }
+        
+        tbody tr:nth-child(odd) {
+            background-color: #f9f9f9; 
+        }
+        
+        tbody tr:nth-child(even) {
+            background-color: white; 
+        }
+        
+
+        tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+        
+
         button {
-            padding: 5px 10px;
+            padding: 6px 12px;
             border: none;
             border-radius: 5px;
             color: white;
             cursor: pointer;
-        }
+            font-size: 14px;
+            margin: 2px; 
+            transition: background-color 0.3s ease;
+        } 
         .aceptar { background-color: #28a745; }
         .rechazar { background-color: #dc3545; }
         .proceso { background-color: #007bff; }
         .finalizar { background-color: #ffc107; color: black; }
         .recoger { background-color: #17a2b8; }
-        .enviado { background-color: #4B0082; }
+        .enviado { background-color: #6f42c1; }
+
+        .tabla {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 90%;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 24px;
+            color: #333;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .video-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+        }
+        
+        #titulo {
+            background-color: rgba(255, 255, 255, 0.9); 
+            max-width: 600px;
+            border-radius: 12px;
+            padding: 15px;
+            margin: 20px auto;
+            text-align: center;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+        } 
     </style>
 </head>
 <body>
-    <h1>Administración Cocinero</h1>
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Usuario</th>
-                <th>Total</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for pedido in pedidos %}
+    <video autoplay muted loop class="video-background">
+        <source src="{{ MEDIA_URL }}/media/videos/principal.mp4" type="video/mp4">
+        Tu navegador no soporta videos.
+    </video>
+    <div id="titulo">
+        <h1> Administración Cocinero</h1>
+    </div>
+    <div class="tabla">
+        <h1>Pedidos</h1>
+        <table>
+            <thead>
                 <tr>
-                    <td>{{ pedido.id }}</td>
-                    <td>{% if pedido.usuario %}
-                            {{ pedido.usuario.username }}
-                        {% else %}
-                        Invitado
-                    {% endif %}</td>
-                    <td>{{ pedido.total }}€</td>
-                    <td>{{ pedido.get_estado_display }}</td>
-                    <td>
-                        <button class="aceptar" onclick="ejecutarAccion('{{ pedido.id }}', 'aceptar')">Aceptar</button>
-                        <button class="rechazar" onclick="ejecutarAccion('{{ pedido.id }}', 'rechazar')">Rechazar</button>
-                        <button class="proceso" onclick="ejecutarAccion('{{ pedido.id }}', 'poner_en_proceso')">En Proceso</button>
-                        <button class="finalizar" onclick="ejecutarAccion('{{ pedido.id }}', 'finalizar')">Finalizar</button>
-                        <button class="recoger" onclick="ejecutarAccion('{{ pedido.id }}', 'preparar_recogida')">Preparar recogida</button>
-                        <button class="enviado" onclick="ejecutarAccion('{{ pedido.id }}', 'enviado')">enviado</button>
-                    </td>
+                    <th>ID</th>
+                    <th>Usuario</th>
+                    <th>Total</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                {% for pedido in pedidos %}
+                    <tr>
+                        <td>{{ pedido.id }}</td>
+                        <td>{% if pedido.usuario %}
+                                {{ pedido.usuario.username }}
+                            {% else %}
+                            Invitado
+                        {% endif %}</td>
+                        <td>{{ pedido.total }}€</td>
+                        <td>{{ pedido.get_estado_display }}</td>
+                        <td>
+                            <button class="aceptar" onclick="ejecutarAccion('{{ pedido.id }}', 'aceptar')">Aceptar</button>
+                            <button class="rechazar" onclick="ejecutarAccion('{{ pedido.id }}', 'rechazar')">Rechazar</button>
+                            <button class="proceso" onclick="ejecutarAccion('{{ pedido.id }}', 'poner_en_proceso')">En Proceso</button>
+                            <button class="finalizar" onclick="ejecutarAccion('{{ pedido.id }}', 'finalizar')">Finalizar</button>
+                            <button class="recoger" onclick="ejecutarAccion('{{ pedido.id }}', 'preparar_recogida')">Preparar recogida</button>
+                            <button class="enviado" onclick="ejecutarAccion('{{ pedido.id }}', 'enviado')">enviado</button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div> 
+
+    <div class = "tabla">
+        <h1>Sugerencias de los comensales</h1>
+        <table class="sugerencias_tabla">
+            <thead>
+                <tr>
+                    <th>Usuario</th>
+                    <th>Sugerencia</th>
+                </tr>
+            </thead>
+            <tbody>
+                {%for sugerencia in sugerencias%}
+                    <tr>
+                        <td>{{ sugerencia.usuario }}</td>
+                        <td>{{ sugerencia.texto }}</td>
+                    </tr>
+                {%endfor%}
+            </tbody>
+        </table>
+    </div>
 
     <script>
         function ejecutarAccion(pedidoId, accion) {
