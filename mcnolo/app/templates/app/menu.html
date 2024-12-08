@@ -183,21 +183,21 @@
                     <h3>Ensaladilla</h3>
                     <p>Fresca y deliciosa</p>
                     <p class="price">4.99€</p>
-                    <button class="add-to-cart" data-name="Ensaladilla" data-price="4.99">Añadir al carrito</button>
+                    <button class="add-to-cart" data-name="Ensaladilla" data-price="4.99" data-category="primero">Seleccionar</button>
                 </div>
                 <div class="menu-item">
                     <img src="/media/productos/sopadepollo.jpeg" alt="Sopa de Pollo">
                     <h3>Sopa de Pollo</h3>
                     <p>Reconfortante y deliciosa</p>
                     <p class="price">3.99€</p>
-                    <button class="add-to-cart" data-name="Sopa de Pollo" data-price="3.99">Añadir al carrito</button>
+                    <button class="add-to-cart" data-name="Sopa de Pollo" data-price="3.99" data-category="primero">Seleccionar</button>
                 </div>
                 <div class="menu-item">
                     <img src="/media/productos/GuisoTernera.jpeg" alt="Guiso de Ternera">
                     <h3>Guiso de Ternera</h3>
                     <p>Clásico y casero</p>
                     <p class="price">5.50€</p>
-                    <button class="add-to-cart" data-name="Guiso de Ternera" data-price="5.50">Añadir al carrito</button>
+                    <button class="add-to-cart" data-name="Guiso de Ternera" data-price="5.50" data-category="primero">Seleccionar</button>
                 </div>
             </div>
         </div>
@@ -211,21 +211,21 @@
                     <h3>Filete de Buey</h3>
                     <p>Jugoso y sabroso</p>
                     <p class="price">9.99€</p>
-                    <button class="add-to-cart" data-name="Filete de Buey" data-price="9.99">Añadir al carrito</button>
+                    <button class="add-to-cart" data-name="Filete de Buey" data-price="9.99" data-category="segundo">Seleccionar</button>
                 </div>
                 <div class="menu-item">
                     <img src="/media/productos/merluzaromana.jpg" alt="Merluza a la Romana">
                     <h3>Merluza a la Romana</h3>
                     <p>Ligera y crujiente</p>
                     <p class="price">8.99€</p>
-                    <button class="add-to-cart" data-name="Merluza a la Romana" data-price="8.99">Añadir al carrito</button>
+                    <button class="add-to-cart" data-name="Merluza a la Romana" data-price="8.99" data-category="segundo">Seleccionar</button>
                 </div>
                 <div class="menu-item">
                     <img src="/media/productos/morcilla.png" alt="Morcilla Asada">
                     <h3>Morcilla Asada</h3>
                     <p>Con un toque de cebolla</p>
                     <p class="price">6.50€</p>
-                    <button class="add-to-cart" data-name="Morcilla Asada" data-price="6.50">Añadir al carrito</button>
+                    <button class="add-to-cart" data-name="Morcilla Asada" data-price="6.50" data-category="segundo">Seleccionar</button>
                 </div>
             </div>
         </div>
@@ -239,21 +239,21 @@
                     <h3>Tarta de Chocolate</h3>
                     <p>Intenso y cremoso</p>
                     <p class="price">3.99€</p>
-                    <button class="add-to-cart" data-name="Tarta de Chocolate" data-price="3.99">Añadir al carrito</button>
+                    <button class="add-to-cart" data-name="Tarta de Chocolate" data-price="3.99" data-category="postre">Seleccionar</button>
                 </div>
                 <div class="menu-item">
                     <img src="/media/productos/vainillahelado.jpeg" alt="Helado de Vainilla">
                     <h3>Helado de Vainilla</h3>
                     <p>Fresco y dulce</p>
                     <p class="price">2.99€</p>
-                    <button class="add-to-cart" data-name="Helado de Vainilla" data-price="2.99">Añadir al carrito</button>
+                    <button class="add-to-cart" data-name="Helado de Vainilla" data-price="2.99" data-category="postre">Seleccionar</button>
                 </div>
                 <div class="menu-item">
                     <img src="/media/productos/frutadetemporada.jpeg" alt="Fruta de Temporada">
                     <h3>Fruta de Temporada</h3>
                     <p>Natural y saludable</p>
                     <p class="price">2.50€</p>
-                    <button class="add-to-cart" data-name="Fruta de Temporada" data-price="2.50">Añadir al carrito</button>
+                    <button class="add-to-cart" data-name="Fruta de Temporada" data-price="2.50" data-category="postre">Seleccionar</button>
                 </div>
             </div>
         </div>
@@ -347,6 +347,33 @@
                 }
             })
             .catch(error => console.error('Error:', error));
+        });
+        
+        const selectedItems = {};
+
+        document.querySelectorAll('.add-to-cart').forEach(button => {
+            button.addEventListener('click', () => {
+                const category = button.getAttribute('data-category');
+                const allButtons = document.querySelectorAll(`button[data-category="${category}"]`);
+                
+                if (selectedItems[category]) {
+                    // Deseleccionar el plato anterior
+                    selectedItems[category].disabled = false;
+                    selectedItems[category].textContent = "Seleccionar";
+                }
+
+                // Seleccionar el plato actual
+                button.disabled = true;
+                button.textContent = "Seleccionado";
+                selectedItems[category] = button;
+
+                // Deshabilitar los otros platos de la categoría
+                allButtons.forEach(btn => {
+                    if (btn !== button) {
+                        btn.disabled = true;
+                    }
+                });
+            });
         });
     </script>
 </body>
