@@ -79,6 +79,30 @@
             max-width: 100%;
             box-sizing: border-box;
         }
+        
+	.menu-button {
+	    position: fixed;
+	    top: 45px;
+	    left: 275px;
+	    background-color: #28a745;
+	    color: white;
+	    padding: 10px 20px;
+	    text-decoration: none;
+	    border-radius: 5px;
+	    font-size: 1rem;
+	    font-weight: bold;
+	    z-index: 9999;
+	    transition: background-color 0.3s ease;
+	}
+
+	.menu-button:hover {
+	    background-color: #218838;
+	}
+
+	.menu-button:active {
+	    background-color: #1e7e34;
+	}
+        
 
         .menu h1 {
             font-size: 3rem;
@@ -641,6 +665,8 @@
     </style>
 </head>
 <body>
+
+<a href="/menu/" class="menu-button">Nuestro Menú</a>
 
 <!-- Video como fondo -->
 <video autoplay muted loop class="video-background">
