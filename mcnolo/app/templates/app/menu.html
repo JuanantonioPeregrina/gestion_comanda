@@ -1,21 +1,203 @@
-<h2>Menú</h2>
-<h3>Primeros</h3>
-<ul>
-    {% for plato in primeros %}
-        <li>{{ plato.nombre }} - {{ plato.precio }}€</li>
-    {% endfor %}
-</ul>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menú del Día</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+        }
 
-<h3>Segundos</h3>
-<ul>
-    {% for plato in segundos %}
-        <li>{{ plato.nombre }} - {{ plato.precio }}€</li>
-    {% endfor %}
-</ul>
+        header {
+            background-color: #ff6b6b;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
 
-<h3>Postres</h3>
-<ul>
-    {% for plato in postres %}
-        <li>{{ plato.nombre }} - {{ plato.precio }}€</li>
-    {% endfor %}
-</ul>
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+
+        main {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section h2 {
+            background-color: #ffcc00;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .menu-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .menu-item {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            width: 280px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .menu-item:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .menu-item img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+
+        .menu-item h3 {
+            font-size: 1.5rem;
+            margin: 15px 0 5px;
+            color: #ff6b6b;
+        }
+
+        .menu-item p {
+            margin: 0;
+            font-size: 1rem;
+            color: #555;
+        }
+
+        .menu-item .price {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #333;
+            margin: 15px 0;
+        }
+
+        .menu-item .add-to-cart {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-bottom: 15px;
+            transition: background-color 0.3s ease;
+        }
+
+        .menu-item .add-to-cart:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Menú del Día</h1>
+        <p>Disfruta de los mejores platos de McNolo</p>
+    </header>
+    <main>
+        <!-- Primeros -->
+        <div class="section">
+            <h2>Primeros</h2>
+            <div class="menu-items">
+                <div class="menu-item">
+                    <img src="/media/productos/ensaladilla.jpeg" alt="Ensaladilla">
+                    <h3>Ensaladilla</h3>
+                    <p>Fresca y deliciosa</p>
+                    <p class="price">4.99€</p>
+                    <button class="add-to-cart">Añadir al carrito</button>
+                </div>
+                <div class="menu-item">
+                    <img src="/media/productos/sopadepollo.jpeg" alt="Sopa de Pollo">
+                    <h3>Sopa de Pollo</h3>
+                    <p>Reconfortante y deliciosa</p>
+                    <p class="price">3.99€</p>
+                    <button class="add-to-cart">Añadir al carrito</button>
+                </div>
+                <div class="menu-item">
+                    <img src="/media/productos/GuisoTernera.jpeg" alt="Guiso de Ternera">
+                    <h3>Guiso de Ternera</h3>
+                    <p>Clásico y casero</p>
+                    <p class="price">5.50€</p>
+                    <button class="add-to-cart">Añadir al carrito</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Segundos -->
+        <div class="section">
+            <h2>Segundos</h2>
+            <div class="menu-items">
+                <div class="menu-item">
+                    <img src="/media/productos/filetedebuey.jpeg" alt="Filete de Buey">
+                    <h3>Filete de Buey</h3>
+                    <p>Jugoso y sabroso</p>
+                    <p class="price">9.99€</p>
+                    <button class="add-to-cart">Añadir al carrito</button>
+                </div>
+                <div class="menu-item">
+                    <img src="/media/productos/merluzaromana.jpg" alt="Merluza a la Romana">
+                    <h3>Merluza a la Romana</h3>
+                    <p>Ligera y crujiente</p>
+                    <p class="price">8.99€</p>
+                    <button class="add-to-cart">Añadir al carrito</button>
+                </div>
+                <div class="menu-item">
+                    <img src="/media/productos/morcilla.png" alt="Morcilla Asada">
+                    <h3>Morcilla Asada</h3>
+                    <p>Con un toque de cebolla</p>
+                    <p class="price">6.50€</p>
+                    <button class="add-to-cart">Añadir al carrito</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Postres -->
+        <div class="section">
+            <h2>Postres</h2>
+            <div class="menu-items">
+                <div class="menu-item">
+                    <img src="/media/productos/tartadechocolate.jpeg" alt="Tarta de Chocolate">
+                    <h3>Tarta de Chocolate</h3>
+                    <p>Intenso y cremoso</p>
+                    <p class="price">3.99€</p>
+                    <button class="add-to-cart">Añadir al carrito</button>
+                </div>
+                <div class="menu-item">
+                    <img src="/media/productos/vainillahelado.jpeg" alt="Helado de Vainilla">
+                    <h3>Helado de Vainilla</h3>
+                    <p>Fresco y dulce</p>
+                    <p class="price">2.99€</p>
+                    <button class="add-to-cart">Añadir al carrito</button>
+                </div>
+                <div class="menu-item">
+                    <img src="/media/productos/frutadetemporada.jpeg" alt="Fruta de Temporada">
+                    <h3>Fruta de Temporada</h3>
+                    <p>Natural y saludable</p>
+                    <p class="price">2.50€</p>
+                    <button class="add-to-cart">Añadir al carrito</button>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+
