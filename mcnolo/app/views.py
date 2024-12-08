@@ -853,4 +853,8 @@ def volver_a_pedir(request, pedido_id):
             return JsonResponse({'error': str(e)}, status=500)
 
     return JsonResponse({'error': 'Método no permitido.'}, status=405)
+    
+def menu_view(request):
+    # Renderiza la plantilla estática directamente
+    return render(request, 'app/menu.html')    
 
