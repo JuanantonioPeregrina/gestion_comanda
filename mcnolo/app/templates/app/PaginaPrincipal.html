@@ -1007,15 +1007,42 @@ function updateCart() {
     cartItemsContainer.innerHTML = '';
     let totalPrice = 0;
 
-    cart.forEach(item => {
+    cart.forEach((item, index) => {
+        // Crear el contenedor del producto
         const itemElement = document.createElement('div');
-        itemElement.textContent = `${item.name} - ${item.price}€`;
+        itemElement.classList.add('cart-item');
+
+        // Mostrar el nombre y precio del producto
+        itemElement.innerHTML = `
+            ${item.name} - ${item.price}€
+            <button class="remove-item" data-index="${index}">Eliminar</button>
+        `;
+
         cartItemsContainer.appendChild(itemElement);
         totalPrice += item.price;
     });
 
     totalPriceElement.textContent = totalPrice.toFixed(2);
+
+    // Asociar eventos a los botones de eliminar
+    document.querySelectorAll('.remove-item').forEach(button => {
+        button.addEventListener('click', function () {
+            const index = parseInt(this.getAttribute('data-index'), 10);
+            removeFromCart(index);
+        });
+    });
+
+    document.getElementById('cart-data').value = JSON.stringify(cart);
 }
+
+function removeFromCart(index) {
+    // Eliminar el producto del array del carrito
+    cart.splice(index, 1);
+
+    // Actualizar la interfaz del carrito
+    updateCart();
+}
+
 
 document.getElementById('form-oferta').addEventListener('submit', function(event) {
     event.preventDefault();
@@ -1085,50 +1112,60 @@ function clearCart() {
 
 const csrftoken = getCookie('csrftoken');
 
-
-document.getElementById('checkout-btn').addEventListener('click', (event) => {
+document.getElementById('checkout-btn').addEventListener('click', function (event) {
     event.preventDefault();
-
-    const checkoutBtn = document.getElementById('checkout-btn');
-    if (checkoutBtn.disabled) return; // Evita múltiples envíos
-    checkoutBtn.disabled = true;
 
     if (cart.length === 0) {
         alert('El carrito está vacío.');
-        checkoutBtn.disabled = false;
         return;
     }
 
-    const notaEspecial = document.getElementById('nota_especial').value;
+    // Obtener la propina ingresada
+    const tipAmount = parseFloat(document.getElementById('tip-amount').value) || 0;
 
-    fetch("{% url 'crear_sesion_pago' %}", { // Asegúrate de que esta URL es correcta
+    // Verificar si la propina es válida
+    if (tipAmount < 0) {
+        alert('La propina no puede ser negativa.');
+        return;
+    }
+
+    // Calcular el total del carrito
+    let totalCartPrice = 0;
+    cart.forEach(item => {
+        totalCartPrice += item.price;
+    });
+
+    // Agregar la propina al total
+    totalCartPrice += tipAmount;
+
+    const notaEspecial = document.getElementById('nota_especial').value;
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    // Enviar datos al backend
+    fetch("{% url 'crear_sesion_pago' %}", {
         method: "POST",
         headers: {
-            "X-CSRFToken": csrftoken,
+            "X-CSRFToken": csrfToken,
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
             cart: cart,
-            total: parseFloat(totalPriceElement.textContent),
+            total: totalCartPrice.toFixed(2), // Total incluye la propina
+            tip: tipAmount.toFixed(2),       // Enviar propina separada
             nota_especial: notaEspecial
         })
     })
     .then(response => response.json())
     .then(data => {
         if (data.url) {
-            // Redirige a la pasarela de pago de Stripe
-            window.location.href = data.url;
+            window.location.href = data.url; // Redirigir a Stripe
         } else if (data.error) {
             alert(data.error);
         }
     })
-    .catch(error => {
-        console.error('Error:', error);
-    })
-    .finally(() => {
-        checkoutBtn.disabled = false;
-    });
+    .catch(error => console.error('Error:', error));
 });
+
 
 
 

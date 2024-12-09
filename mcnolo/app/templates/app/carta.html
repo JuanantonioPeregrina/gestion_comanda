@@ -580,21 +580,46 @@ button#apply-tip:hover {
         });
     
         // Actualizar carrito
-        function updateCart() {
-            cartItemsContainer.innerHTML = '';
-            let totalPrice = 0;
-    
-            cart.forEach(item => {
-                const itemElement = document.createElement('div');
-                itemElement.textContent = `${item.name} - ${item.price}€`;
-                cartItemsContainer.appendChild(itemElement);
-                totalPrice += item.price;
-            });
-    
-            totalPriceElement.textContent = totalPrice.toFixed(2);
-    
-            document.getElementById('cart-data').value = JSON.stringify(cart);
-        }
+function updateCart() {
+    cartItemsContainer.innerHTML = '';
+    let totalPrice = 0;
+
+    cart.forEach((item, index) => {
+        // Crear el contenedor del producto
+        const itemElement = document.createElement('div');
+        itemElement.classList.add('cart-item');
+
+        // Mostrar el nombre y precio del producto con el botón de eliminar
+        itemElement.innerHTML = `
+            ${item.name} - ${item.price}€
+            <button class="remove-item" data-index="${index}">Eliminar</button>
+        `;
+
+        cartItemsContainer.appendChild(itemElement);
+        totalPrice += item.price;
+    });
+
+    totalPriceElement.textContent = totalPrice.toFixed(2);
+
+    // Asociar eventos a los botones de eliminar
+    document.querySelectorAll('.remove-item').forEach(button => {
+        button.addEventListener('click', function () {
+            const index = parseInt(this.getAttribute('data-index'), 10);
+            removeFromCart(index);
+        });
+    });
+
+    document.getElementById('cart-data').value = JSON.stringify(cart);
+}
+
+function removeFromCart(index) {
+    // Eliminar el producto del array del carrito
+    cart.splice(index, 1);
+
+    // Actualizar la interfaz del carrito
+    updateCart();
+}
+
     
         // Aplicar propina
         document.getElementById('apply-tip').addEventListener('click', () => {
@@ -638,40 +663,66 @@ button#apply-tip:hover {
             .catch(error => console.error('Error:', error));
         });
     
-        // Finalizar compra
-        document.getElementById('checkout-form').addEventListener('submit', function(event) {
-            event.preventDefault();
-    
-            if (cart.length === 0) {
-                alert('El carrito está vacío.');
-                return;
-            }
-    
-            const notaEspecial = document.getElementById('nota_especial').value;
-            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    
-            fetch("{% url 'crear_sesion_pago' %}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken
-                },
-                body: JSON.stringify({
-                    cart: cart,
-                    total: totalPriceElement.textContent,
-                    nota_especial: notaEspecial
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.url) {
-                    window.location.href = data.url;
-                } else {
-                    alert('Error al procesar el pago.');
-                }
-            })
-            .catch(error => console.error('Error:', error));
-        });
+       // Finalizar compra
+// Finalizar compra
+document.getElementById('checkout-form').addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    if (cart.length === 0) {
+        alert('El carrito está vacío.');
+        return;
+    }
+
+    // Obtener la propina ingresada
+    const tipAmount = parseFloat(document.getElementById('tip-amount').value) || 0;
+
+    // Verificar si la propina es válida
+    if (tipAmount < 0) {
+        alert('La propina no puede ser negativa.');
+        return;
+    }
+
+    // Calcular el total del carrito
+    let totalCartPrice = 0;
+    cart.forEach(item => {
+        totalCartPrice += item.price;
+    });
+
+    // Agregar la propina al total
+    totalCartPrice += tipAmount;
+
+    const notaEspecial = document.getElementById('nota_especial').value;
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    // Enviar datos al backend
+    fetch("{% url 'crear_sesion_pago' %}", {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": csrfToken,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            cart: cart,
+            total: totalCartPrice.toFixed(2), // Total incluye la propina
+            tip: tipAmount.toFixed(2),       // Enviar propina separada (si es necesario)
+            nota_especial: notaEspecial
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.url) {
+            window.location.href = data.url; // Redirigir a Stripe
+        } else if (data.error) {
+            alert(data.error);
+        }
+    })
+    .catch(error => console.error('Error:', error));
+});
+
+
+
+
+
     </script>
 </body>
 </html>

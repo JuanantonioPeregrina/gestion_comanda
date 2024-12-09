@@ -304,21 +304,45 @@
         });
 
         function updateCart() {
-            cartItemsContainer.innerHTML = '';
-            let totalPrice = 0;
+    cartItemsContainer.innerHTML = '';
+    let totalPrice = 0;
 
-            cart.forEach(item => {
-                const itemElement = document.createElement('div');
-                itemElement.textContent = `${item.name} - ${item.price}€`;
-                cartItemsContainer.appendChild(itemElement);
-                totalPrice += item.price;
-            });
+    cart.forEach((item, index) => {
+        // Crear el contenedor del producto
+        const itemElement = document.createElement('div');
+        itemElement.classList.add('cart-item');
 
-            totalPriceElement.textContent = totalPrice.toFixed(2);
+        // Mostrar el nombre y precio del producto con el botón de eliminar
+        itemElement.innerHTML = `
+            ${item.name} - ${item.price}€
+            <button class="remove-item" data-index="${index}">Eliminar</button>
+        `;
 
-            // Actualizar el campo oculto para enviar al servidor
-            cartDataInput.value = JSON.stringify(cart);
-        }
+        cartItemsContainer.appendChild(itemElement);
+        totalPrice += item.price;
+    });
+
+    totalPriceElement.textContent = totalPrice.toFixed(2);
+
+    // Asociar eventos a los botones de eliminar
+    document.querySelectorAll('.remove-item').forEach(button => {
+        button.addEventListener('click', function () {
+            const index = parseInt(this.getAttribute('data-index'), 10);
+            removeFromCart(index);
+        });
+    });
+
+    document.getElementById('cart-data').value = JSON.stringify(cart);
+}
+
+function removeFromCart(index) {
+    // Eliminar el producto del array del carrito
+    cart.splice(index, 1);
+
+    // Actualizar la interfaz del carrito
+    updateCart();
+}
+
 
         checkoutForm.addEventListener('submit', (event) => {
             event.preventDefault(); // Evitar el envío predeterminado del formulario
