@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Carta</title>
+    <link rel="stylesheet" href="css/estilos.css' %}">
     <style>
         body {
             margin: 0;
@@ -166,6 +167,170 @@
         #checkout-btn:hover {
             background-color: #c82333;
         }
+        /* Estilos del carrito */
+.cart-sidebar {
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: 300px;
+    height: 100%;
+    background-color: #ffffff;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    overflow-y: auto;
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out;
+    z-index: 10500;
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Espaciado entre secciones */
+}
+
+.cart-sidebar h2 {
+    font-size: 24px;
+    color: #333;
+    text-align: center;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+/* Total y propina */
+#total-price {
+    font-weight: bold;
+    font-size: 18px;
+    color: #333;
+    text-align: right;
+    margin-bottom: 10px;
+}
+
+#tip-amount {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+button#apply-tip {
+    display: block;
+    width: 100%;
+    background-color: #ffc107;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-bottom: 15px;
+}
+
+button#apply-tip:hover {
+    background-color: #e0a800;
+}
+
+/* Observaciones */
+#nota_especial {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    margin-bottom: 15px;
+}
+
+/* Código de oferta */
+#form-oferta {
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Espaciado entre campos */
+    margin-bottom: 20px;
+}
+
+#form-oferta input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+#form-oferta button {
+    width: 100%;
+    background-color: #007BFF;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#form-oferta button:hover {
+    background-color: #0056b3;
+}
+
+/* Botón de pagar */
+#checkout-btn {
+    width: 100%;
+    background-color: #dc3545;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: background-color 0.3s ease;
+}
+
+#checkout-btn:hover {
+    background-color: #c82333;
+}
+
+/* Espaciado general */
+.cart-sidebar label {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+
+        form label {
+    display: block;
+    margin: 10px 0 5px;
+    font-weight: bold;
+    color: #333;
+}
+
+form input,
+form textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+button#apply-tip {
+    display: inline-block;
+    background: #ffc107;
+    color: #fff;
+    padding: 8px 15px;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+button#apply-tip:hover {
+    background: #e0a800;
+}
+
     </style>
 </head>
 <body>
@@ -289,11 +454,28 @@
     <button class="cart-toggle">Ver Carrito</button>
 
     <!-- Sidebar del carrito -->
-    <div id="cart-sidebar" class="cart-sidebar">
-        <a href="javascript:void(0)" class="close-cart">&times;</a>
-        <h2>Carrito de Compras</h2>
-        <div id="cart-items"></div>
-        <p>Total: <span id="total-price">0</span>€</p>
+<div id="cart-sidebar" class="cart-sidebar">
+    <a href="javascript:void(0)" class="close-cart">&times;</a>
+    <h2>Carrito de Compras</h2>
+    <div id="cart-items"></div>
+    <p>Total: <span id="total-price">0</span>€</p>
+    
+    <!-- Formulario para propinas -->
+    <label for="tip-amount">Propina (€):</label>
+    <input type="number" id="tip-amount" step="0.01" min="0">
+    <button type="button" id="apply-tip">Aplicar Propina</button>
+
+    <!-- Formulario para observaciones -->
+    <label for="nota_especial">Observaciones:</label>
+    <textarea id="nota_especial"></textarea>
+
+    <!-- Formulario para ofertas -->
+    <form id="form-oferta">
+        {% csrf_token %}
+        <label for="oferta">Código de Oferta:</label>
+        <input type="text" id="oferta">
+        <button type="submit">Aplicar Oferta</button>
+    </form>
         <form id="checkout-form">
             {% csrf_token %}
             <input type="hidden" id="cart-data" name="cart_data">
@@ -308,60 +490,107 @@
         const cartSidebar = document.getElementById('cart-sidebar');
         const cartToggleBtn = document.querySelector('.cart-toggle');
         const closeCartBtn = document.querySelector('.close-cart');
-        const checkoutForm = document.getElementById('checkout-form');
-        const cartDataInput = document.getElementById('cart-data');
-
+    
         cartToggleBtn.addEventListener('click', () => {
             cartSidebar.classList.add('open');
         });
-
+    
         closeCartBtn.addEventListener('click', () => {
             cartSidebar.classList.remove('open');
         });
-
+    
+        // Añadir al carrito
         document.querySelectorAll('.add-to-cart').forEach(button => {
             button.addEventListener('click', (event) => {
                 const name = event.target.getAttribute('data-name');
                 const price = parseFloat(event.target.getAttribute('data-price'));
-
+    
                 cart.push({ name, price });
                 updateCart();
             });
         });
-
+    
+        // Actualizar carrito
         function updateCart() {
             cartItemsContainer.innerHTML = '';
             let totalPrice = 0;
-
+    
             cart.forEach(item => {
                 const itemElement = document.createElement('div');
                 itemElement.textContent = `${item.name} - ${item.price}€`;
                 cartItemsContainer.appendChild(itemElement);
                 totalPrice += item.price;
             });
-
+    
             totalPriceElement.textContent = totalPrice.toFixed(2);
-
-            // Actualizar el campo oculto para enviar al servidor
-            cartDataInput.value = JSON.stringify(cart);
+    
+            document.getElementById('cart-data').value = JSON.stringify(cart);
         }
-
-        checkoutForm.addEventListener('submit', (event) => {
-            event.preventDefault(); // Evitar el envío predeterminado del formulario
+    
+        // Aplicar propina
+        document.getElementById('apply-tip').addEventListener('click', () => {
+            const tipAmount = parseFloat(document.getElementById('tip-amount').value);
+            if (isNaN(tipAmount) || tipAmount < 0) {
+                alert('Por favor, ingrese una cantidad válida para la propina.');
+            } else {
+                const totalPrice = parseFloat(totalPriceElement.textContent);
+                totalPriceElement.textContent = (totalPrice + tipAmount).toFixed(2);
+            }
+        });
+    
+        // Aplicar oferta
+        document.getElementById('form-oferta').addEventListener('submit', function(event) {
+            event.preventDefault();
+    
+            const codigoOferta = document.getElementById('oferta').value;
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+            fetch("{% url 'comprobar_oferta' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ codigo: codigoOferta })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.oferta_aplicable) {
+                    let totalPrice = 0;
+                    cart.forEach(item => {
+                        totalPrice += item.price;
+                    });
+                    const precioFinal = totalPrice * data.oferta_aplicable;
+                    document.getElementById('total-price').textContent = precioFinal.toFixed(2);
+                } else {
+                    alert('Código de oferta no válido.');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    
+        // Finalizar compra
+        document.getElementById('checkout-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+    
             if (cart.length === 0) {
                 alert('El carrito está vacío.');
                 return;
             }
-
+    
+            const notaEspecial = document.getElementById('nota_especial').value;
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
             fetch("{% url 'crear_sesion_pago' %}", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
+                    'X-CSRFToken': csrfToken
                 },
                 body: JSON.stringify({
                     cart: cart,
-                    total: totalPriceElement.textContent
+                    total: totalPriceElement.textContent,
+                    nota_especial: notaEspecial
                 })
             })
             .then(response => response.json())
@@ -373,33 +602,6 @@
                 }
             })
             .catch(error => console.error('Error:', error));
-        });
-        
-        const selectedItems = {};
-
-        document.querySelectorAll('.add-to-cart').forEach(button => {
-            button.addEventListener('click', () => {
-                const category = button.getAttribute('data-category');
-                const allButtons = document.querySelectorAll(`button[data-category="${category}"]`);
-                
-                if (selectedItems[category]) {
-                    // Deseleccionar el plato anterior
-                    selectedItems[category].disabled = false;
-                    selectedItems[category].textContent = "Seleccionar";
-                }
-
-                // Seleccionar el plato actual
-                button.disabled = true;
-                button.textContent = "Seleccionado";
-                selectedItems[category] = button;
-
-                // Deshabilitar los otros platos de la categoría
-                allButtons.forEach(btn => {
-                    if (btn !== button) {
-                        btn.disabled = true;
-                    }
-                });
-            });
         });
     </script>
 </body>
