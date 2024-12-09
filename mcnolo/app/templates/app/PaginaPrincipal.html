@@ -114,7 +114,37 @@
             font-size: 1.2rem;
             font-style: italic;
         }
+	.carta {
+            z-index: 2;
+            text-align: center;
+            padding: 30px;
+            color: white;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        
+	.carta-button {
+	    position: fixed;
+	    top: 120px;
+	    left: 20px;
+	    background-color: #28a745;
+	    color: white;
+	    padding: 10px 20px;
+	    text-decoration: none;
+	    border-radius: 5px;
+	    font-size: 1rem;
+	    font-weight: bold;
+	    z-index: 9999;
+	    transition: background-color 0.3s ease;
+	}
 
+	.carta-button:hover {
+	    background-color: #218838;
+	}
+
+	.carta-button:active {
+	    background-color: #1e7e34;
+	}
         /* Estilo moderno para la sección de productos */
         .products {
             z-index: 2;
@@ -667,7 +697,7 @@
 <body>
 
 <a href="/menu/" class="menu-button">Nuestro Menú</a>
-
+<a href="/carta/" class="carta-button">Carta</a>
 <!-- Video como fondo -->
 <video autoplay muted loop class="video-background">
     <source src="{{ MEDIA_URL }}/media/videos/principal.mp4" type="video/mp4">
@@ -788,7 +818,6 @@
 
 <!-- Menú y Carta -->
 <main>
-    <h2>Menú y Carta</h2>
 
     <!-- Aquí comienza el bloque de las categorías y platos -->
     {% for categoria in categorias %}
@@ -843,7 +872,7 @@
 </div>
 
 <section class="products">
-    <h2>Productos</h2>
+    <h2>Productos exclusivos de la semana</h2>
     <!-- Formulario de filtrado -->
     <form class="filter-form" method="get" action="">
         <label for="filtro">Filtrar por:</label>

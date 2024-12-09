@@ -1,28 +1,408 @@
-<h2>Carta</h2>
-<h3>Entrantes</h3>
-<ul>
-    {% for plato in entrantes %}
-        <li>{{ plato.nombre }} - {{ plato.precio }}€</li>
-    {% endfor %}
-</ul>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carta</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+        }
 
-<h3>Primeros</h3>
-<ul>
-    {% for plato in primeros %}
-        <li>{{ plato.nombre }} - {{ plato.precio }}€</li>
-    {% endfor %}
-</ul>
+        header {
+            background-color: #ff6b6b;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
 
-<h3>Segundos</h3>
-<ul>
-    {% for plato in segundos %}
-        <li>{{ plato.nombre }} - {{ plato.precio }}€</li>
-    {% endfor %}
-</ul>
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
 
-<h3>Postres</h3>
-<ul>
-    {% for plato in postres %}
-        <li>{{ plato.nombre }} - {{ plato.precio }}€</li>
-    {% endfor %}
-</ul>
+        main {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section h2 {
+            background-color: #ffcc00;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .menu-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .menu-item {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            width: 280px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .menu-item:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .menu-item img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+
+        .menu-item h3 {
+            font-size: 1.5rem;
+            margin: 15px 0 5px;
+            color: #ff6b6b;
+        }
+
+        .menu-item p {
+            margin: 0;
+            font-size: 1rem;
+            color: #555;
+        }
+
+        .menu-item .price {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #333;
+            margin: 15px 0;
+        }
+
+        .menu-item .add-to-cart {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-bottom: 15px;
+            transition: background-color 0.3s ease;
+        }
+
+        .menu-item .add-to-cart:hover {
+            background-color: #218838;
+        }
+
+        .cart-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            z-index: 2000;
+        }
+
+        .cart-sidebar {
+            position: fixed;
+            right: 0;
+            top: 0;
+            width: 300px;
+            height: 100%;
+            background-color: #ffffff;
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            overflow-y: auto;
+            transform: translateX(100%);
+            transition: transform 0.3s ease-in-out;
+            z-index: 10500;
+        }
+
+        .cart-sidebar.open {
+            transform: translateX(0);
+        }
+
+        .close-cart {
+            color: #ff6b6b;
+            font-size: 24px;
+            text-decoration: none;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            transition: color 0.3s;
+        }
+
+        .close-cart:hover {
+            color: #ff4a4a;
+        }
+
+        #checkout-btn {
+            background-color: #dc3545;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        #checkout-btn:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Carta</h1>
+        <p>Disfruta de los mejores platos de McNolo</p>
+    </header>
+    <main>
+        <div class="section">
+            <h2>Entrantes</h2>
+            <div class="menu-items">
+                <div class="menu-item">
+                    <img src="/media/productos/ensaladilla.jpeg" alt="Ensaladilla">
+                    <h3>Ensaladilla</h3>
+                    <p>Fresca y deliciosa</p>
+                    <p class="price">4.99€</p>
+                    <button class="add-to-cart" data-name="Ensaladilla" data-price="4.99" data-category="primero">Seleccionar</button>
+                </div>
+                <div class="menu-item">
+                    <img src="/media/productos/sopadepollo.jpeg" alt="Sopa de Pollo">
+                    <h3>Sopa de Pollo</h3>
+                    <p>Reconfortante y deliciosa</p>
+                    <p class="price">3.99€</p>
+                    <button class="add-to-cart" data-name="Sopa de Pollo" data-price="3.99" data-category="primero">Seleccionar</button>
+                </div>
+                <div class="menu-item">
+                    <img src="/media/productos/GuisoTernera.jpeg" alt="Guiso de Ternera">
+                    <h3>Guiso de Ternera</h3>
+                    <p>Clásico y casero</p>
+                    <p class="price">5.50€</p>
+                    <button class="add-to-cart" data-name="Guiso de Ternera" data-price="5.50" data-category="primero">Seleccionar</button>
+                </div>
+            </div>
+        </div>
+        <!-- Primeros -->
+        <div class="section">
+            <h2>Primeros</h2>
+            <div class="menu-items">
+                <div class="menu-item">
+                    <img src="/media/productos/ensaladilla.jpeg" alt="Ensaladilla">
+                    <h3>Ensaladilla</h3>
+                    <p>Fresca y deliciosa</p>
+                    <p class="price">4.99€</p>
+                    <button class="add-to-cart" data-name="Ensaladilla" data-price="4.99" data-category="primero">Seleccionar</button>
+                </div>
+                <div class="menu-item">
+                    <img src="/media/productos/sopadepollo.jpeg" alt="Sopa de Pollo">
+                    <h3>Sopa de Pollo</h3>
+                    <p>Reconfortante y deliciosa</p>
+                    <p class="price">3.99€</p>
+                    <button class="add-to-cart" data-name="Sopa de Pollo" data-price="3.99" data-category="primero">Seleccionar</button>
+                </div>
+                <div class="menu-item">
+                    <img src="/media/productos/GuisoTernera.jpeg" alt="Guiso de Ternera">
+                    <h3>Guiso de Ternera</h3>
+                    <p>Clásico y casero</p>
+                    <p class="price">5.50€</p>
+                    <button class="add-to-cart" data-name="Guiso de Ternera" data-price="5.50" data-category="primero">Seleccionar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Segundos -->
+        <div class="section">
+            <h2>Segundos</h2>
+            <div class="menu-items">
+                <div class="menu-item">
+                    <img src="/media/productos/filetedebuey.jpeg" alt="Filete de Buey">
+                    <h3>Filete de Buey</h3>
+                    <p>Jugoso y sabroso</p>
+                    <p class="price">9.99€</p>
+                    <button class="add-to-cart" data-name="Filete de Buey" data-price="9.99" data-category="segundo">Seleccionar</button>
+                </div>
+                <div class="menu-item">
+                    <img src="/media/productos/merluzaromana.jpg" alt="Merluza a la Romana">
+                    <h3>Merluza a la Romana</h3>
+                    <p>Ligera y crujiente</p>
+                    <p class="price">8.99€</p>
+                    <button class="add-to-cart" data-name="Merluza a la Romana" data-price="8.99" data-category="segundo">Seleccionar</button>
+                </div>
+                <div class="menu-item">
+                    <img src="/media/productos/morcilla.png" alt="Morcilla Asada">
+                    <h3>Morcilla Asada</h3>
+                    <p>Con un toque de cebolla</p>
+                    <p class="price">6.50€</p>
+                    <button class="add-to-cart" data-name="Morcilla Asada" data-price="6.50" data-category="segundo">Seleccionar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Postres -->
+        <div class="section">
+            <h2>Postres</h2>
+            <div class="menu-items">
+                <div class="menu-item">
+                    <img src="/media/productos/tartadechocolate.jpeg" alt="Tarta de Chocolate">
+                    <h3>Tarta de Chocolate</h3>
+                    <p>Intenso y cremoso</p>
+                    <p class="price">3.99€</p>
+                    <button class="add-to-cart" data-name="Tarta de Chocolate" data-price="3.99" data-category="postre">Seleccionar</button>
+                </div>
+                <div class="menu-item">
+                    <img src="/media/productos/vainillahelado.jpeg" alt="Helado de Vainilla">
+                    <h3>Helado de Vainilla</h3>
+                    <p>Fresco y dulce</p>
+                    <p class="price">2.99€</p>
+                    <button class="add-to-cart" data-name="Helado de Vainilla" data-price="2.99" data-category="postre">Seleccionar</button>
+                </div>
+                <div class="menu-item">
+                    <img src="/media/productos/frutadetemporada.jpeg" alt="Fruta de Temporada">
+                    <h3>Fruta de Temporada</h3>
+                    <p>Natural y saludable</p>
+                    <p class="price">2.50€</p>
+                    <button class="add-to-cart" data-name="Fruta de Temporada" data-price="2.50" data-category="postre">Seleccionar</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Botón para abrir el carrito -->
+    <button class="cart-toggle">Ver Carrito</button>
+
+    <!-- Sidebar del carrito -->
+    <div id="cart-sidebar" class="cart-sidebar">
+        <a href="javascript:void(0)" class="close-cart">&times;</a>
+        <h2>Carrito de Compras</h2>
+        <div id="cart-items"></div>
+        <p>Total: <span id="total-price">0</span>€</p>
+        <form id="checkout-form">
+            {% csrf_token %}
+            <input type="hidden" id="cart-data" name="cart_data">
+            <button type="submit" id="checkout-btn">Pagar</button>
+        </form>
+    </div>
+
+    <script>
+        const cart = [];
+        const cartItemsContainer = document.getElementById('cart-items');
+        const totalPriceElement = document.getElementById('total-price');
+        const cartSidebar = document.getElementById('cart-sidebar');
+        const cartToggleBtn = document.querySelector('.cart-toggle');
+        const closeCartBtn = document.querySelector('.close-cart');
+        const checkoutForm = document.getElementById('checkout-form');
+        const cartDataInput = document.getElementById('cart-data');
+
+        cartToggleBtn.addEventListener('click', () => {
+            cartSidebar.classList.add('open');
+        });
+
+        closeCartBtn.addEventListener('click', () => {
+            cartSidebar.classList.remove('open');
+        });
+
+        document.querySelectorAll('.add-to-cart').forEach(button => {
+            button.addEventListener('click', (event) => {
+                const name = event.target.getAttribute('data-name');
+                const price = parseFloat(event.target.getAttribute('data-price'));
+
+                cart.push({ name, price });
+                updateCart();
+            });
+        });
+
+        function updateCart() {
+            cartItemsContainer.innerHTML = '';
+            let totalPrice = 0;
+
+            cart.forEach(item => {
+                const itemElement = document.createElement('div');
+                itemElement.textContent = `${item.name} - ${item.price}€`;
+                cartItemsContainer.appendChild(itemElement);
+                totalPrice += item.price;
+            });
+
+            totalPriceElement.textContent = totalPrice.toFixed(2);
+
+            // Actualizar el campo oculto para enviar al servidor
+            cartDataInput.value = JSON.stringify(cart);
+        }
+
+        checkoutForm.addEventListener('submit', (event) => {
+            event.preventDefault(); // Evitar el envío predeterminado del formulario
+            if (cart.length === 0) {
+                alert('El carrito está vacío.');
+                return;
+            }
+
+            fetch("{% url 'crear_sesion_pago' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    cart: cart,
+                    total: totalPriceElement.textContent
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.url) {
+                    window.location.href = data.url;
+                } else {
+                    alert('Error al procesar el pago.');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+        
+        const selectedItems = {};
+
+        document.querySelectorAll('.add-to-cart').forEach(button => {
+            button.addEventListener('click', () => {
+                const category = button.getAttribute('data-category');
+                const allButtons = document.querySelectorAll(`button[data-category="${category}"]`);
+                
+                if (selectedItems[category]) {
+                    // Deseleccionar el plato anterior
+                    selectedItems[category].disabled = false;
+                    selectedItems[category].textContent = "Seleccionar";
+                }
+
+                // Seleccionar el plato actual
+                button.disabled = true;
+                button.textContent = "Seleccionado";
+                selectedItems[category] = button;
+
+                // Deshabilitar los otros platos de la categoría
+                allButtons.forEach(btn => {
+                    if (btn !== button) {
+                        btn.disabled = true;
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+
+

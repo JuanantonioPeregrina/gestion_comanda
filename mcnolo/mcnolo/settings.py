@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-=8^o*j^=^l&^-+sacx91^2#qopsqly%q6((82_5&2hc=r4&-9u
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', '10.60.116.207','13.60.28.206', 'mcnolo.duckdns.org', 'mcnolo.online', '81.88.48.71']
+ALLOWED_HOSTS = ['127.0.0.1', '16.171.17.34', 'mcnolo.duckdns.org', 'mcnolo.online', 'www.mcnolo.online', '2.140.250.116']
 
 CSRF_TRUSTED_ORIGINS = [
     'https://mcnolo.online',

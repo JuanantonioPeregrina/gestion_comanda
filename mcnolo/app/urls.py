@@ -36,6 +36,7 @@ urlpatterns = [
     path('gestionar-pedidos/', views.gestionar_pedidos, name='gestionar_pedidos'),
     path('enviar_sugerencia/', views.enviar_sugerencia, name='enviar_sugerencia'),
     path('volver-a-pedir/<int:pedido_id>/', views.volver_a_pedir, name='volver_a_pedir'),
+    path('carta/', views.carta_view, name='carta'),
     ]
 
     

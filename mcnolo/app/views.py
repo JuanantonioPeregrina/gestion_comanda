@@ -858,3 +858,6 @@ def menu_view(request):
     # Renderiza la plantilla estática directamente
     return render(request, 'app/menu.html')    
 
+def carta_view(request):
+    # Renderiza la plantilla estática directamente
+    return render(request, 'app/carta.html')
